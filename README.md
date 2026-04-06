@@ -169,8 +169,7 @@ Configuration is stored in a Docker volume (`proxmox-hive-data`) at `/data/confi
 ## Updating
 
 ```bash
-docker compose pull && docker compose up -d
-```
+docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d```
 
 ---
 
