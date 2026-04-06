@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import net from 'net'
 import os from 'os'
+import { execFile } from 'child_process'
 import { createSSHConnection } from '../services/ssh.js'
 import {
   isConfigured, getAllSites, getSite, saveSite, deleteSite,
@@ -16,6 +17,60 @@ const router = Router()
 
 router.get('/version', (req, res) => {
   res.json({ version: process.env.APP_VERSION || 'dev' })
+})
+
+// ─── App self-update ──────────────────────────────────────────────────────────
+
+let _updateCache = null
+let _updateCacheAt = 0
+
+router.get('/app-update', async (req, res) => {
+  const current = process.env.APP_VERSION || 'dev'
+  if (current === 'dev') return res.json({ current, latest: null, updateAvailable: false })
+
+  const now = Date.now()
+  if (_updateCache && now - _updateCacheAt < 60 * 60 * 1000) return res.json(_updateCache)
+
+  try {
+    const r = await fetch('https://api.github.com/repos/macokay/proxmox-hive/releases/latest', {
+      headers: { 'User-Agent': 'proxmox-hive' }
+    })
+    if (!r.ok) throw new Error(`GitHub API ${r.status}`)
+    const data = await r.json()
+    const latest = data.tag_name?.replace(/^v/, '') || null
+    const updateAvailable = !!latest && latest !== current
+    _updateCache = { current, latest, updateAvailable }
+    _updateCacheAt = now
+    res.json(_updateCache)
+  } catch (e) {
+    res.json({ current, latest: null, updateAvailable: false, error: e.message })
+  }
+})
+
+router.post('/app-update/apply', (req, res) => {
+  res.json({ started: true })
+  const COMPOSE = '/opt/proxmox-hive/docker-compose.yml'
+
+  function run(cmd, args) {
+    return new Promise((resolve, reject) => {
+      const child = execFile(cmd, args, { env: process.env })
+      child.stdout.on('data', d => broadcast({ type: 'app_update_log', data: d.toString() }))
+      child.stderr.on('data', d => broadcast({ type: 'app_update_log', data: d.toString() }))
+      child.on('close', code => code === 0 ? resolve() : reject(new Error(`exit ${code}`)))
+    })
+  }
+
+  ;(async () => {
+    try {
+      broadcast({ type: 'app_update_log', data: '--- Pulling latest image ---\n' })
+      await run('docker', ['compose', '-f', COMPOSE, 'pull'])
+      broadcast({ type: 'app_update_log', data: '--- Restarting container ---\n' })
+      await run('docker', ['compose', '-f', COMPOSE, 'up', '-d', '--remove-orphans'])
+    } catch (e) {
+      broadcast({ type: 'app_update_log', data: `\nError: ${e.message}\n` })
+      broadcast({ type: 'app_update_done', success: false })
+    }
+  })()
 })
 
 // ─── Config status ────────────────────────────────────────────────────────────

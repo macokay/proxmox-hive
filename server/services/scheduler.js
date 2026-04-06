@@ -188,6 +188,35 @@ function nodeAptSelectiveUpgradeCmd(site, packages) {
   return `sh -c '${script}'`
 }
 
+// ─── Package manager detection ───────────────────────────────────────────────
+
+async function detectLxcPackageManager(site, vmid) {
+  const cmd = pctExecCmd(site, vmid,
+    `sh -c 'command -v apk >/dev/null 2>&1 && echo apk || command -v dnf >/dev/null 2>&1 && echo dnf || command -v yum >/dev/null 2>&1 && echo yum || command -v apt-get >/dev/null 2>&1 && echo apt || echo unknown'`
+  )
+  try {
+    const { stdout } = await siteExec(site, cmd)
+    return stdout.trim().split('\n').pop().trim() || 'unknown'
+  } catch {
+    return 'unknown'
+  }
+}
+
+function lxcApkUpgradeCmd(site, vmid) {
+  const p = (!site.ssh.username || site.ssh.username === 'root') ? '' : 'sudo '
+  return `${p}pct exec ${vmid} -- sh -c 'apk update -q 2>&1 || true; apk upgrade 2>&1; RC=$?; exit $RC'`
+}
+
+function lxcDnfUpgradeCmd(site, vmid) {
+  const p = (!site.ssh.username || site.ssh.username === 'root') ? '' : 'sudo '
+  return `${p}pct exec ${vmid} -- sh -c 'dnf upgrade -y 2>&1; RC=$?; dnf autoremove -y 2>&1 || true; exit $RC'`
+}
+
+function lxcYumUpgradeCmd(site, vmid) {
+  const p = (!site.ssh.username || site.ssh.username === 'root') ? '' : 'sudo '
+  return `${p}pct exec ${vmid} -- sh -c 'yum upgrade -y 2>&1; RC=$?; yum autoremove -y 2>&1 || true; exit $RC'`
+}
+
 // ─── Check ────────────────────────────────────────────────────────────────────
 
 export async function runCheck(siteId) {
@@ -221,16 +250,31 @@ export async function runCheck(siteId) {
           results.lxc.push({ vmid, name: lxcInfo.name, updates: 0, packages: [], appUpdates: [], running: false })
           continue
         }
-        await siteExec(site, pctExecCmd(site, vmid, 'apt-get update -qq 2>/dev/null || true'))
-        const { stdout: lxcOut } = await siteExec(site, pctExecCmd(site, vmid, 'apt list --upgradable 2>/dev/null'))
-        const aptPackages = parseAptOutput(lxcOut)
+
+        const pm = await detectLxcPackageManager(site, vmid)
+
+        let packages = []
+        if (pm === 'apt') {
+          await siteExec(site, pctExecCmd(site, vmid, 'apt-get update -qq 2>/dev/null || true'))
+          const { stdout } = await siteExec(site, pctExecCmd(site, vmid, 'apt list --upgradable 2>/dev/null'))
+          packages = parseAptOutput(stdout)
+        } else if (pm === 'apk') {
+          await siteExec(site, pctExecCmd(site, vmid, 'apk update -q 2>/dev/null || true'))
+          const { stdout } = await siteExec(site, pctExecCmd(site, vmid, 'apk list --upgradable 2>/dev/null'))
+          packages = parseApkOutput(stdout)
+        } else if (pm === 'dnf' || pm === 'yum') {
+          const { stdout } = await siteExec(site, pctExecCmd(site, vmid, `${pm} check-update 2>/dev/null; true`))
+          packages = parseDnfOutput(stdout)
+        }
 
         let appUpdates = []
-        try { appUpdates = await detectAppUpdates(vmid, site) } catch { }
+        if (pm === 'apt') {
+          try { appUpdates = await detectAppUpdates(vmid, site) } catch { }
+        }
 
         const appNames = new Set(appUpdates.map(a => a.name))
-        const filteredApt = aptPackages.filter(p => !appNames.has(p.name))
-        results.lxc.push({ vmid, name: lxcInfo.name, updates: filteredApt.length + appUpdates.length, packages: filteredApt, appUpdates, running: true })
+        const filteredPkgs = packages.filter(p => !appNames.has(p.name))
+        results.lxc.push({ vmid, name: lxcInfo.name, updates: filteredPkgs.length + appUpdates.length, packages: filteredPkgs, appUpdates, running: true, pm })
       } catch (e) {
         results.lxc.push({ vmid, name: lxcInfo.name, updates: 0, packages: [], appUpdates: [], running: false, error: e.message })
       }
@@ -319,16 +363,31 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
       await siteExecStream(site, cmd, onLog, (code) => { success = code === 0 })
 
     } else if (target === 'lxc') {
-      const appApiUpdates = appUpdates.filter(u => u.source === 'app-api')
-      for (const appUpdate of appApiUpdates) {
-        const ok = await updateApp(vmid, appUpdate, onLog, site)
-        if (!ok) success = false
+      const pm = await detectLxcPackageManager(site, vmid)
+
+      if (pm === 'apt') {
+        const appApiUpdates = appUpdates.filter(u => u.source === 'app-api')
+        for (const appUpdate of appApiUpdates) {
+          const ok = await updateApp(vmid, appUpdate, onLog, site)
+          if (!ok) success = false
+        }
+        onLog('\n[apt] Running package upgrade...\n')
+        const cmd = (packages && packages.length > 0)
+          ? lxcAptSelectiveUpgradeCmd(site, vmid, packages)
+          : lxcAptUpgradeCmd(site, vmid)
+        await siteExecStream(site, cmd, onLog, (code) => { if (code !== 0) success = false })
+      } else if (pm === 'apk') {
+        onLog('\n[apk] Running package upgrade...\n')
+        await siteExecStream(site, lxcApkUpgradeCmd(site, vmid), onLog, (code) => { if (code !== 0) success = false })
+      } else if (pm === 'dnf') {
+        onLog('\n[dnf] Running package upgrade...\n')
+        await siteExecStream(site, lxcDnfUpgradeCmd(site, vmid), onLog, (code) => { if (code !== 0) success = false })
+      } else if (pm === 'yum') {
+        onLog('\n[yum] Running package upgrade...\n')
+        await siteExecStream(site, lxcYumUpgradeCmd(site, vmid), onLog, (code) => { if (code !== 0) success = false })
+      } else {
+        onLog('\n[update] Unsupported package manager — skipping.\n')
       }
-      onLog('\n[apt] Running package upgrade...\n')
-      const cmd = (packages && packages.length > 0)
-        ? lxcAptSelectiveUpgradeCmd(site, vmid, packages)
-        : lxcAptUpgradeCmd(site, vmid)
-      await siteExecStream(site, cmd, onLog, (code) => { if (code !== 0) success = false })
 
     } else if (target === 'vm') {
       onLog('\n[VM] Running update via QEMU guest agent...\n')
@@ -427,4 +486,29 @@ export function parseAptOutput(output) {
       return { name, newVersion: parts[1] || '', arch: parts[2] || '' }
     })
     .filter(p => p.name)
+}
+
+export function parseApkOutput(output) {
+  // `apk list --upgradable` output: name-version [repo]
+  return output.split('\n')
+    .filter(line => line.trim() && !line.startsWith('fetch'))
+    .map(line => {
+      const match = line.match(/^([a-zA-Z0-9._+-]+)-([^\s]+)\s/)
+      if (!match) return null
+      return { name: match[1], newVersion: match[2], arch: '' }
+    })
+    .filter(Boolean)
+}
+
+export function parseDnfOutput(output) {
+  // `dnf check-update` lists: name.arch  newVersion  repo
+  return output.split('\n')
+    .filter(line => line.trim() && !line.startsWith('Last') && !line.startsWith('Loaded') && !line.startsWith('Obsoleting') && !/^[A-Z]/.test(line))
+    .map(line => {
+      const parts = line.trim().split(/\s+/)
+      if (parts.length < 2) return null
+      const name = (parts[0] || '').split('.')[0]
+      return { name, newVersion: parts[1] || '', arch: '' }
+    })
+    .filter(p => p?.name)
 }
