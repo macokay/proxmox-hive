@@ -176,10 +176,10 @@ docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f
 
 ## Known Limitations
 
-- Only **apt-based** systems are supported (Debian, Ubuntu). Containers running Alpine, Fedora, etc. are not detected.
 - LXC containers must be **running** to have their packages checked or updated.
 - VM package detection requires the **QEMU guest agent** to be installed and running.
 - One Proxmox node per site.
+- LXC containers running an unrecognised OS show an "Unsupported OS" badge and are skipped during updates.
 
 ---
 
