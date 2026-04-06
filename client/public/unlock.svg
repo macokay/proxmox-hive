@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="unlockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F87171" />
+      <stop offset="100%" stop-color="#DC2626" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#unlockGrad)" />
+  <g fill="none" stroke="#ffffff" stroke-width="32" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="152" y="248" width="208" height="160" rx="24" />
+    <line x1="192" y1="248" x2="192" y2="168" />
+    <path d="M 192 168 A 64 64 0 0 1 320 168" />
+    <line x1="320" y1="168" x2="320" y2="200" />
+    <circle cx="256" cy="312" r="16" fill="#ffffff" stroke="none" />
+    <polygon points="246,312 266,312 260,352 252,352" fill="#ffffff" stroke="none" />
+  </g>
+</svg>

@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C084FC" />
+      <stop offset="100%" stop-color="#7E22CE" />
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="128" fill="url(#vmGrad)" />
+
+  <g fill="none" stroke="#ffffff" stroke-width="32" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="104" y="104" width="304" height="304" rx="32" stroke-dasharray="32 32" />
+    <rect x="176" y="172" width="160" height="120" rx="16" />
+    <line x1="256" y1="292" x2="256" y2="340" />
+    <line x1="216" y1="340" x2="296" y2="340" />
+  </g>
+</svg>

@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: #4f8ef7;
+  --accent-glow: #4f8ef733;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: #08080a;
+  color: #e8e8f0;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='512' height='512' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #08080a; }
+::-webkit-scrollbar-thumb { background: #2e2e38; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3e3e4a; }
+
+/* Glass card */
+.card {
+  background: #0e0e12;
+  border: 1px solid #1e1e28;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #ffffff05 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Glow badge */
+.glow-accent { box-shadow: 0 0 20px var(--accent-glow); }
+.glow-success { box-shadow: 0 0 20px #10b98122; }
+.glow-danger { box-shadow: 0 0 20px #ef444422; }
+
+/* Pulse dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+/* Fade in */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.4s ease forwards; }
+.fade-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+.fade-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+.fade-up-delay-3 { animation-delay: 0.3s; opacity: 0; }
+
+/* Terminal */
+.terminal {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #a8ffb0;
+  background: #050507;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.terminal .stderr { color: #ff8080; }
+.terminal .info { color: #7aa0ff; }
+
+/* Shimmer */
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, #ffffff08, transparent);
+  animation: shimmer 1.8s infinite;
+}
+
+/* Slide in from bottom */
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.slide-up { animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Button styles */
+.btn {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer;
+}
+.btn-primary {
+  @apply btn bg-accent text-white hover:bg-blue-500 active:scale-95;
+  box-shadow: 0 0 0 0 var(--accent-glow);
+  transition: box-shadow 0.2s, background 0.15s, transform 0.1s;
+}
+.btn-primary:hover { box-shadow: 0 0 20px var(--accent-glow); }
+.btn-ghost {
+  @apply btn bg-transparent text-muted border border-border hover:border-base-500 hover:text-white active:scale-95;
+}
+.btn-danger {
+  @apply btn bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 active:scale-95;
+}
+
+/* Input */
+.input {
+  @apply w-full bg-base-800 border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-muted
+         focus:outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/10 transition-all;
+}
+.label {
+  @apply block text-xs font-medium text-muted mb-1.5 uppercase tracking-wider;
+}

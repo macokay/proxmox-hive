@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="syncGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#syncGrad)" />
+  <g fill="none" stroke="#ffffff" stroke-width="32" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M 144 256 A 112 112 0 0 1 335 177" />
+    <polyline points="335,113 335,177 271,177" />
+    <path d="M 368 256 A 112 112 0 0 1 177 335" />
+    <polyline points="177,399 177,335 241,335" />
+  </g>
+</svg>

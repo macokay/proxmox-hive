@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lxcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3ACBF6" />
+      <stop offset="100%" stop-color="#0280CA" />
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="128" fill="url(#lxcGrad)" />
+
+  <g fill="none" stroke="#ffffff" stroke-width="32" stroke-linejoin="round" stroke-linecap="round">
+    <polygon points="256,96 394,176 394,336 256,416 118,336 118,176" />
+    <line x1="256" y1="256" x2="256" y2="416" />
+    <line x1="256" y1="256" x2="394" y2="176" />
+    <line x1="256" y1="256" x2="118" y2="176" />
+  </g>
+</svg>

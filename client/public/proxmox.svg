@@ -1,0 +1,24 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="proxmoxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF984D" />
+      <stop offset="100%" stop-color="#D95000" />
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="128" fill="url(#proxmoxGrad)" />
+
+  <g fill="none" stroke="#ffffff" stroke-width="32" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="128" y="116" width="256" height="72" rx="16" />
+    <rect x="128" y="220" width="256" height="72" rx="16" />
+    <rect x="128" y="324" width="256" height="72" rx="16" />
+
+    <circle cx="180" cy="152" r="14" fill="#ffffff" stroke="none" />
+    <circle cx="180" cy="256" r="14" fill="#ffffff" stroke="none" />
+    <circle cx="180" cy="360" r="14" fill="#ffffff" stroke="none" />
+
+    <line x1="240" y1="152" x2="336" y2="152" />
+    <line x1="240" y1="256" x2="288" y2="256" />
+    <line x1="240" y1="360" x2="336" y2="360" />
+  </g>
+</svg>

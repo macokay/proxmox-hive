@@ -1,0 +1,14 @@
+services:
+  proxmox-hive:
+    build: .
+    container_name: proxmox-hive
+    ports:
+      - "3000:3000"
+    volumes:
+      - proxmox-hive-data:/data
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+
+volumes:
+  proxmox-hive-data:
