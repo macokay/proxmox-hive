@@ -56,13 +56,20 @@
 
 ### Automatic (recommended)
 
-Run the following on your server:
+Run the following on your **Proxmox node**:
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"
 ```
 
-The script installs Docker if needed, pulls the image, and starts Proxmox Hive. Then open `http://<your-server>:3000` and follow the setup wizard.
+When run on a Proxmox node the script prompts you to choose between:
+
+- **New LXC container** — creates a dedicated Debian 12 container, upgrades it, installs Docker and Proxmox Hive inside it, and configures console auto-login. Recommended.
+- **This machine** — installs Docker and Proxmox Hive directly on the node.
+
+When run on any other Debian/Ubuntu host (e.g. an existing LXC or VM) it installs directly without prompting.
+
+After installation open `http://<ip>:3000` and follow the setup wizard.
 
 ### Manual
 

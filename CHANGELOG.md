@@ -2,11 +2,15 @@
 
 All notable changes to Proxmox Hive are documented here.
 
-## [Unreleased]
+## [1.0.1] - 2026-04-06
 
 ### Added
 - CI workflow to build and publish Docker image to GHCR on every push to `main` and on version tags
-- Install script now prompts whether to deploy into a new LXC container or directly on the current machine — when run on a Proxmox node, a `whiptail` menu offers both options; the LXC path auto-selects the next available CT ID, downloads a Debian 12 template if needed, and runs the install inside the container
+- Install script now prompts whether to deploy into a new LXC container or directly on the current machine — when run on a Proxmox node, a `whiptail` menu offers both options; the LXC path auto-selects the next available CT ID, downloads a Debian 12 template if needed, upgrades all packages, and runs the install inside the container
+
+### Fixed
+- LXC console auto-login (no password prompt when opening the Proxmox web console)
+- Suppressed apt and locale output during install — only progress messages are shown
 
 ## [1.0.0] - 2026-04-04
 
