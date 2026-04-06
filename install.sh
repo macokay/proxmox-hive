@@ -23,10 +23,10 @@ msg_error() { echo -e " ${CROSS} $1"; exit 1; }
 header_info() {
   clear
   cat <<'EOF'
-  ____   ____    ___ __  __ __  __   ___ __  __  _   _  ___ __     __ _____ 
+  ____   ____    ___ __  __ __  __   ___ __  __  _   _  ___ __     __ _____
   |  _ \ |  _ \  / _ \\ \/ /|  \/  | / _ \\ \/ / | | | ||_ _|\ \   / /| ____|
-  | |_) || |_) || | | |\  / | |\/| || | | |\  /  | |_| | | |  \ \ / / |  _|  
-  |  __/ |  _ < | |_| |/  \ | |  | || |_| |/  \  |  _  | | |   \ V /  | |___ 
+  | |_) || |_) || | | |\  / | |\/| || | | |\  /  | |_| | | |  \ \ / / |  _|
+  |  __/ |  _ < | |_| |/  \ | |  | || |_| |/  \  |  _  | | |   \ V /  | |___
   |_|    |_| \_\ \___//_/\_\|_|  |_| \___//_/\_\ |_| |_||___|   \_/   |_____|
 
 EOF
@@ -111,15 +111,119 @@ EOF
   msg_ok "Started Proxmox Hive"
 }
 
+# ─── LXC creation ────────────────────────────────────────────────────────────
+LXC_HOSTNAME="proxmox-hive"
+LXC_CORES=2
+LXC_RAM=1024
+LXC_DISK=8
+
+get_template() {
+  # Use already-downloaded Debian 12 template if available
+  local tmpl
+  tmpl=$(pveam list local 2>/dev/null \
+    | awk '/debian-12-standard/ {print $1}' \
+    | sed 's|local:vztmpl/||' \
+    | sort -V | tail -1)
+
+  if [[ -z "$tmpl" ]]; then
+    msg_info "Downloading Debian 12 template"
+    tmpl=$(pveam available --section system 2>/dev/null \
+      | awk '/debian-12-standard/ {print $1}' \
+      | sort -V | tail -1)
+    [[ -z "$tmpl" ]] && msg_error "Could not find Debian 12 template in catalog"
+    pveam download local "$tmpl" >/dev/null
+    msg_ok "Downloaded $tmpl"
+  fi
+
+  echo "$tmpl"
+}
+
+get_storage() {
+  # Pick first storage that supports rootdir content
+  pvesh get /nodes/localhost/storage --output-format json 2>/dev/null \
+    | grep -o '"storage":"[^"]*",".*?"content":"[^"]*rootdir[^"]*"' \
+    | head -1 \
+    | grep -o '"storage":"[^"]*"' \
+    | cut -d'"' -f4 \
+    || echo "local-lvm"
+}
+
+create_lxc() {
+  local ctid
+  ctid=$(pvesh get /cluster/nextid 2>/dev/null || echo 200)
+
+  local template
+  template=$(get_template)
+
+  local storage
+  storage=$(get_storage)
+
+  msg_info "Creating LXC container ${ctid} (${LXC_CORES} cores, ${LXC_RAM}MB RAM, ${LXC_DISK}GB)"
+  pct create "$ctid" "local:vztmpl/${template}" \
+    -hostname "$LXC_HOSTNAME" \
+    -features nesting=1,keyctl=1 \
+    -cores "$LXC_CORES" \
+    -memory "$LXC_RAM" \
+    -rootfs "${storage}:${LXC_DISK}" \
+    -net0 name=eth0,bridge=vmbr0,ip=dhcp \
+    -onboot 1 \
+    -unprivileged 1 \
+    -start 1 >/dev/null
+  msg_ok "Created LXC ${ctid}"
+
+  msg_info "Waiting for network"
+  local ip=""
+  for i in {1..30}; do
+    ip=$(pct exec "$ctid" -- ip -4 addr show dev eth0 2>/dev/null \
+      | awk '/inet / {gsub(/\/.*/, "", $2); print $2; exit}')
+    [[ -n "$ip" ]] && break
+    sleep 1
+  done
+  [[ -z "$ip" ]] && msg_error "LXC did not get an IP address"
+  msg_ok "LXC is up at ${ip}"
+
+  msg_info "Installing Proxmox Hive inside LXC ${ctid}"
+  pct exec "$ctid" -- bash -c \
+    "bash <(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"
+
+  echo
+  echo -e " ${GN}Proxmox Hive is running!${CL}"
+  echo -e " Access it at: ${BL}http://${ip}:${PORT}${CL}"
+  echo
+}
+
 # ─── Entry point ─────────────────────────────────────────────────────────────
 header_info
 check_root
-check_os
-install_docker
-deploy_proxmox_hive
 
-IP=$(hostname -I | awk '{print $1}')
-echo
-echo -e " ${GN}Proxmox Hive is running!${CL}"
-echo -e " Access it at: ${BL}http://${IP}:${PORT}${CL}"
-echo
+# If running on a Proxmox node, offer LXC vs direct install
+if command -v pct &>/dev/null; then
+  CHOICE=$(whiptail --title "Proxmox Hive — Installation" \
+    --menu "\nWhere should Proxmox Hive be installed?" 14 55 2 \
+    "1" "New LXC container (recommended)" \
+    "2" "This Proxmox node directly" \
+    3>&1 1>&2 2>&3) || msg_error "Installation cancelled"
+
+  case "$CHOICE" in
+    1) create_lxc ;;
+    2)
+      check_os
+      install_docker
+      deploy_proxmox_hive
+      IP=$(hostname -I | awk '{print $1}')
+      echo
+      echo -e " ${GN}Proxmox Hive is running!${CL}"
+      echo -e " Access it at: ${BL}http://${IP}:${PORT}${CL}"
+      echo
+      ;;
+  esac
+else
+  check_os
+  install_docker
+  deploy_proxmox_hive
+  IP=$(hostname -I | awk '{print $1}')
+  echo
+  echo -e " ${GN}Proxmox Hive is running!${CL}"
+  echo -e " Access it at: ${BL}http://${IP}:${PORT}${CL}"
+  echo
+fi

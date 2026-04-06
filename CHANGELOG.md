@@ -6,6 +6,7 @@ All notable changes to Proxmox Hive are documented here.
 
 ### Added
 - CI workflow to build and publish Docker image to GHCR on every push to `main` and on version tags
+- Install script now prompts whether to deploy into a new LXC container or directly on the current machine — when run on a Proxmox node, a `whiptail` menu offers both options; the LXC path auto-selects the next available CT ID, downloads a Debian 12 template if needed, and runs the install inside the container
 
 ## [1.0.0] - 2026-04-04
 
