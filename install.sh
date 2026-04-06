@@ -183,28 +183,28 @@ create_lxc() {
   msg_ok "LXC is up at ${ip}"
 
   msg_info "Bootstrapping package manager in LXC ${ctid}"
-  pct exec "$ctid" -- bash -c "apt-get update -qq && apt-get install -y -qq curl" >/dev/null
+  pct exec "$ctid" -- bash -c \
+    "apt-get update -qq && apt-get install -y -qq curl locales && locale-gen en_US.UTF-8 >/dev/null" >/dev/null
   msg_ok "Bootstrap complete"
 
-  msg_info "Configuring auto-login on console"
-  pct exec "$ctid" -- bash -c "
-    mkdir -p /etc/systemd/system/container-getty@1.service.d
-    cat > /etc/systemd/system/container-getty@1.service.d/override.conf <<'EOF'
+  msg_info "Configuring console auto-login"
+  local _override
+  _override=$(mktemp)
+  cat > "$_override" << 'EOF'
 [Service]
 ExecStart=
-ExecStart=-/sbin/agetty --autologin root --noclear --keep-baud tty%I 115200,38400,9600 \$TERM
+ExecStart=-/sbin/agetty --autologin root --noclear --keep-baud tty%I 115200,38400,9600 $TERM
 EOF
-    systemctl daemon-reload" >/dev/null
+  pct exec "$ctid" -- mkdir -p /etc/systemd/system/container-getty@1.service.d
+  pct push "$ctid" "$_override" /etc/systemd/system/container-getty@1.service.d/override.conf
+  rm -f "$_override"
+  pct exec "$ctid" -- bash -c \
+    "systemctl daemon-reload && systemctl restart 'container-getty@1'" >/dev/null
   msg_ok "Console auto-login enabled"
 
   msg_info "Installing Proxmox Hive inside LXC ${ctid}"
   pct exec "$ctid" -- bash -c \
-    "bash <(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"
-
-  echo
-  echo -e " ${GN}Proxmox Hive is running!${CL}"
-  echo -e " Access it at: ${BL}http://${ip}:${PORT}${CL}"
-  echo
+    "export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 && bash <(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"
 }
 
 # ─── Entry point ─────────────────────────────────────────────────────────────
