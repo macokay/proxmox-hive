@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.2] - 2026-04-06
+
+### Fixed
+- App version now injected at build time from git tag and served via `/api/version` — footer always reflects the running release
+
 ## [1.0.1] - 2026-04-06
 
 ### Added
