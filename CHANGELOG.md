@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [Unreleased]
+
+### Added
+- CI workflow to build and publish Docker image to GHCR on every push to `main` and on version tags
+
 ## [1.0.0] - 2026-04-04
 
 ### Added
