@@ -6,6 +6,8 @@ COPY client/ ./
 RUN npm run build
 
 FROM node:20-alpine AS runtime
+ARG APP_VERSION=dev
+ENV APP_VERSION=${APP_VERSION}
 WORKDIR /app
 
 COPY server/package*.json ./

@@ -12,6 +12,12 @@ import { broadcast } from '../broadcast.js'
 
 const router = Router()
 
+// ─── Version ──────────────────────────────────────────────────────────────────
+
+router.get('/version', (req, res) => {
+  res.json({ version: process.env.APP_VERSION || 'dev' })
+})
+
 // ─── Config status ────────────────────────────────────────────────────────────
 
 router.get('/config/status', (req, res) => {

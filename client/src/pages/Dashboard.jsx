@@ -544,10 +544,15 @@ function GlobalView({ sites, activeUpdates, onUpdate, onCheck }) {
 // ─── Main Dashboard ────────────────────────────────────────────────────────────
 
 export default function Dashboard({ sites, activeSiteId, onSiteChange, onSettings, onAddSite }) {
+  const [appVersion, setAppVersion] = useState(null)
   const [lastChecks, setLastChecks] = useState({}) // siteId → lastCheck data
   const [checking, setChecking] = useState({})     // siteId → bool
   const [terminals, setTerminals] = useState({})   // updateKey → terminal data
   const [activeUpdates, setActiveUpdates] = useState({}) // key → bool
+
+  useEffect(() => {
+    fetch('/api/version').then(r => r.json()).then(d => setAppVersion(d.version)).catch(() => {})
+  }, [])
 
   // Seed lastChecks from initial sites data
   useEffect(() => {
@@ -691,7 +696,7 @@ export default function Dashboard({ sites, activeSiteId, onSiteChange, onSetting
 
       <footer className="border-t border-border px-5 py-3 text-center">
         <span className="text-xs text-muted">
-          <a href="https://github.com/macokay/proxmox-hive/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Proxmox Hive v1.0.0</a> · <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+          <a href={`https://github.com/macokay/proxmox-hive/releases/tag/v${appVersion}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Proxmox Hive {appVersion ? `v${appVersion}` : ''}</a> · <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
         </span>
       </footer>
     </div>
