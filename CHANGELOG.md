@@ -2,6 +2,12 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.3] - 2026-04-06
+
+### Added
+- Self-update notifications — a banner appears when a new GitHub release is available, with an "Update now" button that pulls the latest image and restarts the container with live log output
+- Non-apt LXC support — containers running Alpine (apk), Fedora/CentOS (dnf/yum) are now detected and updated with the correct package manager; unsupported OS shows a badge instead of an error
+
 ## [1.0.2] - 2026-04-06
 
 ### Fixed

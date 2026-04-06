@@ -70,6 +70,12 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
               <span>CT {lxc.vmid}</span>
               <span className="w-1 h-1 rounded-full bg-base-500" />
               <span className={lxc.running ? 'text-success' : 'text-muted'}>{lxc.running ? 'running' : 'stopped'}</span>
+              {lxc.pm && lxc.pm !== 'apt' && lxc.pm !== 'unknown' && (
+                <>
+                  <span className="w-1 h-1 rounded-full bg-base-500" />
+                  <span className="uppercase tracking-wide">{lxc.pm}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -78,6 +84,8 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
             <span className="text-xs px-2.5 py-1 rounded-full bg-base-700 text-muted border border-border italic">Pending check</span>
           ) : !lxc.running ? (
             <span className="text-xs px-2.5 py-1 rounded-full bg-base-700 text-muted border border-border">Offline</span>
+          ) : lxc.pm === 'unknown' ? (
+            <span className="text-xs px-2.5 py-1 rounded-full bg-base-700 text-muted border border-border">Unsupported OS</span>
           ) : hasUpdates ? (
             <div className="flex flex-col items-end gap-1">
               <span className="text-2xl font-semibold text-white tabular-nums">{totalUpdates}</span>
