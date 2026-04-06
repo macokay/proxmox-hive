@@ -186,6 +186,17 @@ create_lxc() {
   pct exec "$ctid" -- bash -c "apt-get update -qq && apt-get install -y -qq curl" >/dev/null
   msg_ok "Bootstrap complete"
 
+  msg_info "Configuring auto-login on console"
+  pct exec "$ctid" -- bash -c "
+    mkdir -p /etc/systemd/system/container-getty@1.service.d
+    cat > /etc/systemd/system/container-getty@1.service.d/override.conf <<'EOF'
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin root --noclear --keep-baud tty%I 115200,38400,9600 \$TERM
+EOF
+    systemctl daemon-reload" >/dev/null
+  msg_ok "Console auto-login enabled"
+
   msg_info "Installing Proxmox Hive inside LXC ${ctid}"
   pct exec "$ctid" -- bash -c \
     "bash <(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"
