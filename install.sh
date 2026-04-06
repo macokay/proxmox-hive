@@ -113,9 +113,9 @@ EOF
 
 # ─── LXC creation ────────────────────────────────────────────────────────────
 LXC_HOSTNAME="proxmox-hive"
-LXC_CORES=2
-LXC_RAM=1024
-LXC_DISK=8
+LXC_CORES=1
+LXC_RAM=1536
+LXC_DISK=4
 
 get_template() {
   # Use already-downloaded Debian 12 template if available
@@ -181,6 +181,10 @@ create_lxc() {
   done
   [[ -z "$ip" ]] && msg_error "LXC did not get an IP address"
   msg_ok "LXC is up at ${ip}"
+
+  msg_info "Bootstrapping package manager in LXC ${ctid}"
+  pct exec "$ctid" -- bash -c "apt-get update -qq && apt-get install -y -qq curl" >/dev/null
+  msg_ok "Bootstrap complete"
 
   msg_info "Installing Proxmox Hive inside LXC ${ctid}"
   pct exec "$ctid" -- bash -c \
