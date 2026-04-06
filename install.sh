@@ -55,12 +55,12 @@ install_docker() {
   fi
 
   msg_info "Installing Docker"
-  apt-get update -qq
-  apt-get install -y -qq ca-certificates curl gnupg lsb-release
+  apt-get update -qq >/dev/null 2>&1
+  apt-get install -y -qq ca-certificates curl gnupg lsb-release >/dev/null 2>&1
 
   install -m 0755 -d /etc/apt/keyrings
   curl -fsSL https://download.docker.com/linux/$(. /etc/os-release && echo "$ID")/gpg \
-    | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    | gpg --dearmor -o /etc/apt/keyrings/docker.gpg 2>/dev/null
   chmod a+r /etc/apt/keyrings/docker.gpg
 
   echo \
@@ -69,9 +69,9 @@ install_docker() {
     $(lsb_release -cs) stable" \
     > /etc/apt/sources.list.d/docker.list
 
-  apt-get update -qq
-  apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-compose-plugin
-  systemctl enable --now docker
+  apt-get update -qq >/dev/null 2>&1
+  apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-compose-plugin >/dev/null 2>&1
+  systemctl enable --now docker >/dev/null 2>&1
   msg_ok "Installed Docker"
 }
 
@@ -182,10 +182,10 @@ create_lxc() {
   [[ -z "$ip" ]] && msg_error "LXC did not get an IP address"
   msg_ok "LXC is up at ${ip}"
 
-  msg_info "Bootstrapping package manager in LXC ${ctid}"
+  msg_info "Updating LXC packages"
   pct exec "$ctid" -- bash -c \
-    "apt-get update -qq && apt-get install -y -qq curl locales && locale-gen en_US.UTF-8 >/dev/null" >/dev/null
-  msg_ok "Bootstrap complete"
+    "apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -qq && apt-get install -y -qq curl locales && locale-gen en_US.UTF-8 >/dev/null" >/dev/null 2>&1
+  msg_ok "Packages up to date"
 
   msg_info "Configuring console auto-login"
   local _override
