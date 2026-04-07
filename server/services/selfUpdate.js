@@ -1,7 +1,5 @@
-import { execFile } from 'child_process'
-import { readFileSync, writeFileSync } from 'fs'
-
-const COMPOSE = '/opt/proxmox-hive/docker-compose.yml'
+import { execFile, execFileSync } from 'child_process'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
 
 function versionIsNewer(a, b) {
   const parse = v => String(v).replace(/[-+].*$/, '').split('.').map(n => parseInt(n) || 0)
@@ -11,6 +9,26 @@ function versionIsNewer(a, b) {
     if (diff !== 0) return diff > 0
   }
   return false
+}
+
+function findComposeFile() {
+  // Ask Docker for the compose project working dir of this container
+  try {
+    const out = execFileSync('docker', [
+      'inspect', 'proxmox-hive',
+      '--format', '{{ index .Config.Labels "com.docker.compose.project.working_dir" }}'
+    ], { encoding: 'utf8' }).trim()
+    if (out && out !== '<no value>') {
+      const candidate = `${out}/docker-compose.yml`
+      if (existsSync(candidate)) return candidate
+    }
+  } catch {}
+
+  const fallbacks = ['/opt/proxmox-hive/docker-compose.yml']
+  for (const p of fallbacks) {
+    if (existsSync(p)) return p
+  }
+  return null
 }
 
 export function getCurrentVersion() {
@@ -28,7 +46,6 @@ export async function fetchLatestRelease() {
 
 export function isUpdateAvailable(current, latest) {
   if (!latest) return false
-  // current may be "1.0.3" (release) or "1.0.3-0abd6b1" (post-release commit)
   const base = current.split('-')[0]
   return versionIsNewer(latest, base)
 }
@@ -36,19 +53,6 @@ export function isUpdateAvailable(current, latest) {
 export async function applySelfUpdate(onLog) {
   const latest = await fetchLatestRelease()
   if (!latest) throw new Error('Could not fetch latest release')
-
-  // Pin the compose file to the new release tag so future pulls stay on releases
-  try {
-    let content = readFileSync(COMPOSE, 'utf8')
-    content = content.replace(
-      /image:\s*ghcr\.io\/macokay\/proxmox-hive:[^\s\n]+/,
-      `image: ghcr.io/macokay/proxmox-hive:v${latest}`
-    )
-    writeFileSync(COMPOSE, content)
-    onLog(`Pinned image to v${latest}\n`)
-  } catch (e) {
-    onLog(`Warning: could not update compose file: ${e.message}\n`)
-  }
 
   function run(cmd, args) {
     return new Promise((resolve, reject) => {
@@ -59,8 +63,31 @@ export async function applySelfUpdate(onLog) {
     })
   }
 
-  onLog('--- Pulling latest image ---\n')
-  await run('docker', ['compose', '-f', COMPOSE, 'pull'])
-  onLog('--- Restarting container ---\n')
-  await run('docker', ['compose', '-f', COMPOSE, 'up', '-d', '--remove-orphans'])
+  const compose = findComposeFile()
+
+  if (compose) {
+    // Update the image tag in the compose file so it stays pinned to releases
+    try {
+      let content = readFileSync(compose, 'utf8')
+      content = content.replace(
+        /image:\s*ghcr\.io\/macokay\/proxmox-hive:[^\s\n]+/,
+        `image: ghcr.io/macokay/proxmox-hive:v${latest}`
+      )
+      writeFileSync(compose, content)
+      onLog(`Pinned image to v${latest}\n`)
+    } catch (e) {
+      onLog(`Warning: could not update compose file: ${e.message}\n`)
+    }
+    onLog('--- Pulling latest image ---\n')
+    await run('docker', ['compose', '-f', compose, 'pull'])
+    onLog('--- Restarting container ---\n')
+    await run('docker', ['compose', '-f', compose, 'up', '-d', '--remove-orphans'])
+  } else {
+    // No compose file found — pull directly and restart the container
+    onLog('Compose file not found, using docker pull directly\n')
+    onLog('--- Pulling latest image ---\n')
+    await run('docker', ['pull', `ghcr.io/macokay/proxmox-hive:v${latest}`])
+    onLog('--- Restarting container ---\n')
+    await run('docker', ['restart', 'proxmox-hive'])
+  }
 }
