@@ -77,8 +77,20 @@ install_docker() {
 
 # ─── Proxmox Hive ────────────────────────────────────────────────────────────
 INSTALL_DIR="/opt/proxmox-hive"
-IMAGE="ghcr.io/macokay/proxmox-hive:latest"
 PORT="${PORT:-3000}"
+
+resolve_image() {
+  local tag
+  tag=$(curl -fsSL https://api.github.com/repos/macokay/proxmox-hive/releases/latest \
+    | grep '"tag_name"' | head -1 | cut -d'"' -f4)
+  if [[ -n "$tag" ]]; then
+    echo "ghcr.io/macokay/proxmox-hive:${tag}"
+  else
+    echo "ghcr.io/macokay/proxmox-hive:latest"
+  fi
+}
+
+IMAGE=$(resolve_image)
 
 deploy_proxmox_hive() {
   msg_info "Setting up Proxmox Hive in ${INSTALL_DIR}"

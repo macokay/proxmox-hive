@@ -38,16 +38,8 @@ jobs:
       - name: Resolve app version
         id: appver
         run: |
-          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            echo "value=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
-          else
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-            if [[ -n "$LATEST_TAG" ]]; then
-              echo "value=${LATEST_TAG#v}" >> $GITHUB_OUTPUT
-            else
-              echo "value=dev" >> $GITHUB_OUTPUT
-            fi
-          fi
+          DESC=$(git describe --tags --always 2>/dev/null || echo "dev")
+          echo "value=${DESC#v}" >> $GITHUB_OUTPUT
 
       - name: Build and push
         uses: docker/build-push-action@v6
