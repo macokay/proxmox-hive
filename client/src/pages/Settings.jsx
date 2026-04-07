@@ -553,6 +553,17 @@ function SiteSettings({ site, onSaved, onDeleted }) {
             </div>
           ))}
         </div>
+        <div className="mt-3">
+          <label className="label">Timezone</label>
+          <input
+            type="text"
+            className="input"
+            placeholder="e.g. Europe/Copenhagen"
+            value={config.schedule?.timezone || ''}
+            onChange={e => update('schedule.timezone', e.target.value || undefined)}
+          />
+          <p className="text-xs text-muted mt-1">IANA timezone name. Leave empty to use UTC.</p>
+        </div>
       </Section>
 
       {/* Auto-update */}

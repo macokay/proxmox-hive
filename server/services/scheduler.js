@@ -28,12 +28,13 @@ export function initSiteScheduler(site) {
   const tasks = []
 
   const checkTimes = site.schedule?.times || ['08:00', '20:00']
+  const timezone = site.schedule?.timezone || undefined
   checkTimes.forEach(time => {
     const [hour, minute] = time.split(':').map(Number)
     tasks.push(cron.schedule(`${minute} ${hour} * * *`, () => {
       console.log(`[${site.name}] Scheduled check at ${time}`)
       runCheck(site.id)
-    }))
+    }, { timezone }))
   })
 
   const groups = site.autoUpdate?.groups || []
@@ -42,7 +43,7 @@ export function initSiteScheduler(site) {
     tasks.push(cron.schedule(`${minute} ${hour} * * *`, () => {
       console.log(`[${site.name}] Auto-update group "${group.name}"`)
       runGroupUpdate(site.id, group)
-    }))
+    }, { timezone }))
   })
 
   siteTasks.set(site.id, tasks)
