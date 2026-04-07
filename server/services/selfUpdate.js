@@ -71,7 +71,7 @@ export async function applySelfUpdate(onLog) {
       let content = readFileSync(compose, 'utf8')
       content = content.replace(
         /image:\s*ghcr\.io\/macokay\/proxmox-hive:[^\s\n]+/,
-        `image: ghcr.io/macokay/proxmox-hive:v${latest}`
+        `image: ghcr.io/macokay/proxmox-hive:${latest}`
       )
       writeFileSync(compose, content)
       onLog(`Pinned image to v${latest}\n`)
@@ -86,7 +86,7 @@ export async function applySelfUpdate(onLog) {
     // No compose file found — pull directly and restart the container
     onLog('Compose file not found, using docker pull directly\n')
     onLog('--- Pulling latest image ---\n')
-    await run('docker', ['pull', `ghcr.io/macokay/proxmox-hive:v${latest}`])
+    await run('docker', ['pull', `ghcr.io/macokay/proxmox-hive:${latest}`])
     onLog('--- Restarting container ---\n')
     await run('docker', ['restart', 'proxmox-hive'])
   }

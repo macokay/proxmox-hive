@@ -177,7 +177,7 @@ You can also include **Proxmox Hive** as a target in an auto-update group (Setti
 ### Manual update to latest release
 
 ```bash
-TAG=$(curl -fsSL https://api.github.com/repos/macokay/proxmox-hive/releases/latest | grep -o '"tag_name": *"[^"]*"' | grep -o '"v[^"]*"' | tr -d '"') && [ -n "$TAG" ] && sed -i "s|image: .*proxmox-hive:.*|image: ghcr.io/macokay/proxmox-hive:${TAG}|" /opt/proxmox-hive/docker-compose.yml && docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
+TAG=$(curl -fsSL https://api.github.com/repos/macokay/proxmox-hive/releases/latest | grep -o '"tag_name": *"[^"]*"' | grep -o '"v[^"]*"' | tr -d '"v') && [ -n "$TAG" ] && sed -i "s|image: .*proxmox-hive:.*|image: ghcr.io/macokay/proxmox-hive:${TAG}|" /opt/proxmox-hive/docker-compose.yml && docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
 ```
 
 ### Update to latest commit (pre-release)
