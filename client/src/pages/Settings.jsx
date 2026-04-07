@@ -145,6 +145,7 @@ function GroupEditor({ groups, lxcList, vmList, onChange }) {
     { id: 'node', icon: 'proxmox', name: 'Node' },
     ...lxcList.map(l => ({ id: l.vmid, icon: 'lxc', name: l.name })),
     ...vmList.map(v => ({ id: v.vmid, icon: 'vm', name: `${v.name} (VM)` })),
+    { id: 'hive', icon: 'hive', name: 'Proxmox Hive' },
   ]
 
   return (

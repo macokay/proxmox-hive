@@ -168,7 +168,26 @@ Configuration is stored in a Docker volume (`proxmox-hive-data`) at `/data/confi
 
 ## Updating
 
+### Using the built-in self-update
+
+When a new release is available, a banner appears at the top of the dashboard with an **Update now** button. Clicking it pulls the new release image and restarts the container automatically — no terminal needed.
+
+You can also include **Proxmox Hive** as a target in an auto-update group (Settings → Auto-Update Groups). When the group runs at its scheduled time it checks GitHub for a new release and applies it the same way as the banner button.
+
+### Manual update to latest release
+
 ```bash
+docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
+```
+
+This pulls the image tag pinned in your `docker-compose.yml` (set by the installer or by a previous self-update) and restarts the container.
+
+### Update to latest commit (pre-release)
+
+> ⚠ The `latest` tag tracks the `main` branch and may include unreleased or unstable changes.
+
+```bash
+# Edit /opt/proxmox-hive/docker-compose.yml and change the image tag to :latest, then:
 docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
 ```
 

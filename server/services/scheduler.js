@@ -4,6 +4,7 @@ import { detectAppUpdates } from './appUpdates.js'
 import { notify } from './notifications.js'
 import { getAllSites, getSite, saveSite } from './config.js'
 import { broadcast } from '../broadcast.js'
+import { getCurrentVersion, fetchLatestRelease, isUpdateAvailable, applySelfUpdate } from './selfUpdate.js'
 
 // Map of siteId -> array of cron tasks
 const siteTasks = new Map()
@@ -432,6 +433,20 @@ export async function runGroupUpdate(siteId, group) {
   for (const target of (group.targets || [])) {
     if (target === 'node') {
       if (checkResult.node.updates > 0) await runTargetUpdate(siteId, 'node', null, 'Proxmox Node')
+    } else if (target === 'hive') {
+      try {
+        const current = getCurrentVersion()
+        if (current === 'dev') continue
+        const latest = await fetchLatestRelease()
+        if (!isUpdateAvailable(current, latest)) continue
+        broadcast({ type: 'update_start', siteId, target: 'hive', vmid: null, targetLabel: 'Proxmox Hive', key: 'hive' })
+        const onLog = (data) => broadcast({ type: 'log', siteId, data, key: 'hive' })
+        await applySelfUpdate(onLog)
+        broadcast({ type: 'update_done', siteId, target: 'hive', vmid: null, success: true, key: 'hive' })
+      } catch (e) {
+        console.error(`[${site.name}] Hive self-update failed:`, e.message)
+        broadcast({ type: 'update_done', siteId, target: 'hive', vmid: null, success: false, key: 'hive' })
+      }
     } else {
       const vmid = Number(target)
       // Check LXC first
