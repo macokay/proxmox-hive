@@ -2,6 +2,19 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.4] - 2026-04-07
+
+### Added
+- Timezone support for scheduled checks — set an IANA timezone per site (e.g. `Europe/Copenhagen`) in Settings → Check Schedule so checks run at local time instead of UTC
+- Proxmox Hive self-update via auto-update groups — add "Proxmox Hive" as a target in an auto-update group to apply new releases on a schedule, the same as clicking "Update now"
+
+### Fixed
+- Version display always visible in footer — non-release builds show `1.0.4-abc1234` (tag + commit hash) so you always know exactly what is running
+- Self-update banner no longer triggers on post-release commits — comparison now uses base semver so `1.0.4-abc1234` is not considered behind `1.0.4`
+- Self-update apply now pins `docker-compose.yml` to the specific release tag before pulling — prevents future `docker compose pull` from drifting to untagged commits
+- Install script resolves the latest release tag from the GitHub API — new installs always get the latest stable release instead of the latest commit
+- CI now fetches full git history so `git describe` correctly finds the nearest version tag
+
 ## [1.0.3] - 2026-04-06
 
 ### Added
