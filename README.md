@@ -177,18 +177,15 @@ You can also include **Proxmox Hive** as a target in an auto-update group (Setti
 ### Manual update to latest release
 
 ```bash
-docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
+TAG=$(curl -fsSL https://api.github.com/repos/macokay/proxmox-hive/releases/latest | grep '"tag_name"' | head -1 | cut -d'"' -f4) && sed -i "s|image: .*proxmox-hive:.*|image: ghcr.io/macokay/proxmox-hive:${TAG}|" /opt/proxmox-hive/docker-compose.yml && docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
 ```
-
-This pulls the image tag pinned in your `docker-compose.yml` (set by the installer or by a previous self-update) and restarts the container.
 
 ### Update to latest commit (pre-release)
 
 > ⚠ The `latest` tag tracks the `main` branch and may include unreleased or unstable changes.
 
 ```bash
-# Edit /opt/proxmox-hive/docker-compose.yml and change the image tag to :latest, then:
-docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
+sed -i "s|image: .*proxmox-hive:.*|image: ghcr.io/macokay/proxmox-hive:latest|" /opt/proxmox-hive/docker-compose.yml && docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
 ```
 
 ---
