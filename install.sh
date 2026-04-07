@@ -82,7 +82,7 @@ PORT="${PORT:-3000}"
 resolve_image() {
   local tag
   tag=$(curl -fsSL https://api.github.com/repos/macokay/proxmox-hive/releases/latest \
-    | grep '"tag_name"' | head -1 | cut -d'"' -f4)
+    | grep -o '"tag_name": *"[^"]*"' | grep -o '"v[^"]*"' | tr -d '"')
   if [[ -n "$tag" ]]; then
     echo "ghcr.io/macokay/proxmox-hive:${tag}"
   else
