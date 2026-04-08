@@ -165,6 +165,17 @@ function lxcAptUpgradeCmd(site, vmid) {
   return `${p}pct exec ${vmid} -- sh -c '${script}'`
 }
 
+function lxcAptForceInstallCmd(site, vmid, packages) {
+  const isRoot = !site.ssh.username || site.ssh.username === 'root'
+  const p = isRoot ? '' : 'sudo '
+  const pkgList = packages.map(pkg => pkg.replace(/[^a-zA-Z0-9._:+~-]/g, '')).filter(Boolean).join(' ')
+  const script = [
+    `DEBIAN_FRONTEND=noninteractive apt-get install -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
+    `exit $RC`,
+  ].join('; ')
+  return `${p}pct exec ${vmid} -- sh -c '${script}'`
+}
+
 function lxcAptSelectiveUpgradeCmd(site, vmid, packages) {
   const isRoot = !site.ssh.username || site.ssh.username === 'root'
   const p = isRoot ? '' : 'sudo '
@@ -387,6 +398,17 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
           ? lxcAptSelectiveUpgradeCmd(site, vmid, packages)
           : lxcAptUpgradeCmd(site, vmid)
         await siteExecStream(site, cmd, onLog, (code) => { if (code !== 0) success = false })
+
+        // Force-install any held-back packages (apt-get install bypasses the hold where dist-upgrade cannot)
+        const lxcData = site.lastCheck?.lxc?.find(l => l.vmid === vmid)
+        const keptBackPkgs = (lxcData?.packages || [])
+          .filter(p => p.keptBack)
+          .filter(p => !packages || packages.includes(p.name))
+          .map(p => p.name)
+        if (keptBackPkgs.length > 0) {
+          onLog(`\n[apt] Force-installing ${keptBackPkgs.length} held-back package(s): ${keptBackPkgs.join(' ')}\n`)
+          await siteExecStream(site, lxcAptForceInstallCmd(site, vmid, keptBackPkgs), onLog, (code) => { if (code !== 0) success = false })
+        }
       } else if (pm === 'apk') {
         onLog('\n[apk] Running package upgrade...\n')
         await siteExecStream(site, lxcApkUpgradeCmd(site, vmid), onLog, (code) => { if (code !== 0) success = false })
