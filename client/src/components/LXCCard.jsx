@@ -17,7 +17,7 @@ function AppBadge({ appType }) {
   )
 }
 
-export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSelected, onCardSelect }) {
+export default function LXCCard({ lxc, onUpdate, onDismiss, updating, delay = 0, isCardSelected, onCardSelect }) {
   const aptCount = lxc?.packages?.length || 0
   const appCount = lxc?.appUpdates?.length || 0
   const totalUpdates = aptCount + appCount
@@ -134,16 +134,23 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
 
           {/* Apt packages */}
           {lxc.packages?.map((pkg, i) => (
-            <button key={`apt-${i}`} onClick={() => togglePkg(pkg.name)}
-              className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
-                effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
-              }`}>
-              <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all ${
-                effectiveSelected.has(pkg.name) ? 'bg-accent border-accent text-white' : 'border-base-500'
-              }`}>{effectiveSelected.has(pkg.name) && '✓'}</div>
-              <span className="font-mono text-white/80 flex-1 text-left min-w-0 truncate" title={pkg.name}>{pkg.name}</span>
-              <span className="text-muted flex-shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
-            </button>
+            <div key={`apt-${i}`} className="group relative">
+              <button onClick={() => togglePkg(pkg.name)}
+                className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
+                  effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
+                }`}>
+                <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all ${
+                  effectiveSelected.has(pkg.name) ? 'bg-accent border-accent text-white' : 'border-base-500'
+                }`}>{effectiveSelected.has(pkg.name) && '✓'}</div>
+                <span className="font-mono text-white/80 flex-1 text-left min-w-0 truncate" title={pkg.name}>{pkg.name}</span>
+                <span className="text-muted flex-shrink-0 max-w-[100px] truncate mr-5" title={pkg.newVersion}>{pkg.newVersion}</span>
+              </button>
+              {onDismiss && (
+                <button onClick={e => { e.stopPropagation(); onDismiss([pkg.name]) }}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded text-muted hover:text-warning hover:bg-warning/10 text-[10px]"
+                  title="Dismiss (snooze — hide until next upgrade)">⊘</button>
+              )}
+            </div>
           ))}
         </div>
       )}

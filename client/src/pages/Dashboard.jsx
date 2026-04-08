@@ -241,7 +241,7 @@ function TerminalPanel({ term, onClose }) {
 
 // ─── Single Site View ──────────────────────────────────────────────────────────
 
-function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
+function SiteView({ site, activeUpdates, onUpdate, onDismiss, onCheck, checking }) {
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [selectedCards, setSelectedCards] = useState(new Set())
 
@@ -387,6 +387,7 @@ function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
                 {lxcData.map((lxc, i) => (
                   <LXCCard key={lxc.vmid} lxc={lxc} delay={i + 1}
                     onUpdate={(vmid, pkgs) => onUpdate(site.id, 'lxc', vmid, pkgs)}
+                    onDismiss={(pkgs) => onDismiss(site.id, 'lxc', lxc.vmid, pkgs)}
                     updating={!!activeUpdates[`lxc-${lxc.vmid}`]}
                     isCardSelected={selectedCards.has(`lxc-${lxc.vmid}`)}
                     onCardSelect={updatableLXC.length > 1 ? (vmid) => toggleCard('lxc', vmid) : null} />
@@ -445,7 +446,7 @@ function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
 
 // ─── Global View (all sites) ───────────────────────────────────────────────────
 
-function GlobalView({ sites, activeUpdates, onUpdate, onCheck }) {
+function GlobalView({ sites, activeUpdates, onUpdate, onDismiss, onCheck }) {
   const totalUpdates = sites.reduce((sum, site) => {
     const lc = site.lastCheck
     if (!lc) return sum
@@ -515,6 +516,7 @@ function GlobalView({ sites, activeUpdates, onUpdate, onCheck }) {
                       {lc.lxc.map((lxc, i) => (
                         <LXCCard key={lxc.vmid} lxc={lxc} delay={i}
                           onUpdate={(vmid, pkgs) => onUpdate(site.id, 'lxc', vmid, pkgs)}
+                          onDismiss={(pkgs) => onDismiss(site.id, 'lxc', lxc.vmid, pkgs)}
                           updating={!!activeUpdates[`${site.id}:lxc-${lxc.vmid}`]} />
                       ))}
                     </div>
@@ -631,6 +633,14 @@ export default function Dashboard({ sites, activeSiteId, onSiteChange, onSetting
     })
   }
 
+  async function runDismiss(siteId, target, vmid, packages) {
+    await fetch(`/api/sites/${siteId}/dismiss`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target, vmid, packages })
+    })
+  }
+
   function closeTerminal(key) {
     setTerminals(prev => { const n = { ...prev }; delete n[key]; return n })
   }
@@ -681,6 +691,7 @@ export default function Dashboard({ sites, activeSiteId, onSiteChange, onSetting
             sites={sitesWithChecks}
             activeUpdates={activeUpdates}
             onUpdate={runUpdate}
+            onDismiss={runDismiss}
             onCheck={runCheck}
           />
         ) : activeSiteWithCheck ? (
@@ -688,6 +699,7 @@ export default function Dashboard({ sites, activeSiteId, onSiteChange, onSetting
             site={activeSiteWithCheck}
             activeUpdates={activeUpdates}
             onUpdate={runUpdate}
+            onDismiss={runDismiss}
             onCheck={runCheck}
             checking={isChecking}
           />

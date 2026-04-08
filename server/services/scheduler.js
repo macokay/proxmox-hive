@@ -238,7 +238,8 @@ export async function runCheck(siteId) {
   try {
     await siteExec(site, aptUpdateCmd(site))
     const { stdout: nodeOut } = await siteExec(site, 'apt list --upgradable 2>/dev/null')
-    const nodePackages = parseAptOutput(nodeOut)
+    const nodeDismissed = new Set(site.dismissedPackages?.['node'] || [])
+    const nodePackages = parseAptOutput(nodeOut).filter(p => !nodeDismissed.has(p.name))
     results.node = { updates: nodePackages.length, packages: nodePackages }
 
     // ── LXC containers ──
@@ -275,7 +276,8 @@ export async function runCheck(siteId) {
         }
 
         const appNames = new Set(appUpdates.map(a => a.name))
-        const filteredPkgs = packages.filter(p => !appNames.has(p.name))
+        const dismissedSet = new Set(site.dismissedPackages?.[String(vmid)] || [])
+        const filteredPkgs = packages.filter(p => !appNames.has(p.name) && !dismissedSet.has(p.name))
         results.lxc.push({ vmid, name: lxcInfo.name, updates: filteredPkgs.length + appUpdates.length, packages: filteredPkgs, appUpdates, running: true, pm })
       } catch (e) {
         results.lxc.push({ vmid, name: lxcInfo.name, updates: 0, packages: [], appUpdates: [], running: false, error: e.message })
@@ -311,7 +313,8 @@ export async function runCheck(siteId) {
 
           const { stdout: vmOut } = await qmGuestExecSimple(site, vmid,
             'apt-get update -qq 2>/dev/null; apt list --upgradable 2>/dev/null', 90)
-          const vmPackages = parseAptOutput(vmOut)
+          const vmDismissed = new Set(site.dismissedPackages?.[String(vmid)] || [])
+          const vmPackages = parseAptOutput(vmOut).filter(p => !vmDismissed.has(p.name))
           results.vms.push({ vmid, name: vmInfo.name, updates: vmPackages.length, packages: vmPackages, running: true })
         } catch (e) {
           results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: false, error: e.message })

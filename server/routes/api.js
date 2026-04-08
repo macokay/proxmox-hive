@@ -406,6 +406,64 @@ router.post('/sites/:id/group-update', (req, res) => {
   runGroupUpdate(req.params.id, group).catch(e => console.error('Group update error:', e.message))
 })
 
+// ─── Dismiss packages ─────────────────────────────────────────────────────────
+
+router.post('/sites/:id/dismiss', (req, res) => {
+  const site = getSite(req.params.id)
+  if (!site) return res.status(404).json({ error: 'Site not found' })
+  const { target, vmid, packages } = req.body
+  if (!packages?.length) return res.status(400).json({ error: 'Missing packages' })
+
+  const dismissed = site.dismissedPackages || {}
+  const key = target === 'node' ? 'node' : String(vmid)
+  const current = new Set(dismissed[key] || [])
+  packages.forEach(p => current.add(p))
+  dismissed[key] = [...current]
+
+  saveSite({ ...site, dismissedPackages: dismissed })
+
+  // Update lastCheck so dashboard refreshes immediately
+  const s = getSite(req.params.id)
+  if (s?.lastCheck) {
+    if (target === 'node') {
+      s.lastCheck.node.packages = (s.lastCheck.node.packages || []).filter(p => !current.has(p.name))
+      s.lastCheck.node.updates = s.lastCheck.node.packages.length
+    } else if (target === 'lxc' && s.lastCheck.lxc) {
+      const e = s.lastCheck.lxc.find(l => l.vmid === vmid)
+      if (e) {
+        e.packages = (e.packages || []).filter(p => !current.has(p.name))
+        e.updates = e.packages.length + (e.appUpdates?.length || 0)
+      }
+    } else if (target === 'vm' && s.lastCheck.vms) {
+      const e = s.lastCheck.vms.find(v => v.vmid === vmid)
+      if (e) {
+        e.packages = (e.packages || []).filter(p => !current.has(p.name))
+        e.updates = e.packages.length
+      }
+    }
+    saveSite(s)
+    broadcast({ type: 'status_update', siteId: s.id, lastCheck: s.lastCheck })
+  }
+
+  res.json({ ok: true })
+})
+
+router.delete('/sites/:id/dismiss', (req, res) => {
+  const site = getSite(req.params.id)
+  if (!site) return res.status(404).json({ error: 'Site not found' })
+  const { target, vmid, packages } = req.body
+  if (!packages?.length) return res.status(400).json({ error: 'Missing packages' })
+
+  const dismissed = site.dismissedPackages || {}
+  const key = target === 'node' ? 'node' : String(vmid)
+  const current = new Set(dismissed[key] || [])
+  packages.forEach(p => current.delete(p))
+  dismissed[key] = [...current]
+
+  saveSite({ ...site, dismissedPackages: dismissed })
+  res.json({ ok: true })
+})
+
 // ─── Notifications ────────────────────────────────────────────────────────────
 
 router.post('/test-notification', async (req, res) => {
