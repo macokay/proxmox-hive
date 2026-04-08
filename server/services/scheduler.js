@@ -238,8 +238,7 @@ export async function runCheck(siteId) {
   try {
     await siteExec(site, aptUpdateCmd(site))
     const { stdout: nodeOut } = await siteExec(site, 'apt list --upgradable 2>/dev/null')
-    const nodeDismissed = new Set(site.dismissedPackages?.['node'] || [])
-    const nodePackages = parseAptOutput(nodeOut).filter(p => !nodeDismissed.has(p.name))
+    const nodePackages = parseAptOutput(nodeOut)
     results.node = { updates: nodePackages.length, packages: nodePackages }
 
     // ── LXC containers ──
@@ -275,9 +274,17 @@ export async function runCheck(siteId) {
           try { appUpdates = await detectAppUpdates(vmid, site) } catch { }
         }
 
+        // Detect kept-back packages (require full-upgrade)
+        let keptBackNames = new Set()
+        try {
+          const { stdout: dryRun } = await siteExec(site, pctExecCmd(site, vmid, 'apt-get -s upgrade 2>/dev/null || true'))
+          keptBackNames = parseKeptBack(dryRun)
+        } catch { }
+
         const appNames = new Set(appUpdates.map(a => a.name))
-        const dismissedSet = new Set(site.dismissedPackages?.[String(vmid)] || [])
-        const filteredPkgs = packages.filter(p => !appNames.has(p.name) && !dismissedSet.has(p.name))
+        const filteredPkgs = packages
+          .filter(p => !appNames.has(p.name))
+          .map(p => keptBackNames.has(p.name) ? { ...p, keptBack: true } : p)
         results.lxc.push({ vmid, name: lxcInfo.name, updates: filteredPkgs.length + appUpdates.length, packages: filteredPkgs, appUpdates, running: true, pm })
       } catch (e) {
         results.lxc.push({ vmid, name: lxcInfo.name, updates: 0, packages: [], appUpdates: [], running: false, error: e.message })
@@ -313,8 +320,7 @@ export async function runCheck(siteId) {
 
           const { stdout: vmOut } = await qmGuestExecSimple(site, vmid,
             'apt-get update -qq 2>/dev/null; apt list --upgradable 2>/dev/null', 90)
-          const vmDismissed = new Set(site.dismissedPackages?.[String(vmid)] || [])
-          const vmPackages = parseAptOutput(vmOut).filter(p => !vmDismissed.has(p.name))
+          const vmPackages = parseAptOutput(vmOut)
           results.vms.push({ vmid, name: vmInfo.name, updates: vmPackages.length, packages: vmPackages, running: true })
         } catch (e) {
           results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: false, error: e.message })
@@ -517,6 +523,23 @@ export function parseApkOutput(output) {
       return { name: match[1], newVersion: match[2], arch: '' }
     })
     .filter(Boolean)
+}
+
+export function parseKeptBack(output) {
+  const names = new Set()
+  const lines = output.split('\n')
+  let inSection = false
+  for (const line of lines) {
+    if (/kept back:/i.test(line)) { inSection = true; continue }
+    if (inSection) {
+      if (line.startsWith(' ') || line.startsWith('\t')) {
+        line.trim().split(/\s+/).forEach(n => { if (n) names.add(n) })
+      } else {
+        inSection = false
+      }
+    }
+  }
+  return names
 }
 
 export function parseDnfOutput(output) {

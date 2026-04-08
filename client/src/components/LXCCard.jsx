@@ -17,16 +17,15 @@ function AppBadge({ appType }) {
   )
 }
 
-export default function LXCCard({ lxc, onUpdate, onDismiss, updating, delay = 0, isCardSelected, onCardSelect }) {
+export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSelected, onCardSelect }) {
   const aptCount = lxc?.packages?.length || 0
   const appCount = lxc?.appUpdates?.length || 0
   const totalUpdates = aptCount + appCount
   const hasUpdates = totalUpdates > 0
 
-  // Individual package selection: null means "all selected"
   const [selectedPkgs, setSelectedPkgs] = useState(null)
+  const [confirmFullUpgrade, setConfirmFullUpgrade] = useState(false)
 
-  // Compute effective selection: null → all packages
   const allPkgNames = [
     ...(lxc.appUpdates || []).map(p => p.name),
     ...(lxc.packages || []).map(p => p.name)
@@ -34,25 +33,31 @@ export default function LXCCard({ lxc, onUpdate, onDismiss, updating, delay = 0,
   const effectiveSelected = selectedPkgs ?? new Set(allPkgNames)
   const selectionCount = effectiveSelected.size
 
+  // Kept-back packages that are in the current selection
+  const selectedKeptBack = (lxc.packages || []).filter(p => p.keptBack && effectiveSelected.has(p.name))
+
   function togglePkg(name) {
     const base = selectedPkgs ?? new Set(allPkgNames)
     const next = new Set(base)
     next.has(name) ? next.delete(name) : next.add(name)
-    // If all selected, go back to null (all)
     setSelectedPkgs(next.size === allPkgNames.length ? null : next)
+    setConfirmFullUpgrade(false)
   }
 
-  function handleUpdate() {
-    // Pass selected package names (null = all)
+  function handleUpdateClick() {
+    if (selectedKeptBack.length > 0 && !confirmFullUpgrade) {
+      setConfirmFullUpgrade(true)
+      return
+    }
     const pkgList = selectedPkgs ? [...selectedPkgs] : null
     onUpdate(lxc.vmid, pkgList)
+    setConfirmFullUpgrade(false)
   }
 
   return (
     <div className={`card p-5 transition-all duration-300 fade-up fade-up-delay-${Math.min(delay, 3)} ${hasUpdates ? 'glow-accent' : ''} ${!lxc.running ? 'opacity-60' : ''} ${isCardSelected ? 'ring-2 ring-accent/50' : ''}`}>
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
-          {/* Card-level selection checkbox (only when updates available) */}
           {hasUpdates && lxc.running && onCardSelect && (
             <button onClick={e => { e.stopPropagation(); onCardSelect(lxc.vmid) }}
               className={`w-5 h-5 rounded border flex-shrink-0 flex items-center justify-center text-[10px] transition-all ${
@@ -103,21 +108,19 @@ export default function LXCCard({ lxc, onUpdate, onDismiss, updating, delay = 0,
 
       {hasUpdates && (
         <div className="mb-4 space-y-1">
-          {/* Select all / none row */}
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-[10px] text-muted uppercase tracking-wider">
               {selectionCount === allPkgNames.length ? 'All selected' : `${selectionCount} of ${allPkgNames.length} selected`}
             </span>
             <div className="flex gap-2">
               <button className="text-[10px] text-accent/70 hover:text-accent transition-colors"
-                onClick={() => setSelectedPkgs(null)}>All</button>
+                onClick={() => { setSelectedPkgs(null); setConfirmFullUpgrade(false) }}>All</button>
               <span className="text-[10px] text-border">·</span>
               <button className="text-[10px] text-accent/70 hover:text-accent transition-colors"
-                onClick={() => setSelectedPkgs(new Set())}>None</button>
+                onClick={() => { setSelectedPkgs(new Set()); setConfirmFullUpgrade(false) }}>None</button>
             </div>
           </div>
 
-          {/* App-API updates */}
           {lxc.appUpdates?.map((pkg, i) => (
             <button key={`app-${i}`} onClick={() => togglePkg(pkg.name)}
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
@@ -132,32 +135,45 @@ export default function LXCCard({ lxc, onUpdate, onDismiss, updating, delay = 0,
             </button>
           ))}
 
-          {/* Apt packages */}
           {lxc.packages?.map((pkg, i) => (
-            <div key={`apt-${i}`} className="group relative">
-              <button onClick={() => togglePkg(pkg.name)}
-                className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
-                  effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
-                }`}>
-                <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all ${
-                  effectiveSelected.has(pkg.name) ? 'bg-accent border-accent text-white' : 'border-base-500'
-                }`}>{effectiveSelected.has(pkg.name) && '✓'}</div>
-                <span className="font-mono text-white/80 flex-1 text-left min-w-0 truncate" title={pkg.name}>{pkg.name}</span>
-                <span className="text-muted flex-shrink-0 max-w-[100px] truncate mr-5" title={pkg.newVersion}>{pkg.newVersion}</span>
-              </button>
-              {onDismiss && (
-                <button onClick={e => { e.stopPropagation(); onDismiss([pkg.name]) }}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded text-muted hover:text-warning hover:bg-warning/10 text-[10px]"
-                  title="Dismiss (snooze — hide until next upgrade)">⊘</button>
+            <button key={`apt-${i}`} onClick={() => togglePkg(pkg.name)}
+              className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
+                effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
+              }`}>
+              <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all ${
+                effectiveSelected.has(pkg.name) ? 'bg-accent border-accent text-white' : 'border-base-500'
+              }`}>{effectiveSelected.has(pkg.name) && '✓'}</div>
+              <span className="font-mono text-white/80 flex-1 text-left min-w-0 truncate" title={pkg.name}>{pkg.name}</span>
+              {pkg.keptBack && (
+                <span className="text-[9px] px-1 py-0.5 rounded border bg-warning/10 text-warning border-warning/20 flex-shrink-0">held back</span>
               )}
-            </div>
+              <span className="text-muted flex-shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
+            </button>
           ))}
         </div>
       )}
 
+      {hasUpdates && lxc.running && confirmFullUpgrade && (
+        <div className="mb-3 rounded-md border border-warning/30 bg-warning/5 px-3 py-2.5">
+          <p className="text-xs text-warning/90 mb-2">
+            {selectedKeptBack.length} package{selectedKeptBack.length !== 1 ? 's' : ''} require <span className="font-mono">full-upgrade</span> — may install new packages or remove existing ones. Continue?
+          </p>
+          <div className="flex gap-2">
+            <button className="text-[10px] px-2.5 py-1 rounded border border-warning/40 text-warning hover:bg-warning/10 transition-colors"
+              onClick={handleUpdateClick}>
+              Yes, run full-upgrade
+            </button>
+            <button className="text-[10px] px-2.5 py-1 rounded border border-border text-muted hover:text-white transition-colors"
+              onClick={() => setConfirmFullUpgrade(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {hasUpdates && lxc.running && (
-        <button className="btn-primary w-full justify-center" onClick={handleUpdate}
-          disabled={updating || selectionCount === 0}>
+        <button className="btn-primary w-full justify-center" onClick={handleUpdateClick}
+          disabled={updating || selectionCount === 0 || confirmFullUpgrade}>
           {updating
             ? <><span className="pulse-dot w-2 h-2 rounded-full bg-white inline-block mr-1.5" />Updating...</>
             : selectionCount === allPkgNames.length
