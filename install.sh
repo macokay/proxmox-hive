@@ -16,9 +16,9 @@ CL=$(echo "\033[m")
 CM="${GN}✓${CL}"
 CROSS="${RD}✗${CL}"
 
-msg_info()  { echo -e " ${BL}[i]${CL} $1 ..."; }
-msg_ok()    { echo -e " ${CM} $1"; }
-msg_error() { echo -e " ${CROSS} $1"; exit 1; }
+msg_info()  { echo -e " ${BL}[i]${CL} $1 ..." >&2; }
+msg_ok()    { echo -e " ${CM} $1" >&2; }
+msg_error() { echo -e " ${CROSS} $1" >&2; exit 1; }
 
 header_info() {
   clear
