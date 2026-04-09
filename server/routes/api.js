@@ -427,24 +427,23 @@ router.post('/sites/:id/fix-sudo', async (req, res) => {
   const username = site.ssh?.username || 'root'
   const isRoot = !username || username === 'root'
   const safeUser = username.replace(/[^a-zA-Z0-9_-]/g, '')
-  const sudoersLine = `${safeUser} ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/bin/pct,/usr/sbin/qm,/usr/bin/qm`
   const p = isRoot ? '' : 'sudo '
-
   const script = [
-    `echo '${sudoersLine}' | ${p}tee /etc/sudoers.d/${safeUser}`,
+    `printf 'Defaults:${safeUser} !requiretty\\n${safeUser} ALL=(ALL) NOPASSWD: ALL\\n' | ${p}tee /etc/sudoers.d/${safeUser}`,
     `${p}chmod 440 /etc/sudoers.d/${safeUser}`,
     `echo __fix_sudo_ok__`,
   ].join(' && ')
+  const manual = `printf 'Defaults:${safeUser} !requiretty\\n${safeUser} ALL=(ALL) NOPASSWD: ALL\\n' > /etc/sudoers.d/${safeUser} && chmod 440 /etc/sudoers.d/${safeUser}`
 
   try {
     const out = await siteExecSimple(site.ssh, script)
     if (out.includes('__fix_sudo_ok__')) {
       res.json({ ok: true })
     } else {
-      res.json({ ok: false, error: 'No confirmation received', manual: sudoersLine })
+      res.json({ ok: false, error: 'No confirmation received', manual })
     }
   } catch (e) {
-    res.json({ ok: false, error: e.message, manual: sudoersLine })
+    res.json({ ok: false, error: e.message, manual })
   }
 })
 

@@ -579,26 +579,6 @@ function SiteSettings({ site, onSaved, onDeleted }) {
           <button className="btn-ghost text-xs" onClick={testSSH} disabled={testingSSH}>{testingSSH ? 'Testing...' : 'Test connection'}</button>
           {sshResult && <span className={`text-xs flex items-center gap-1.5 ${sshResult.ok ? 'text-success' : 'text-danger'}`}><img src={sshResult.ok ? '/check.svg' : '/cross.svg'} className="w-4 h-4 flex-shrink-0" alt="" />{sshResult.ok ? 'Connected' : sshResult.error}</span>}
         </div>
-        {(!config.ssh?.username || config.ssh.username !== 'root') && (
-          <div className="pt-2 border-t border-border space-y-2">
-            <div className="text-xs text-muted">
-              Getting <span className="font-mono text-white/60">sudo: a terminal is required</span>? Run this on the Proxmox host to fix sudoers:
-            </div>
-            <div className="font-mono text-[10px] text-white/70 bg-base-800 rounded px-3 py-2 break-all select-all leading-relaxed">
-              {`echo "${config.ssh?.username || 'pvehive'} ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/bin/pct,/usr/sbin/qm,/usr/bin/qm" | sudo tee /etc/sudoers.d/${config.ssh?.username || 'pvehive'} && sudo chmod 440 /etc/sudoers.d/${config.ssh?.username || 'pvehive'}`}
-            </div>
-            <div className="flex items-center gap-3">
-              <button className="btn-ghost text-xs" onClick={fixSudo} disabled={fixingSudo} title="Only works if SSH user is root">
-                {fixingSudo ? 'Fixing...' : 'Auto-fix (root only)'}
-              </button>
-              {sudoResult && (
-                sudoResult.ok
-                  ? <span className="text-xs text-success flex items-center gap-1"><img src="/check.svg" className="w-4 h-4" alt="" />Fixed</span>
-                  : <span className="text-xs text-danger">Auto-fix failed — run the command above manually</span>
-              )}
-            </div>
-          </div>
-        )}
       </Section>
 
       {/* LXC */}
@@ -625,6 +605,14 @@ function SiteSettings({ site, onSaved, onDeleted }) {
           error={vmError}
           type="vm"
         />
+        {vmError && /sudo|terminal|password/i.test(vmError) && (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-warning/90">Sudo permissions missing. Run on Proxmox host as root:</p>
+            <div className="font-mono text-[10px] text-white/70 bg-base-800 rounded px-3 py-2 break-all select-all leading-relaxed">
+              {`printf 'Defaults:${config.ssh?.username || 'pvehive'} !requiretty\\n${config.ssh?.username || 'pvehive'} ALL=(ALL) NOPASSWD: ALL\\n' > /etc/sudoers.d/${config.ssh?.username || 'pvehive'} && chmod 440 /etc/sudoers.d/${config.ssh?.username || 'pvehive'}`}
+            </div>
+          </div>
+        )}
         {!vmLoading && !vmError && vmList.length > 0 && (
           <p className="text-xs text-muted mt-2">
             VMs need <span className="font-mono text-white/70">qemu-guest-agent</span> installed and VM Options → QEMU Guest Agent enabled.

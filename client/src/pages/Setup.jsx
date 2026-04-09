@@ -191,7 +191,7 @@ function SSHStep({ data, onChange, onNext }) {
                     'apt install sudo -y',
                     'id pvehive &>/dev/null && (deluser --remove-home pvehive 2>/dev/null || userdel -rf pvehive 2>/dev/null) || true',
                     'adduser pvehive --disabled-password --gecos ""',
-                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/bin/pct,/usr/sbin/qm,/usr/bin/qm" | tee /etc/sudoers.d/pvehive',
+                    { cmd: "printf 'Defaults:pvehive !requiretty\\npvehive ALL=(ALL) NOPASSWD: ALL\\n' > /etc/sudoers.d/pvehive", note: '' },
                     'chmod 440 /etc/sudoers.d/pvehive',
                   ]} />
                 <CopyBlock icon={<img src="/proxmox.svg" className="w-4 h-4 align-middle" alt="" />} where="Proxmox host — Step 2: Generate & install SSH key"
@@ -279,7 +279,7 @@ function SSHStep({ data, onChange, onNext }) {
                   steps={[
                     'apt install sudo -y',
                     'adduser pvehive --gecos ""',
-                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/bin/pct,/usr/sbin/qm,/usr/bin/qm" | tee /etc/sudoers.d/pvehive',
+                    { cmd: "printf 'Defaults:pvehive !requiretty\\npvehive ALL=(ALL) NOPASSWD: ALL\\n' > /etc/sudoers.d/pvehive", note: '' },
                     'chmod 440 /etc/sudoers.d/pvehive',
                     { cmd: 'passwd pvehive', note: '← set a password when prompted' },
                   ]} />
