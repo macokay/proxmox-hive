@@ -88,12 +88,22 @@ function UpdateSelectionModal({ nodeData, lxcData, vmData, onClose, onUpdate }) 
     return s
   })
   const [running, setRunning] = useState(false)
+  const [keptBackWarning, setKeptBackWarning] = useState(false)
 
   function toggle(id) {
     setSelected(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+    setKeptBackWarning(false)
   }
 
-  async function start() {
+  const selectedKeptBackCount = lxcData
+    .filter(l => selected.has(`lxc-${l.vmid}`))
+    .reduce((a, l) => a + (l.packages || []).filter(p => p.keptBack).length, 0)
+
+  async function start(force = false) {
+    if (selectedKeptBackCount > 0 && !force) {
+      setKeptBackWarning(true)
+      return
+    }
     setRunning(true)
     const targets = []
     if (selected.has('node') && (nodeData?.updates || 0) > 0) targets.push({ type: 'node', vmid: null, label: 'Proxmox Node' })
@@ -164,11 +174,28 @@ function UpdateSelectionModal({ nodeData, lxcData, vmData, onClose, onUpdate }) 
             </button>
           ))}
         </div>
+        {keptBackWarning && (
+          <div className="mx-5 mb-3 rounded-md border border-warning/30 bg-warning/5 px-3 py-2.5">
+            <p className="text-xs text-warning/90 mb-2">
+              {selectedKeptBackCount} package{selectedKeptBackCount !== 1 ? 's' : ''} require <span className="font-mono">full-upgrade</span> — may install new packages or remove existing ones. Continue?
+            </p>
+            <div className="flex gap-2">
+              <button className="text-[10px] px-2.5 py-1 rounded border border-warning/40 text-warning hover:bg-warning/10 transition-colors"
+                onClick={() => start(true)}>
+                Yes, run full-upgrade
+              </button>
+              <button className="text-[10px] px-2.5 py-1 rounded border border-border text-muted hover:text-white transition-colors"
+                onClick={() => setKeptBackWarning(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
         <div className="px-5 py-4 border-t border-border flex items-center justify-between">
           <span className="text-xs text-muted">{selected.size} target{selected.size !== 1 ? 's' : ''}, {totalSelected} update{totalSelected !== 1 ? 's' : ''}</span>
           <div className="flex gap-2">
             <button className="btn-ghost text-xs" onClick={onClose}>Cancel</button>
-            <button className="btn-primary text-xs" onClick={start} disabled={selected.size === 0 || running}>
+            <button className="btn-primary text-xs" onClick={() => start(false)} disabled={selected.size === 0 || running || keptBackWarning}>
               {running ? 'Starting...' : '↑ Apply updates'}
             </button>
           </div>
@@ -244,6 +271,7 @@ function TerminalPanel({ term, onClose }) {
 function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [selectedCards, setSelectedCards] = useState(new Set())
+  const [batchKeptBackWarning, setBatchKeptBackWarning] = useState(false)
 
   // Auto-run first check when site has no data yet
   const autoCheckedRef = useRef(false)
@@ -287,7 +315,16 @@ function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
     setSelectedCards(new Set())
   }
 
-  async function updateSelected() {
+  const batchKeptBackCount = lxcData
+    .filter(l => selectedCards.has(`lxc-${l.vmid}`))
+    .reduce((a, l) => a + (l.packages || []).filter(p => p.keptBack).length, 0)
+
+  async function updateSelected(force = false) {
+    if (batchKeptBackCount > 0 && !force) {
+      setBatchKeptBackWarning(true)
+      return
+    }
+    setBatchKeptBackWarning(false)
     const targets = []
     for (const key of selectedCards) {
       if (key.startsWith('lxc-')) {
@@ -364,14 +401,30 @@ function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
                   <div className="flex items-center gap-3">
                     {selectedCards.size > 0 && (
                       <>
+                        {batchKeptBackWarning ? (
+                          <>
+                            <span className="text-xs text-warning/90">{batchKeptBackCount} pkg{batchKeptBackCount !== 1 ? 's' : ''} need full-upgrade</span>
+                            <button className="text-xs px-2.5 py-1 rounded border border-warning/40 text-warning hover:bg-warning/10 transition-colors"
+                              onClick={() => updateSelected(true)}>
+                              Confirm
+                            </button>
+                            <button className="text-xs text-muted hover:text-white transition-colors"
+                              onClick={() => setBatchKeptBackWarning(false)}>
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
                         <button className="text-xs text-muted hover:text-white transition-colors" onClick={clearSelection}>
                           Clear
                         </button>
                         <button className="btn-primary text-xs py-1 px-3"
                           disabled={Object.keys(activeUpdates).length > 0}
-                          onClick={updateSelected}>
+                          onClick={() => updateSelected(false)}>
                           ↑ Update {selectedCards.size} selected
                         </button>
+                          </>
+                        )}
                       </>
                     )}
                     {selectedCards.size === 0 && (

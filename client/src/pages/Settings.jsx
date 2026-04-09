@@ -17,6 +17,16 @@ export const ALERT_TYPES = [
   { key: 'onNoUpdates',       label: 'All up to date',      description: 'When check finds nothing to update' },
 ]
 
+export function TimezoneSelect({ value, onChange }) {
+  const zones = Intl.supportedValuesOf?.('timeZone') || []
+  return (
+    <select className="input" value={value || ''} onChange={e => onChange(e.target.value || undefined)}>
+      <option value="">UTC (default)</option>
+      {zones.map(z => <option key={z} value={z}>{z.replace(/_/g, ' ')}</option>)}
+    </select>
+  )
+}
+
 function Section({ title, description, children, danger }) {
   return (
     <div className={`card p-6 space-y-5 ${danger ? 'border-danger/30' : ''}`}>
@@ -382,6 +392,8 @@ function SiteSettings({ site, onSaved, onDeleted }) {
   const [saved, setSaved] = useState(false)
   const [testingSSH, setTestingSSH] = useState(false)
   const [sshResult, setSSHResult] = useState(null)
+  const [fixingSudo, setFixingSudo] = useState(false)
+  const [sudoResult, setSudoResult] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showOffboard, setShowOffboard] = useState(false)
@@ -426,6 +438,15 @@ function SiteSettings({ site, onSaved, onDeleted }) {
       obj[keys[keys.length - 1]] = value
       return next
     })
+  }
+
+  async function fixSudo() {
+    setFixingSudo(true); setSudoResult(null)
+    try {
+      const r = await fetch(`/api/sites/${site.id}/fix-sudo`, { method: 'POST' })
+      setSudoResult(await r.json())
+    } catch { setSudoResult({ ok: false, error: 'Request failed' }) }
+    setFixingSudo(false)
   }
 
   async function testSSH() {
@@ -508,6 +529,28 @@ function SiteSettings({ site, onSaved, onDeleted }) {
           <button className="btn-ghost text-xs" onClick={testSSH} disabled={testingSSH}>{testingSSH ? 'Testing...' : 'Test connection'}</button>
           {sshResult && <span className={`text-xs flex items-center gap-1.5 ${sshResult.ok ? 'text-success' : 'text-danger'}`}><img src={sshResult.ok ? '/check.svg' : '/cross.svg'} className="w-4 h-4 flex-shrink-0" alt="" />{sshResult.ok ? 'Connected' : sshResult.error}</span>}
         </div>
+        {(!config.ssh?.username || config.ssh.username !== 'root') && (
+          <div className="pt-2 border-t border-border">
+            <div className="text-xs text-muted mb-2">
+              Getting <span className="font-mono text-white/70">sudo: a terminal is required to read the password</span>? The sudoers entry is missing or incomplete.
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="btn-ghost text-xs" onClick={fixSudo} disabled={fixingSudo}>
+                {fixingSudo ? 'Fixing...' : 'Fix sudo permissions'}
+              </button>
+              {sudoResult && (
+                sudoResult.ok
+                  ? <span className="text-xs text-success flex items-center gap-1"><img src="/check.svg" className="w-4 h-4" alt="" />Fixed</span>
+                  : <span className="text-xs text-danger">Failed — run manually on host:</span>
+              )}
+            </div>
+            {sudoResult && !sudoResult.ok && (
+              <div className="mt-2 font-mono text-[10px] text-white/70 bg-base-800 rounded px-3 py-2 break-all select-all">
+                {sudoResult.manual}
+              </div>
+            )}
+          </div>
+        )}
       </Section>
 
       {/* LXC */}
@@ -556,14 +599,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
         </div>
         <div className="mt-3">
           <label className="label">Timezone</label>
-          <input
-            type="text"
-            className="input"
-            placeholder="e.g. Europe/Copenhagen"
-            value={config.schedule?.timezone || ''}
-            onChange={e => update('schedule.timezone', e.target.value || undefined)}
-          />
-          <p className="text-xs text-muted mt-1">IANA timezone name. Leave empty to use UTC.</p>
+          <TimezoneSelect value={config.schedule?.timezone || ''} onChange={tz => update('schedule.timezone', tz)} />
         </div>
       </Section>
 

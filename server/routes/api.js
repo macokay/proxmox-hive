@@ -383,20 +383,69 @@ router.post('/sites/:id/update', async (req, res) => {
     if (success) {
       const s = getSite(req.params.id)
       if (s?.lastCheck) {
+        const updatedSet = packages?.length ? new Set(packages) : null
         if (target === 'node') {
-          s.lastCheck.node = { updates: 0, packages: [] }
+          if (updatedSet) {
+            s.lastCheck.node.packages = (s.lastCheck.node.packages || []).filter(p => !updatedSet.has(p.name))
+            s.lastCheck.node.updates = s.lastCheck.node.packages.length
+          } else {
+            s.lastCheck.node = { updates: 0, packages: [] }
+          }
         } else if (target === 'lxc') {
           const e = s.lastCheck.lxc?.find(l => l.vmid === vmid)
-          if (e) { e.updates = 0; e.packages = []; e.appUpdates = [] }
+          if (e) {
+            if (updatedSet) {
+              e.packages = (e.packages || []).filter(p => !updatedSet.has(p.name))
+              e.appUpdates = (e.appUpdates || []).filter(p => !updatedSet.has(p.name))
+            } else {
+              e.packages = []; e.appUpdates = []
+            }
+            e.updates = (e.packages?.length || 0) + (e.appUpdates?.length || 0)
+          }
         } else if (target === 'vm') {
           const e = s.lastCheck.vms?.find(v => v.vmid === vmid)
-          if (e) { e.updates = 0; e.packages = [] }
+          if (e) {
+            if (updatedSet) {
+              e.packages = (e.packages || []).filter(p => !updatedSet.has(p.name))
+            } else {
+              e.packages = []
+            }
+            e.updates = e.packages?.length || 0
+          }
         }
         saveSite(s)
         broadcast({ type: 'status_update', siteId: s.id, lastCheck: s.lastCheck })
       }
     }
   })
+})
+
+router.post('/sites/:id/fix-sudo', async (req, res) => {
+  const site = getSite(req.params.id)
+  if (!site) return res.status(404).json({ error: 'Site not found' })
+
+  const username = site.ssh?.username || 'root'
+  const isRoot = !username || username === 'root'
+  const safeUser = username.replace(/[^a-zA-Z0-9_-]/g, '')
+  const sudoersLine = `${safeUser} ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/sbin/qm`
+  const p = isRoot ? '' : 'sudo '
+
+  const script = [
+    `echo '${sudoersLine}' | ${p}tee /etc/sudoers.d/${safeUser}`,
+    `${p}chmod 440 /etc/sudoers.d/${safeUser}`,
+    `echo __fix_sudo_ok__`,
+  ].join(' && ')
+
+  try {
+    const out = await siteExecSimple(site.ssh, script)
+    if (out.includes('__fix_sudo_ok__')) {
+      res.json({ ok: true })
+    } else {
+      res.json({ ok: false, error: 'No confirmation received', manual: sudoersLine })
+    }
+  } catch (e) {
+    res.json({ ok: false, error: e.message, manual: sudoersLine })
+  }
 })
 
 router.post('/sites/:id/group-update', (req, res) => {

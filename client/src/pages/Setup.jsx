@@ -1,5 +1,5 @@
 import { SSHHowButton } from '../components/SSHHowModal.jsx'
-import { NotificationChannels } from './Settings.jsx'
+import { NotificationChannels, TimezoneSelect } from './Settings.jsx'
 import { useState } from 'react'
 
 const STEPS = ['SSH Access', 'Select LXC', 'Schedule & Discord', 'Name your site']
@@ -191,7 +191,7 @@ function SSHStep({ data, onChange, onNext }) {
                     'apt install sudo -y',
                     'id pvehive &>/dev/null && (deluser --remove-home pvehive 2>/dev/null || userdel -rf pvehive 2>/dev/null) || true',
                     'adduser pvehive --disabled-password --gecos ""',
-                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive',
+                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/sbin/qm" | tee /etc/sudoers.d/pvehive',
                     'chmod 440 /etc/sudoers.d/pvehive',
                   ]} />
                 <CopyBlock icon={<img src="/proxmox.svg" className="w-4 h-4 align-middle" alt="" />} where="Proxmox host — Step 2: Generate & install SSH key"
@@ -279,7 +279,7 @@ function SSHStep({ data, onChange, onNext }) {
                   steps={[
                     'apt install sudo -y',
                     'adduser pvehive --gecos ""',
-                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive',
+                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/sbin/qm" | tee /etc/sudoers.d/pvehive',
                     'chmod 440 /etc/sudoers.d/pvehive',
                     { cmd: 'passwd pvehive', note: '← set a password when prompted' },
                   ]} />
@@ -545,9 +545,10 @@ function LXCStep({ sshData, selected, onSelect, onNext, onBack }) {
 
 function ScheduleStep({ data, onChange, onNext, onBack }) {
   const times = data.schedule?.times || ['08:00', '20:00']
+  const timezone = data.schedule?.timezone || ''
   function updateTime(index, value) {
     const t = [...times]; t[index] = value
-    onChange({ schedule: { times: t } })
+    onChange({ schedule: { times: t, timezone: timezone || undefined } })
   }
 
   return (
@@ -568,6 +569,11 @@ function ScheduleStep({ data, onChange, onNext, onBack }) {
           ))}
         </div>
         <p className="text-xs text-muted mt-2">Runs automatically twice a day.</p>
+      </div>
+
+      <div>
+        <label className="label">Timezone</label>
+        <TimezoneSelect value={timezone} onChange={tz => onChange({ schedule: { times, timezone: tz || undefined } })} />
       </div>
 
       <div>
