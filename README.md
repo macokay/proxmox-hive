@@ -98,22 +98,22 @@ Creates a dedicated low-privilege user. SSH keys only, no password. Limits blast
 ```bash
 # Step 1 — Create user + restricted sudo
 apt install sudo -y
-adduser pvedash --disabled-password --gecos ""
-echo "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash
-chmod 440 /etc/sudoers.d/pvedash
+adduser pvehive --disabled-password --gecos ""
+echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive
+chmod 440 /etc/sudoers.d/pvehive
 
 # Step 2 — Generate & install SSH key
-ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""
-mkdir -p /home/pvedash/.ssh
-cat ~/.ssh/pvedash.pub >> /home/pvedash/.ssh/authorized_keys
-chmod 700 /home/pvedash/.ssh && chmod 600 /home/pvedash/.ssh/authorized_keys
-chown -R pvedash:pvedash /home/pvedash/.ssh
+ssh-keygen -t ed25519 -f ~/.ssh/pvehive -N ""
+mkdir -p /home/pvehive/.ssh
+cat ~/.ssh/pvehive.pub >> /home/pvehive/.ssh/authorized_keys
+chmod 700 /home/pvehive/.ssh && chmod 600 /home/pvehive/.ssh/authorized_keys
+chown -R pvehive:pvehive /home/pvehive/.ssh
 
 # Step 3 — Print private key (copy output → paste into Proxmox Hive)
-cat ~/.ssh/pvedash
+cat ~/.ssh/pvehive
 ```
 
-In the setup wizard: username `pvedash`, paste the private key (not the `.pub` file).
+In the setup wizard: username `pvehive`, paste the private key (not the `.pub` file).
 
 ---
 
@@ -127,12 +127,12 @@ sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd
 systemctl reload sshd
 
 # Step 2 — Generate & install SSH key
-ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""
-cat ~/.ssh/pvedash.pub >> ~/.ssh/authorized_keys
+ssh-keygen -t ed25519 -f ~/.ssh/pvehive -N ""
+cat ~/.ssh/pvehive.pub >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 
 # Step 3 — Print private key (copy output → paste into Proxmox Hive)
-cat ~/.ssh/pvedash
+cat ~/.ssh/pvehive
 ```
 
 In the setup wizard: username `root`, paste the private key.
@@ -146,17 +146,17 @@ Uses password authentication instead of SSH keys. Less secure — switch to Opti
 ```bash
 # Step 1 — Create user with password
 apt install sudo -y
-adduser pvedash --gecos ""
-echo "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash
-chmod 440 /etc/sudoers.d/pvedash
-passwd pvedash
+adduser pvehive --gecos ""
+echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive
+chmod 440 /etc/sudoers.d/pvehive
+passwd pvehive
 
 # Step 2 — Enable password authentication
 sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
 systemctl reload sshd
 ```
 
-In the setup wizard: username `pvedash`, select **Password** auth and enter the password set above.
+In the setup wizard: username `pvehive`, select **Password** auth and enter the password set above.
 
 ---
 

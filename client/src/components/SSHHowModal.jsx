@@ -3,7 +3,18 @@ import { useState } from 'react'
 function CopyBlock({ label, text }) {
   const [copied, setCopied] = useState(false)
   function copy() {
-    navigator.clipboard.writeText(text)
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text)
+    } else {
+      const el = document.createElement('textarea')
+      el.value = text
+      el.style.cssText = 'position:fixed;opacity:0'
+      document.body.appendChild(el)
+      el.focus()
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -58,23 +69,23 @@ export function SSHKeyHowModal({ onClose }) {
 
               <CopyBlock
                 label="Step 1 — Create user + sudo access"
-                text={`apt install sudo -y\nadduser pvedash --disabled-password --gecos ""\necho "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash\nchmod 440 /etc/sudoers.d/pvedash`}
+                text={`apt install sudo -y\nadduser pvehive --disabled-password --gecos ""\necho "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive\nchmod 440 /etc/sudoers.d/pvehive`}
               />
 
               <CopyBlock
                 label="Step 2 — Generate & install SSH key"
-                text={`ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""\nmkdir -p /home/pvedash/.ssh\ncat ~/.ssh/pvedash.pub >> /home/pvedash/.ssh/authorized_keys\nchmod 700 /home/pvedash/.ssh && chmod 600 /home/pvedash/.ssh/authorized_keys\nchown -R pvedash:pvedash /home/pvedash/.ssh\nssh -i ~/.ssh/pvedash -o BatchMode=yes pvedash@localhost echo "Login OK"`}
+                text={`ssh-keygen -t ed25519 -f ~/.ssh/pvehive -N ""\nmkdir -p /home/pvehive/.ssh\ncat ~/.ssh/pvehive.pub >> /home/pvehive/.ssh/authorized_keys\nchmod 700 /home/pvehive/.ssh && chmod 600 /home/pvehive/.ssh/authorized_keys\nchown -R pvehive:pvehive /home/pvehive/.ssh\nssh -i ~/.ssh/pvehive -o BatchMode=yes -o StrictHostKeyChecking=accept-new pvehive@localhost echo "Login OK"`}
               />
 
               <CopyBlock
                 label="Step 3 — Get private key (copy output → paste in field)"
-                text="cat ~/.ssh/pvedash"
+                text="cat ~/.ssh/pvehive"
               />
 
               <div className="p-3 rounded-lg bg-base-800 border border-border text-[10px] text-muted space-y-1">
-                <div>→ Username: <span className="font-mono text-white">pvedash</span></div>
+                <div>→ Username: <span className="font-mono text-white">pvehive</span></div>
                 <div>→ <span className="text-yellow-400 font-semibold">-N ""</span> = no passphrase — required, passphrases are not supported</div>
-                <div>→ Paste the <span className="text-white">private key</span> (<span className="font-mono">~/.ssh/pvedash</span>), not the <span className="font-mono">.pub</span> file</div>
+                <div>→ Paste the <span className="text-white">private key</span> (<span className="font-mono">~/.ssh/pvehive</span>), not the <span className="font-mono">.pub</span> file</div>
               </div>
             </>
           )}
@@ -90,18 +101,18 @@ export function SSHKeyHowModal({ onClose }) {
 
               <CopyBlock
                 label="Step 2 — Generate & install SSH key"
-                text={`ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""\ncat ~/.ssh/pvedash.pub >> ~/.ssh/authorized_keys\nchmod 600 ~/.ssh/authorized_keys\nssh -i ~/.ssh/pvedash -o BatchMode=yes root@localhost echo "Login OK"`}
+                text={`ssh-keygen -t ed25519 -f ~/.ssh/pvehive -N ""\ncat ~/.ssh/pvehive.pub >> ~/.ssh/authorized_keys\nchmod 600 ~/.ssh/authorized_keys\nssh -i ~/.ssh/pvehive -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@localhost echo "Login OK"`}
               />
 
               <CopyBlock
                 label="Step 3 — Get private key (copy output → paste in field)"
-                text="cat ~/.ssh/pvedash"
+                text="cat ~/.ssh/pvehive"
               />
 
               <div className="p-3 rounded-lg bg-base-800 border border-border text-[10px] text-muted space-y-1">
                 <div>→ Username: <span className="font-mono text-white">root</span></div>
                 <div>→ <span className="text-yellow-400 font-semibold">-N ""</span> = no passphrase — required</div>
-                <div>→ Paste the <span className="text-white">private key</span> (<span className="font-mono">~/.ssh/pvedash</span>), not the <span className="font-mono">.pub</span> file</div>
+                <div>→ Paste the <span className="text-white">private key</span> (<span className="font-mono">~/.ssh/pvehive</span>), not the <span className="font-mono">.pub</span> file</div>
               </div>
             </>
           )}
@@ -112,7 +123,7 @@ export function SSHKeyHowModal({ onClose }) {
 
               <CopyBlock
                 label="Step 1 — Create user with password"
-                text={`apt install sudo -y\nadduser pvedash --gecos ""\necho "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash\nchmod 440 /etc/sudoers.d/pvedash\npasswd pvedash`}
+                text={`apt install sudo -y\nadduser pvehive --gecos ""\necho "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive\nchmod 440 /etc/sudoers.d/pvehive\npasswd pvehive`}
               />
 
               <CopyBlock
@@ -121,7 +132,7 @@ export function SSHKeyHowModal({ onClose }) {
               />
 
               <div className="p-3 rounded-lg bg-warning/5 border border-warning/20 text-[10px] text-warning/70 space-y-1">
-                <div>→ Username: <span className="font-mono text-white">pvedash</span></div>
+                <div>→ Username: <span className="font-mono text-white">pvehive</span></div>
                 <div>→ Select <span className="text-white">Password</span> in the auth toggle and enter the password set with <span className="font-mono">passwd</span></div>
                 <div>⚠ Password auth is less secure — switch to SSH keys when possible</div>
               </div>

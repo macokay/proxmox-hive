@@ -339,14 +339,14 @@ function OffboardModal({ site, onClose }) {
                 {result?.isRoot ? (
                   <>
                     <p className="text-xs text-muted">Remove the generated key from authorized_keys, then delete the key files:</p>
-                    <CopyLine>{`PUBKEY=$(cat /root/.ssh/pvedash.pub); grep -vF "$PUBKEY" /root/.ssh/authorized_keys > /tmp/_ak && mv /tmp/_ak /root/.ssh/authorized_keys`}</CopyLine>
-                    <CopyLine>rm -f /root/.ssh/pvedash /root/.ssh/pvedash.pub</CopyLine>
+                    <CopyLine>{`PUBKEY=$(cat /root/.ssh/pvehive.pub); grep -vF "$PUBKEY" /root/.ssh/authorized_keys > /tmp/_ak && mv /tmp/_ak /root/.ssh/authorized_keys`}</CopyLine>
+                    <CopyLine>rm -f /root/.ssh/pvehive /root/.ssh/pvehive.pub</CopyLine>
                   </>
                 ) : (
                   <>
                     <CopyLine>deluser --remove-home {result?.username || username}</CopyLine>
                     <CopyLine>rm -f /etc/sudoers.d/{result?.username || username}</CopyLine>
-                    <CopyLine>rm -f /root/.ssh/pvedash /root/.ssh/pvedash.pub</CopyLine>
+                    <CopyLine>rm -f /root/.ssh/pvehive /root/.ssh/pvehive.pub</CopyLine>
                   </>
                 )}
               </div>
@@ -486,7 +486,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
           <div className="col-span-2"><label className="label">Host / IP</label><input className="input" value={config.ssh?.host || ''} onChange={e => update('ssh.host', e.target.value)} /></div>
           <div><label className="label">Port</label><input className="input" value={config.ssh?.port || '22'} onChange={e => update('ssh.port', e.target.value)} /></div>
         </div>
-        <div><label className="label">Username</label><input className="input" placeholder="root or pvedash" value={config.ssh?.username || ''} onChange={e => update('ssh.username', e.target.value)} /></div>
+        <div><label className="label">Username</label><input className="input" placeholder="root or pvehive" value={config.ssh?.username || ''} onChange={e => update('ssh.username', e.target.value)} /></div>
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="label mb-0">SSH Private Key <span className="text-base-500 normal-case">(leave empty to keep)</span></label>

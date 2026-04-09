@@ -432,7 +432,7 @@ router.post('/sites/:id/offboard', async (req, res) => {
   // Undo everything done during setup:
   // 1. Remove user + home dir (includes ~/.ssh/authorized_keys) — non-root only
   // 2. Remove /etc/sudoers.d/<username>
-  // 3. Remove the generated key pair /root/.ssh/pvedash{,.pub}
+  // 3. Remove the generated key pair /root/.ssh/pvehive{,.pub}
   // 4. For root: remove the specific public key from /root/.ssh/authorized_keys
   //    (done before removing key files so we can read the pub key)
   // NOTE: sudo itself is intentionally left installed.
@@ -444,9 +444,9 @@ router.post('/sites/:id/offboard', async (req, res) => {
     // Can't delete root user. Remove key pair + strip from authorized_keys.
     script = [
       // Remove specific key from authorized_keys BEFORE deleting key files
-      `if [ -f /root/.ssh/pvedash.pub ]; then PUBKEY=$(cat /root/.ssh/pvedash.pub); grep -vF "$PUBKEY" /root/.ssh/authorized_keys > /tmp/_ak_tmp 2>/dev/null && mv /tmp/_ak_tmp /root/.ssh/authorized_keys || true; fi`,
+      `if [ -f /root/.ssh/pvehive.pub ]; then PUBKEY=$(cat /root/.ssh/pvehive.pub); grep -vF "$PUBKEY" /root/.ssh/authorized_keys > /tmp/_ak_tmp 2>/dev/null && mv /tmp/_ak_tmp /root/.ssh/authorized_keys || true; fi`,
       // Remove generated key pair
-      `rm -f /root/.ssh/pvedash /root/.ssh/pvedash.pub 2>/dev/null || true`,
+      `rm -f /root/.ssh/pvehive /root/.ssh/pvehive.pub 2>/dev/null || true`,
       // Remove sudoers file if present (option B doesn't create one, but just in case)
       `rm -f /etc/sudoers.d/root 2>/dev/null || true`,
       `echo __offboard_ok__`,
@@ -462,7 +462,7 @@ router.post('/sites/:id/offboard', async (req, res) => {
       // Remove sudoers file
       `${p}rm -f /etc/sudoers.d/${username} 2>/dev/null || true`,
       // Remove generated key pair from root's home
-      `${p}rm -f /root/.ssh/pvedash /root/.ssh/pvedash.pub 2>/dev/null || true`,
+      `${p}rm -f /root/.ssh/pvehive /root/.ssh/pvehive.pub 2>/dev/null || true`,
       `echo __offboard_ok__`,
     ].join('; ')
   }

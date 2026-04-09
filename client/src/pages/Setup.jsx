@@ -12,7 +12,18 @@ function CopyBlock({ icon, where, hint, steps }) {
     .join('\n')
 
   function copy() {
-    navigator.clipboard.writeText(copyable)
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(copyable)
+    } else {
+      const el = document.createElement('textarea')
+      el.value = copyable
+      el.style.cssText = 'position:fixed;opacity:0'
+      document.body.appendChild(el)
+      el.focus()
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -178,28 +189,28 @@ function SSHStep({ data, onChange, onNext }) {
                   hint='Proxmox web UI → select your node → "Shell" tab, or: ssh root@PROXMOX-IP'
                   steps={[
                     'apt install sudo -y',
-                    'id pvedash &>/dev/null && (deluser --remove-home pvedash 2>/dev/null || userdel -rf pvedash 2>/dev/null) || true',
-                    'adduser pvedash --disabled-password --gecos ""',
-                    'echo "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash',
-                    'chmod 440 /etc/sudoers.d/pvedash',
+                    'id pvehive &>/dev/null && (deluser --remove-home pvehive 2>/dev/null || userdel -rf pvehive 2>/dev/null) || true',
+                    'adduser pvehive --disabled-password --gecos ""',
+                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive',
+                    'chmod 440 /etc/sudoers.d/pvehive',
                   ]} />
                 <CopyBlock icon={<img src="/proxmox.svg" className="w-4 h-4 align-middle" alt="" />} where="Proxmox host — Step 2: Generate & install SSH key"
                   steps={[
-                    'rm -f ~/.ssh/pvedash ~/.ssh/pvedash.pub',
-                    'ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""',
-                    'mkdir -p /home/pvedash/.ssh',
-                    'cat ~/.ssh/pvedash.pub >> /home/pvedash/.ssh/authorized_keys',
-                    'chmod 700 /home/pvedash/.ssh && chmod 600 /home/pvedash/.ssh/authorized_keys',
-                    'chown -R pvedash:pvedash /home/pvedash/.ssh',
-                    'ssh -i ~/.ssh/pvedash -o BatchMode=yes pvedash@localhost echo "Login OK"',
+                    'rm -f ~/.ssh/pvehive ~/.ssh/pvehive.pub',
+                    'ssh-keygen -t ed25519 -f ~/.ssh/pvehive -N ""',
+                    'mkdir -p /home/pvehive/.ssh',
+                    'cat ~/.ssh/pvehive.pub >> /home/pvehive/.ssh/authorized_keys',
+                    'chmod 700 /home/pvehive/.ssh && chmod 600 /home/pvehive/.ssh/authorized_keys',
+                    'chown -R pvehive:pvehive /home/pvehive/.ssh',
+                    'ssh -i ~/.ssh/pvehive -o BatchMode=yes -o StrictHostKeyChecking=accept-new pvehive@localhost echo "Login OK"',
                   ]} />
                 <CopyBlock icon={<img src="/proxmox.svg" className="w-4 h-4 align-middle" alt="" />} where="Proxmox host — Step 3: Get private key"
                   hint="Copy ALL output and paste it in the field below"
-                  steps={['cat ~/.ssh/pvedash']} />
+                  steps={['cat ~/.ssh/pvehive']} />
                 <div className="px-4 py-2.5 bg-base-700/40 border-t border-border text-[10px] text-muted space-y-1">
-                  <div>→ Username: <span className="font-mono text-white">pvedash</span></div>
+                  <div>→ Username: <span className="font-mono text-white">pvehive</span></div>
                   <div>→ <span className="text-yellow-400 font-semibold">-N ""</span> means no passphrase — required, keys with passphrases are not supported</div>
-                  <div>→ Paste the <span className="text-white">private key</span> (the file <span className="font-mono">~/.ssh/pvedash</span>, not <span className="font-mono">~/.ssh/pvedash.pub</span>)</div>
+                  <div>→ Paste the <span className="text-white">private key</span> (the file <span className="font-mono">~/.ssh/pvehive</span>, not <span className="font-mono">~/.ssh/pvehive.pub</span>)</div>
                 </div>
               </>
             )}
@@ -229,19 +240,19 @@ function SSHStep({ data, onChange, onNext }) {
                   ]} />
                 <CopyBlock icon={<img src="/proxmox.svg" className="w-4 h-4 align-middle" alt="" />} where="Proxmox host — Step 2: Generate & install SSH key"
                   steps={[
-                    'rm -f ~/.ssh/pvedash ~/.ssh/pvedash.pub',
-                    'ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""',
-                    'cat ~/.ssh/pvedash.pub >> ~/.ssh/authorized_keys',
+                    'rm -f ~/.ssh/pvehive ~/.ssh/pvehive.pub',
+                    'ssh-keygen -t ed25519 -f ~/.ssh/pvehive -N ""',
+                    'cat ~/.ssh/pvehive.pub >> ~/.ssh/authorized_keys',
                     'chmod 600 ~/.ssh/authorized_keys',
-                    'ssh -i ~/.ssh/pvedash -o BatchMode=yes root@localhost echo "Login OK"',
+                    'ssh -i ~/.ssh/pvehive -o BatchMode=yes -o StrictHostKeyChecking=accept-new root@localhost echo "Login OK"',
                   ]} />
                 <CopyBlock icon={<img src="/proxmox.svg" className="w-4 h-4 align-middle" alt="" />} where="Proxmox host — Step 3: Get private key"
                   hint="Copy ALL output and paste it in the field below"
-                  steps={['cat ~/.ssh/pvedash']} />
+                  steps={['cat ~/.ssh/pvehive']} />
                 <div className="px-4 py-2.5 bg-base-700/40 border-t border-border text-[10px] text-muted space-y-1">
                   <div>→ Username: <span className="font-mono text-white">root</span></div>
                   <div>→ <span className="text-yellow-400 font-semibold">-N ""</span> means no passphrase — required</div>
-                  <div>→ Paste the <span className="text-white">private key</span> (the file <span className="font-mono">~/.ssh/pvedash</span>, not <span className="font-mono">~/.ssh/pvedash.pub</span>)</div>
+                  <div>→ Paste the <span className="text-white">private key</span> (the file <span className="font-mono">~/.ssh/pvehive</span>, not <span className="font-mono">~/.ssh/pvehive.pub</span>)</div>
                 </div>
               </>
             )}
@@ -267,13 +278,13 @@ function SSHStep({ data, onChange, onNext }) {
                   hint='Proxmox web UI → select your node → "Shell" tab, or: ssh root@PROXMOX-IP'
                   steps={[
                     'apt install sudo -y',
-                    'adduser pvedash --gecos ""',
-                    'echo "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash',
-                    'chmod 440 /etc/sudoers.d/pvedash',
-                    { cmd: 'passwd pvedash', note: '← set a password when prompted' },
+                    'adduser pvehive --gecos ""',
+                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive',
+                    'chmod 440 /etc/sudoers.d/pvehive',
+                    { cmd: 'passwd pvehive', note: '← set a password when prompted' },
                   ]} />
                 <div className="px-4 py-2.5 bg-warning/5 border-t border-warning/20 text-[10px] text-muted space-y-1">
-                  <div>→ Username: <span className="font-mono text-white">pvedash</span></div>
+                  <div>→ Username: <span className="font-mono text-white">pvehive</span></div>
                   <div>→ Auth: select <span className="text-white">Password</span> below and enter the password you set with <span className="font-mono">passwd</span></div>
                   <div className="text-warning/70">⚠ Password auth is less secure — prefer SSH keys if possible</div>
                 </div>
@@ -331,7 +342,7 @@ function SSHStep({ data, onChange, onNext }) {
       <div>
         <label className="label">Username</label>
         <input className={`input ${errors.username ? 'border-danger/60 focus:border-danger/80' : ''}`}
-          placeholder="pvedash" value={data.username || ''}
+          placeholder="pvehive" value={data.username || ''}
           onChange={e => field('username', { username: e.target.value })} />
         {errors.username && <p className="text-xs text-danger mt-1">{errors.username}</p>}
       </div>
@@ -368,7 +379,7 @@ function SSHStep({ data, onChange, onNext }) {
               ? <p className="text-xs text-danger">{errors.auth}</p>
               : (
                 <div className="rounded-lg bg-base-800 border border-border px-3 py-2.5 text-xs space-y-1.5 text-muted font-sans">
-                  <div className="font-mono text-white/70">cat ~/.ssh/pvedash</div>
+                  <div className="font-mono text-white/70">cat ~/.ssh/pvehive</div>
                   <div>Run this where you generated the key, then copy the entire output and paste it above.</div>
                   <div className="pt-1 border-t border-border space-y-1">
                     <div className="text-warning/80">⚠ No passphrase — generate with <span className="font-mono">-N ""</span></div>
@@ -472,10 +483,10 @@ function LXCStep({ sshData, selected, onSelect, onNext, onBack }) {
           <div className="p-3 rounded-lg bg-base-800 border border-border text-xs text-muted space-y-1">
             <div className="text-white text-xs font-medium mb-1">Checklist:</div>
             <div>✓ Is <code className="text-white/70 font-mono">sudo</code> installed? Run: <code className="text-white/70 font-mono">apt install sudo -y</code></div>
-            <div>✓ Is the <code className="text-white/70 font-mono">pvedash</code> user created on the Proxmox host?</div>
-            <div>✓ Is <code className="text-white/70 font-mono">/etc/sudoers.d/pvedash</code> created with the right content?</div>
-            <div>✓ Did you set a password (<code className="text-white/70 font-mono">passwd pvedash</code>) or copy an SSH key?</div>
-            <div>✓ Can you SSH in manually? <code className="text-white/70 font-mono">ssh pvedash@{'{'}HOST{'}'}</code></div>
+            <div>✓ Is the <code className="text-white/70 font-mono">pvehive</code> user created on the Proxmox host?</div>
+            <div>✓ Is <code className="text-white/70 font-mono">/etc/sudoers.d/pvehive</code> created with the right content?</div>
+            <div>✓ Did you set a password (<code className="text-white/70 font-mono">passwd pvehive</code>) or copy an SSH key?</div>
+            <div>✓ Can you SSH in manually? <code className="text-white/70 font-mono">ssh pvehive@{'{'}HOST{'}'}</code></div>
           </div>
         </div>
       )}
@@ -611,7 +622,7 @@ export default function Setup({ onComplete, onCancel, isAdding }) {
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
   const [siteName, setSiteName] = useState('')
-  const [ssh, setSSH] = useState({ host: '', port: '22', username: 'pvedash', privateKey: '' })
+  const [ssh, setSSH] = useState({ host: '', port: '22', username: 'pvehive', privateKey: '' })
   const [selectedLXC, setSelectedLXC] = useState([])
   const [notifications, setNotifications] = useState({ channels: [] })
   const [schedule, setSchedule] = useState({ times: ['08:00', '20:00'] })
