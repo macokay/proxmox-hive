@@ -139,11 +139,12 @@ get_template() {
 
   if [[ -z "$tmpl" ]]; then
     msg_info "Downloading Debian 12 template"
+    pveam update >/dev/null 2>&1 || true
     tmpl=$(pveam available --section system 2>/dev/null \
-      | awk '/debian-12-standard/ {print $2}' \
+      | awk '/debian-12-standard/ {print $NF}' \
       | sort -V | tail -1)
     [[ -z "$tmpl" ]] && msg_error "Could not find Debian 12 template in catalog"
-    pveam download local "$tmpl" >/dev/null
+    pveam download local "$tmpl" 2>&1 | grep -v "^$" >&2 || msg_error "Failed to download template: $tmpl"
     msg_ok "Downloaded $tmpl"
   fi
 
