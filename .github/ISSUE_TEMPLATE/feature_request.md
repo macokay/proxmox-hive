@@ -1,19 +1,27 @@
 ---
 name: Feature request
-about: Suggest an idea or improvement for Proxmox Hive
-title: '[Feature] '
+about: Suggest a new feature or improvement
+title: "[FEATURE] "
 labels: enhancement
-assignees: ''
+assignees: macokay
 ---
 
-**Is your feature request related to a problem?**
-A clear description of the problem. e.g. "I'm always frustrated when..."
+## Summary
 
-**Describe the solution you'd like**
-A clear description of what you want to happen.
+A clear and concise description of the feature you are requesting.
 
-**Alternatives considered**
-Any alternative solutions or features you've considered.
+## Problem it solves
 
-**Additional context**
-Any other context, screenshots, or examples.
+Describe the problem or limitation this feature addresses.
+
+## Proposed solution
+
+Describe how you envision this working. Include examples if applicable.
+
+## Alternatives considered
+
+Any alternative solutions or workarounds you have considered.
+
+## Additional context
+
+Any other context, screenshots, or references relevant to the request.

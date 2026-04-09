@@ -1,31 +1,43 @@
 ---
 name: Bug report
-about: Report a problem with Proxmox Hive
-title: '[Bug] '
+about: Report a bug with this tool
+title: "[BUG] "
 labels: bug
-assignees: ''
+assignees: macokay
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Describe the bug
 
-**To reproduce**
-Steps to reproduce the behaviour:
+A clear and concise description of what is wrong.
+
+## Steps to reproduce
+
 1. Go to '...'
 2. Click on '...'
 3. See error
 
-**Expected behaviour**
-What you expected to happen.
+## Expected behaviour
 
-**Screenshots / logs**
-If applicable, add screenshots or paste relevant log output.
+A clear description of what you expected to happen.
 
-**Environment**
-- Proxmox Hive version: [e.g. v1.0.0]
-- Proxmox VE version: [e.g. 8.2]
-- Browser: [e.g. Chrome 124]
-- Deployment: [Docker / Docker Compose]
+## Actual behaviour
 
-**Additional context**
-Any other context about the problem.
+What actually happened.
+
+## Console errors
+
+Open browser DevTools (`F12` → Console) and paste any relevant errors below.
+
+```
+[paste console output here]
+```
+
+## Environment
+
+| Field | Value |
+|---|---|
+| Tool version | |
+| Browser | |
+| OS | |
+| Proxmox VE version | |
+| Deployment | Docker / Docker Compose |
