@@ -1,5 +1,5 @@
 import { SSHHowButton } from '../components/SSHHowModal.jsx'
-import { NotificationChannels, TimezoneSelect, TimeSelect } from './Settings.jsx'
+import { NotificationChannels, TimezoneSelect, TimeInput } from './Settings.jsx'
 import { useState } from 'react'
 
 const STEPS = ['SSH Access', 'Select LXC', 'Schedule & Notifications', 'Name your site']
@@ -564,7 +564,7 @@ function ScheduleStep({ data, onChange, onNext, onBack }) {
           {times.map((t, i) => (
             <div key={i} className="flex-1">
               <label className="text-xs text-muted mb-1 block">Check {i + 1}</label>
-              <TimeSelect value={t} onChange={v => updateTime(i, v)} />
+              <TimeInput value={t} onChange={v => updateTime(i, v)} />
             </div>
           ))}
         </div>

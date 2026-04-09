@@ -26,34 +26,55 @@ const TIMEZONES = [
   ['Pacific', ['Australia/Perth','Australia/Darwin','Australia/Adelaide','Australia/Brisbane','Australia/Sydney','Australia/Melbourne','Pacific/Auckland','Pacific/Fiji']],
 ]
 
+function tzOffset(tz) {
+  try {
+    const d = new Date()
+    const utc = new Date(d.toLocaleString('en-US', { timeZone: 'UTC' }))
+    const local = new Date(d.toLocaleString('en-US', { timeZone: tz }))
+    const diff = Math.round((local - utc) / 60000)
+    const sign = diff >= 0 ? '+' : '-'
+    const abs = Math.abs(diff)
+    return `UTC${sign}${String(Math.floor(abs / 60)).padStart(2, '0')}:${String(abs % 60).padStart(2, '0')}`
+  } catch { return 'UTC' }
+}
+
 export function TimezoneSelect({ value, onChange }) {
   return (
     <select className="input" value={value || ''} onChange={e => onChange(e.target.value || undefined)}>
-      <option value="">UTC (default)</option>
+      <option value="">UTC+00:00 — UTC (default)</option>
       {TIMEZONES.map(([region, zones]) => (
         <optgroup key={region} label={region}>
-          {zones.map(z => <option key={z} value={z}>{z.replace(/.*\//, '').replace(/_/g, ' ')}</option>)}
+          {zones.map(z => {
+            const city = z.replace(/.*\//, '').replace(/_/g, ' ')
+            const offset = tzOffset(z)
+            return <option key={z} value={z}>{offset} — {city}</option>
+          })}
         </optgroup>
       ))}
     </select>
   )
 }
 
-export function TimeSelect({ value, onChange, className = '' }) {
-  const [h, m] = (value || '08:00').split(':')
-  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
-  const minutes = ['00', '15', '30', '45']
-  const effectiveMin = minutes.includes(m) ? m : '00'
+function normalizeTime(input) {
+  const sep = input.includes(':') ? ':' : '.'
+  const parts = input.replace(/[^\d:.]/g, '').split(sep)
+  const h = Math.min(23, Math.max(0, parseInt(parts[0] || '0', 10) || 0))
+  const m = Math.min(59, Math.max(0, parseInt(parts[1] || '0', 10) || 0))
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+export function TimeInput({ value, onChange }) {
+  const [draft, setDraft] = useState(value || '')
+  // sync if parent changes value externally
+  useState(() => { setDraft(value || '') })
   return (
-    <div className={`flex items-center gap-1 ${className}`}>
-      <select className="input flex-1 text-center" value={h} onChange={e => onChange(`${e.target.value}:${effectiveMin}`)}>
-        {hours.map(hr => <option key={hr} value={hr}>{hr}</option>)}
-      </select>
-      <span className="text-muted font-mono">:</span>
-      <select className="input w-16 text-center" value={effectiveMin} onChange={e => onChange(`${h}:${e.target.value}`)}>
-        {minutes.map(min => <option key={min} value={min}>{min}</option>)}
-      </select>
-    </div>
+    <input
+      className="input"
+      value={draft}
+      placeholder="08:00"
+      onChange={e => setDraft(e.target.value)}
+      onBlur={() => { const n = normalizeTime(draft); setDraft(n); onChange(n) }}
+    />
   )
 }
 
@@ -200,7 +221,7 @@ function GroupEditor({ groups, lxcList, vmList, onChange }) {
             </button>
             <input className="flex-1 bg-transparent text-white text-sm font-medium focus:outline-none"
               value={group.name} onChange={e => upd(group.id, { name: e.target.value })} />
-            <TimeSelect value={group.time} onChange={v => upd(group.id, { time: v })} className="w-auto" />
+            <TimeInput value={group.time} onChange={v => upd(group.id, { time: v })} />
             <button onClick={() => remove(group.id)} className="text-muted hover:text-danger text-sm px-1 transition-colors">✕</button>
           </div>
           <div className="p-3">
@@ -559,25 +580,23 @@ function SiteSettings({ site, onSaved, onDeleted }) {
           {sshResult && <span className={`text-xs flex items-center gap-1.5 ${sshResult.ok ? 'text-success' : 'text-danger'}`}><img src={sshResult.ok ? '/check.svg' : '/cross.svg'} className="w-4 h-4 flex-shrink-0" alt="" />{sshResult.ok ? 'Connected' : sshResult.error}</span>}
         </div>
         {(!config.ssh?.username || config.ssh.username !== 'root') && (
-          <div className="pt-2 border-t border-border">
-            <div className="text-xs text-muted mb-2">
-              Getting <span className="font-mono text-white/70">sudo: a terminal is required to read the password</span>? The sudoers entry is missing or incomplete.
+          <div className="pt-2 border-t border-border space-y-2">
+            <div className="text-xs text-muted">
+              Getting <span className="font-mono text-white/60">sudo: a terminal is required</span>? Run this on the Proxmox host to fix sudoers:
+            </div>
+            <div className="font-mono text-[10px] text-white/70 bg-base-800 rounded px-3 py-2 break-all select-all leading-relaxed">
+              {`echo "${config.ssh?.username || 'pvehive'} ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/bin/pct,/usr/sbin/qm,/usr/bin/qm" | sudo tee /etc/sudoers.d/${config.ssh?.username || 'pvehive'} && sudo chmod 440 /etc/sudoers.d/${config.ssh?.username || 'pvehive'}`}
             </div>
             <div className="flex items-center gap-3">
-              <button className="btn-ghost text-xs" onClick={fixSudo} disabled={fixingSudo}>
-                {fixingSudo ? 'Fixing...' : 'Fix sudo permissions'}
+              <button className="btn-ghost text-xs" onClick={fixSudo} disabled={fixingSudo} title="Only works if SSH user is root">
+                {fixingSudo ? 'Fixing...' : 'Auto-fix (root only)'}
               </button>
               {sudoResult && (
                 sudoResult.ok
                   ? <span className="text-xs text-success flex items-center gap-1"><img src="/check.svg" className="w-4 h-4" alt="" />Fixed</span>
-                  : <span className="text-xs text-danger">Failed — run manually on host:</span>
+                  : <span className="text-xs text-danger">Auto-fix failed — run the command above manually</span>
               )}
             </div>
-            {sudoResult && !sudoResult.ok && (
-              <div className="mt-2 font-mono text-[10px] text-white/70 bg-base-800 rounded px-3 py-2 break-all select-all">
-                {sudoResult.manual}
-              </div>
-            )}
           </div>
         )}
       </Section>
@@ -619,7 +638,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
           {(config.schedule?.times || ['08:00', '20:00']).map((t, i) => (
             <div key={i} className="flex-1">
               <label className="label">Check {i + 1}</label>
-              <TimeSelect value={t} onChange={v => {
+              <TimeInput value={t} onChange={v => {
                 const times = [...(config.schedule?.times || ['08:00', '20:00'])]
                 times[i] = v; update('schedule.times', times)
               }} />
