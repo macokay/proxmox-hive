@@ -1,8 +1,8 @@
 import { SSHHowButton } from '../components/SSHHowModal.jsx'
-import { NotificationChannels, TimezoneSelect } from './Settings.jsx'
+import { NotificationChannels, TimezoneSelect, TimeSelect } from './Settings.jsx'
 import { useState } from 'react'
 
-const STEPS = ['SSH Access', 'Select LXC', 'Schedule & Discord', 'Name your site']
+const STEPS = ['SSH Access', 'Select LXC', 'Schedule & Notifications', 'Name your site']
 
 function CopyBlock({ icon, where, hint, steps }) {
   const [copied, setCopied] = useState(false)
@@ -191,7 +191,7 @@ function SSHStep({ data, onChange, onNext }) {
                     'apt install sudo -y',
                     'id pvehive &>/dev/null && (deluser --remove-home pvehive 2>/dev/null || userdel -rf pvehive 2>/dev/null) || true',
                     'adduser pvehive --disabled-password --gecos ""',
-                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/sbin/qm" | tee /etc/sudoers.d/pvehive',
+                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/bin/pct,/usr/sbin/qm,/usr/bin/qm" | tee /etc/sudoers.d/pvehive',
                     'chmod 440 /etc/sudoers.d/pvehive',
                   ]} />
                 <CopyBlock icon={<img src="/proxmox.svg" className="w-4 h-4 align-middle" alt="" />} where="Proxmox host — Step 2: Generate & install SSH key"
@@ -279,7 +279,7 @@ function SSHStep({ data, onChange, onNext }) {
                   steps={[
                     'apt install sudo -y',
                     'adduser pvehive --gecos ""',
-                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/sbin/qm" | tee /etc/sudoers.d/pvehive',
+                    'echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/bin/pct,/usr/sbin/qm,/usr/bin/qm" | tee /etc/sudoers.d/pvehive',
                     'chmod 440 /etc/sudoers.d/pvehive',
                     { cmd: 'passwd pvehive', note: '← set a password when prompted' },
                   ]} />
@@ -564,7 +564,7 @@ function ScheduleStep({ data, onChange, onNext, onBack }) {
           {times.map((t, i) => (
             <div key={i} className="flex-1">
               <label className="text-xs text-muted mb-1 block">Check {i + 1}</label>
-              <input type="time" className="input" value={t} onChange={e => updateTime(i, e.target.value)} />
+              <TimeSelect value={t} onChange={v => updateTime(i, v)} />
             </div>
           ))}
         </div>

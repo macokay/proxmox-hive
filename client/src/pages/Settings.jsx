@@ -17,13 +17,43 @@ export const ALERT_TYPES = [
   { key: 'onNoUpdates',       label: 'All up to date',      description: 'When check finds nothing to update' },
 ]
 
+const TIMEZONES = [
+  ['UTC', ['UTC']],
+  ['Europe', ['Europe/London','Europe/Dublin','Europe/Lisbon','Europe/Paris','Europe/Berlin','Europe/Rome','Europe/Madrid','Europe/Amsterdam','Europe/Brussels','Europe/Vienna','Europe/Zurich','Europe/Warsaw','Europe/Prague','Europe/Budapest','Europe/Stockholm','Europe/Oslo','Europe/Copenhagen','Europe/Helsinki','Europe/Tallinn','Europe/Riga','Europe/Vilnius','Europe/Athens','Europe/Bucharest','Europe/Sofia','Europe/Istanbul','Europe/Kyiv','Europe/Moscow']],
+  ['Americas', ['America/New_York','America/Detroit','America/Toronto','America/Chicago','America/Winnipeg','America/Denver','America/Phoenix','America/Los_Angeles','America/Vancouver','America/Anchorage','America/Halifax','America/St_Johns','America/Sao_Paulo','America/Argentina/Buenos_Aires','America/Santiago','America/Bogota','America/Lima','America/Mexico_City','America/Caracas','America/Panama','Pacific/Honolulu']],
+  ['Asia & Middle East', ['Asia/Dubai','Asia/Riyadh','Asia/Tehran','Asia/Karachi','Asia/Kolkata','Asia/Colombo','Asia/Dhaka','Asia/Kathmandu','Asia/Rangoon','Asia/Bangkok','Asia/Ho_Chi_Minh','Asia/Jakarta','Asia/Singapore','Asia/Kuala_Lumpur','Asia/Hong_Kong','Asia/Shanghai','Asia/Taipei','Asia/Seoul','Asia/Tokyo']],
+  ['Africa & Middle East', ['Africa/Casablanca','Africa/Lagos','Africa/Cairo','Africa/Nairobi','Africa/Johannesburg','Africa/Harare']],
+  ['Pacific', ['Australia/Perth','Australia/Darwin','Australia/Adelaide','Australia/Brisbane','Australia/Sydney','Australia/Melbourne','Pacific/Auckland','Pacific/Fiji']],
+]
+
 export function TimezoneSelect({ value, onChange }) {
-  const zones = Intl.supportedValuesOf?.('timeZone') || []
   return (
     <select className="input" value={value || ''} onChange={e => onChange(e.target.value || undefined)}>
       <option value="">UTC (default)</option>
-      {zones.map(z => <option key={z} value={z}>{z.replace(/_/g, ' ')}</option>)}
+      {TIMEZONES.map(([region, zones]) => (
+        <optgroup key={region} label={region}>
+          {zones.map(z => <option key={z} value={z}>{z.replace(/.*\//, '').replace(/_/g, ' ')}</option>)}
+        </optgroup>
+      ))}
     </select>
+  )
+}
+
+export function TimeSelect({ value, onChange, className = '' }) {
+  const [h, m] = (value || '08:00').split(':')
+  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+  const minutes = ['00', '15', '30', '45']
+  const effectiveMin = minutes.includes(m) ? m : '00'
+  return (
+    <div className={`flex items-center gap-1 ${className}`}>
+      <select className="input flex-1 text-center" value={h} onChange={e => onChange(`${e.target.value}:${effectiveMin}`)}>
+        {hours.map(hr => <option key={hr} value={hr}>{hr}</option>)}
+      </select>
+      <span className="text-muted font-mono">:</span>
+      <select className="input w-16 text-center" value={effectiveMin} onChange={e => onChange(`${h}:${e.target.value}`)}>
+        {minutes.map(min => <option key={min} value={min}>{min}</option>)}
+      </select>
+    </div>
   )
 }
 
@@ -170,8 +200,7 @@ function GroupEditor({ groups, lxcList, vmList, onChange }) {
             </button>
             <input className="flex-1 bg-transparent text-white text-sm font-medium focus:outline-none"
               value={group.name} onChange={e => upd(group.id, { name: e.target.value })} />
-            <input type="time" value={group.time} onChange={e => upd(group.id, { time: e.target.value })}
-              className="bg-base-700 border border-border rounded px-2 py-1 text-xs text-white focus:outline-none" />
+            <TimeSelect value={group.time} onChange={v => upd(group.id, { time: v })} className="w-auto" />
             <button onClick={() => remove(group.id)} className="text-muted hover:text-danger text-sm px-1 transition-colors">✕</button>
           </div>
           <div className="p-3">
@@ -590,9 +619,9 @@ function SiteSettings({ site, onSaved, onDeleted }) {
           {(config.schedule?.times || ['08:00', '20:00']).map((t, i) => (
             <div key={i} className="flex-1">
               <label className="label">Check {i + 1}</label>
-              <input type="time" className="input" value={t} onChange={e => {
+              <TimeSelect value={t} onChange={v => {
                 const times = [...(config.schedule?.times || ['08:00', '20:00'])]
-                times[i] = e.target.value; update('schedule.times', times)
+                times[i] = v; update('schedule.times', times)
               }} />
             </div>
           ))}

@@ -427,7 +427,7 @@ router.post('/sites/:id/fix-sudo', async (req, res) => {
   const username = site.ssh?.username || 'root'
   const isRoot = !username || username === 'root'
   const safeUser = username.replace(/[^a-zA-Z0-9_-]/g, '')
-  const sudoersLine = `${safeUser} ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/sbin/qm`
+  const sudoersLine = `${safeUser} ALL=(ALL) NOPASSWD: /usr/bin/apt-get,/usr/bin/apt,/usr/bin/dpkg,/usr/sbin/pct,/usr/bin/pct,/usr/sbin/qm,/usr/bin/qm`
   const p = isRoot ? '' : 'sudo '
 
   const script = [
