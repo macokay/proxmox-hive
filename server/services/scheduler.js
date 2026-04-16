@@ -132,10 +132,11 @@ function pctExecCmd(site, vmid, inner) {
 function aptUpdateCmd(site) {
   const isRoot = !site.ssh.username || site.ssh.username === 'root'
   const p = isRoot ? '' : 'sudo '
-  return `DEBIAN_FRONTEND=noninteractive ${p}apt-get update -qq 2>/dev/null || true`
+  return `DEBIAN_FRONTEND=noninteractive ${p}apt-get update -qq ${APT_TIMEOUT_OPTS} 2>/dev/null || true`
 }
 
 const DPKG_OPTS = `-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-overwrite`
+const APT_TIMEOUT_OPTS = `-o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15`
 
 function aptUpgradeCmd(site) {
   const isRoot = !site.ssh.username || site.ssh.username === 'root'
@@ -143,7 +144,7 @@ function aptUpgradeCmd(site) {
   const script = [
     `DEBIAN_FRONTEND=noninteractive ${p}dpkg --configure -a 2>&1 || true`,
     `DEBIAN_FRONTEND=noninteractive ${p}apt-get install -f -y ${DPKG_OPTS} 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive ${p}apt-get update -qq 2>&1 || true`,
+    `DEBIAN_FRONTEND=noninteractive ${p}apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
     `DEBIAN_FRONTEND=noninteractive ${p}apt-get dist-upgrade -y ${DPKG_OPTS} 2>&1; RC=$?`,
     `DEBIAN_FRONTEND=noninteractive ${p}apt-get autoremove -y 2>&1 || true`,
     `exit $RC`,
@@ -157,7 +158,7 @@ function lxcAptUpgradeCmd(site, vmid) {
   const script = [
     `DEBIAN_FRONTEND=noninteractive dpkg --configure -a 2>&1 || true`,
     `DEBIAN_FRONTEND=noninteractive apt-get install -f -y ${DPKG_OPTS} 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>&1 || true`,
+    `DEBIAN_FRONTEND=noninteractive apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
     `DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y ${DPKG_OPTS} 2>&1; RC=$?`,
     `DEBIAN_FRONTEND=noninteractive apt-get autoremove -y 2>&1 || true`,
     `exit $RC`,
@@ -182,7 +183,7 @@ function lxcAptSelectiveUpgradeCmd(site, vmid, packages) {
   // Sanitize package names
   const pkgList = packages.map(pkg => pkg.replace(/[^a-zA-Z0-9._:+~-]/g, '')).filter(Boolean).join(' ')
   const script = [
-    `DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>&1 || true`,
+    `DEBIAN_FRONTEND=noninteractive apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
     `DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
     `exit $RC`,
   ].join('; ')
@@ -194,7 +195,7 @@ function nodeAptSelectiveUpgradeCmd(site, packages) {
   const p = isRoot ? '' : 'sudo '
   const pkgList = packages.map(pkg => pkg.replace(/[^a-zA-Z0-9._:+~-]/g, '')).filter(Boolean).join(' ')
   const script = [
-    `DEBIAN_FRONTEND=noninteractive ${p}apt-get update -qq 2>&1 || true`,
+    `DEBIAN_FRONTEND=noninteractive ${p}apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
     `DEBIAN_FRONTEND=noninteractive ${p}apt-get install --only-upgrade -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
     `exit $RC`,
   ].join('; ')
@@ -268,7 +269,7 @@ export async function runCheck(siteId) {
 
         let packages = []
         if (pm === 'apt') {
-          await siteExec(site, pctExecCmd(site, vmid, 'apt-get update -qq 2>/dev/null || true'))
+          await siteExec(site, pctExecCmd(site, vmid, 'apt-get update -qq -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 2>/dev/null || true'))
           const { stdout } = await siteExec(site, pctExecCmd(site, vmid, 'apt list --upgradable 2>/dev/null'))
           packages = parseAptOutput(stdout)
         } else if (pm === 'apk') {
@@ -330,7 +331,7 @@ export async function runCheck(siteId) {
           }
 
           const { stdout: vmOut } = await qmGuestExecSimple(site, vmid,
-            'apt-get update -qq 2>/dev/null; apt list --upgradable 2>/dev/null', 90)
+            'apt-get update -qq -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 2>/dev/null; apt list --upgradable 2>/dev/null', 90)
           const vmPackages = parseAptOutput(vmOut)
           results.vms.push({ vmid, name: vmInfo.name, updates: vmPackages.length, packages: vmPackages, running: true })
         } catch (e) {
@@ -427,14 +428,14 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
       onLog('[VM] Note: output appears when update completes (buffered)\n\n')
       const script = packages && packages.length > 0
         ? [
-            `DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>&1 || true`,
+            `DEBIAN_FRONTEND=noninteractive apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
             `DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade -y ${DPKG_OPTS} ${packages.map(p => p.replace(/[^a-zA-Z0-9._:+~-]/g, '')).join(' ')} 2>&1; RC=$?`,
             `exit $RC`
           ].join('; ')
         : [
             `DEBIAN_FRONTEND=noninteractive dpkg --configure -a 2>&1 || true`,
             `DEBIAN_FRONTEND=noninteractive apt-get install -f -y ${DPKG_OPTS} 2>&1 || true`,
-            `DEBIAN_FRONTEND=noninteractive apt-get update -qq 2>&1 || true`,
+            `DEBIAN_FRONTEND=noninteractive apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
             `DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y ${DPKG_OPTS} 2>&1; RC=$?`,
             `DEBIAN_FRONTEND=noninteractive apt-get autoremove -y 2>&1 || true`,
             `exit $RC`
