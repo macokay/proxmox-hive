@@ -77,3 +77,10 @@ jobs:
             proxmox-hive.zip \
             --repo "${{ github.repository }}" \
             --clobber
+
+      - name: Merge main into dev
+        run: |
+          git fetch origin dev
+          git checkout dev
+          git merge origin/main --no-edit
+          git push origin dev
