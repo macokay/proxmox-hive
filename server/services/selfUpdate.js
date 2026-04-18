@@ -65,7 +65,21 @@ export function isDevUpdateAvailable(current, latestSha) {
   return currentSha !== latestSha
 }
 
+export function checkDockerSocket() {
+  return existsSync('/var/run/docker.sock')
+}
+
 export async function applySelfUpdate(onLog, beta = false) {
+  if (!checkDockerSocket()) {
+    onLog('ERROR: Docker socket not mounted into container.\n\n')
+    onLog('Your docker-compose.yml is missing required volume mounts.\n')
+    onLog('Add these lines under "volumes:" and restart manually:\n\n')
+    onLog('  - /var/run/docker.sock:/var/run/docker.sock\n')
+    onLog('  - /opt/proxmox-hive:/opt/proxmox-hive\n\n')
+    onLog('Then run: cd /opt/proxmox-hive && docker compose up -d\n')
+    throw new Error('Docker socket not accessible — see instructions above')
+  }
+
   const latest = beta ? 'dev' : await fetchLatestRelease()
   if (!latest) throw new Error('Could not fetch latest release')
 
