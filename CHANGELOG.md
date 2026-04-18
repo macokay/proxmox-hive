@@ -2,6 +2,13 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.6] - 2026-04-18
+
+### Fixed
+- Self-update now works: Docker socket and install directory are mounted into the container so the app can run docker commands and find the compose file
+- Self-update check re-polls every 30 minutes (with cache bypass) so the banner appears after a release without requiring a page reload
+- Error handler added to child process runner so missing `docker` binary gives a clear error instead of crashing silently
+
 ## [1.0.4] - 2026-04-07
 
 ### Added

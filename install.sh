@@ -105,6 +105,8 @@ services:
       - "${PORT}:3000"
     volumes:
       - proxmox-hive-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${INSTALL_DIR}:${INSTALL_DIR}
     restart: unless-stopped
     environment:
       - NODE_ENV=production

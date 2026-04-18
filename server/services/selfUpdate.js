@@ -59,6 +59,7 @@ export async function applySelfUpdate(onLog) {
       const child = execFile(cmd, args, { env: process.env })
       child.stdout.on('data', d => onLog(d.toString()))
       child.stderr.on('data', d => onLog(d.toString()))
+      child.on('error', err => reject(err))
       child.on('close', code => code === 0 ? resolve() : reject(new Error(`exit ${code}`)))
     })
   }
