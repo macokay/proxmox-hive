@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Proxmox Hive - a self-hosted update dashboard for Proxmox</title>
+<meta name="description" content="One dashboard to monitor and apply updates across your Proxmox nodes, LXC containers, and VMs." />
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9InByZW1pdW0tc2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMiIgZHk9IjUiIHN0ZERldmlhdGlvbj0iNCIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuNiI+PC9mZURyb3BTaGFkb3c+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIxIiBzdGREZXZpYXRpb249IjIiIGZsb29kLWNvbG9yPSIjMDAwMDAwIiBmbG9vZC1vcGFjaXR5PSIwLjQiPjwvZmVEcm9wU2hhZG93PgogICAgPC9maWx0ZXI+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im9yYW5nZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjlEMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIyMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJkYXJrLWdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzU1NUE2NiI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjE1JSIgc3RvcC1jb2xvcj0iIzM2M0E0NCI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxQjFEMjIiPjwvc3RvcD4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJyaWRnZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPHBvbHlnb24gaWQ9ImRhcmstaGV4IiBwb2ludHM9IjAsLTM0IDI5LjQ0NSwtMTcgMjkuNDQ1LDE3IDAsMzQgLTI5LjQ0NSwxNyAtMjkuNDQ1LC0xNyIgZmlsbD0idXJsKCNkYXJrLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8cG9seWdvbiBpZD0iY2VudGVyLWhleCIgcG9pbnRzPSIwLC0zNCAyOS40NDUsLTE3IDI5LjQ0NSwxNyAwLDM0IC0yOS40NDUsMTcgLTI5LjQ0NSwtMTciIGZpbGw9InVybCgjb3JhbmdlLWdyYWQpIiBzdHJva2U9IiNGRjhDMUEiIHN0cm9rZS13aWR0aD0iMS41IiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8ZyBpZD0iYnJpZGdlIj4KICAgICAgPHJlY3QgeD0iLTYiIHk9Ii0xMjAiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMjAiIGZpbGw9InVybCgjYnJpZGdlLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3JlY3Q+CiAgICA8L2c+CiAgPC9kZWZzPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDApIj4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMjUuMjgsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5MC42NCwgMzE2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjIxLjM2LCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxODYuNzIsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyMS4zNiwgMTk2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjkwLjY0LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzOTQuNTYsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyNS4yOCwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTg2LjcyLCAzNzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTcuNDQsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4Ni43MiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzI1LjI4LCAxMzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgwKSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNicmlkZ2UiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSByb3RhdGUoNjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxMjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxODApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgyNDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgzMDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTkuOTIsIDE5NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzU5LjkyLCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTIuMDgsIDMxNikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTUyLjA4LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSI+PC91c2U+CiAgPC9nPgo8L3N2Zz4=" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ Proxmox Hive landing ============ */
+:root {
+  --bg: #0A0B0D;
+  --bg-2: #0E1013;
+  --surface: #111318;
+  --surface-2: #161922;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.13);
+  --text: #E8E9EC;
+  --text-dim: #9CA0AA;
+  --text-mute: #6A6F7A;
+  --accent: #FF7A00;
+  --accent-2: #FF9D00;
+  --accent-deep: #CC5200;
+  --green: #10B981;
+  --cyan: #22D3EE;
+  --violet: #A855F7;
+  --rose: #F43F5E;
+  --amber: #F59E0B;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+  --shadow-1: 0 1px 0 rgba(255,255,255,0.04) inset, 0 8px 24px rgba(0,0,0,0.35);
+  --shadow-2: 0 30px 80px -20px rgba(0,0,0,0.7), 0 2px 0 rgba(255,255,255,0.03) inset;
+  --ff-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ff-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--ff-sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+a { color: inherit; text-decoration: none; }
+.mono { font-family: var(--ff-mono); font-size: 0.88em; letter-spacing: -0.01em; }
+
+/* density variants */
+body[data-density="compact"] .section { padding: 72px 28px; }
+body[data-density="compact"] .hero { padding: 80px 28px 40px; }
+
+/* bg grain + glow */
+.bg-grain { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.35;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+body.no-grain .bg-grain { display: none; }
+.bg-glow { position: fixed; z-index: 0; pointer-events: none;
+  top: -200px; left: 50%; transform: translateX(-50%);
+  width: 1200px; height: 900px;
+  background: radial-gradient(ellipse at center, rgba(255,122,0,0.18), rgba(255,122,0,0.04) 40%, transparent 70%);
+  filter: blur(20px);
+}
+
+body > * { position: relative; z-index: 1; }
+
+/* ============ NAV ============ */
+.nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 20px;
+  padding: 14px 28px; backdrop-filter: blur(14px) saturate(140%);
+  background: rgba(10,11,13,0.72); border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -0.01em; }
+.brand-mark { width: 28px; height: 28px; display: inline-flex; }
+.brand-mark img { width: 100%; height: 100%; }
+.brand-name { font-size: 15px; }
+.brand-version { font-family: var(--ff-mono); font-size: 11px; color: var(--text-dim); background: var(--surface-2); padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); }
+body.hide-version .brand-version { display: none; }
+
+.nav-links { display: flex; gap: 22px; margin-left: 24px; }
+.nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 500; transition: color 0.15s; }
+.nav-links a:hover { color: var(--text); }
+.nav-cta { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+
+.cta, .ghost { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px; padding: 9px 14px; border-radius: 10px; border: 1px solid transparent; cursor: pointer; transition: transform 0.08s, background 0.15s, border-color 0.15s, box-shadow 0.15s; font-family: inherit; }
+.cta { background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: #1A0D00; box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 6px 20px -6px rgba(255,122,0,0.6); }
+.cta:hover { transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 10px 30px -8px rgba(255,122,0,0.7); }
+.cta:active { transform: translateY(0); }
+.ghost { background: transparent; border-color: var(--border-strong); color: var(--text); }
+.ghost:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); }
+.cta-lg, .ghost-lg { padding: 13px 20px; font-size: 15px; border-radius: 12px; }
+
+/* ============ HERO ============ */
+.hero { max-width: 1240px; margin: 0 auto; padding: 96px 28px 56px; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 60px; align-items: center; }
+.hero[data-layout="center"] { grid-template-columns: 1fr; text-align: center; max-width: 860px; }
+.hero[data-layout="center"] .hero-art { display: none; }
+.hero[data-layout="center"] .hero-meta, .hero[data-layout="center"] .hero-cta-row, .hero[data-layout="center"] .hero-install, .hero[data-layout="center"] .status-pill { justify-content: center; }
+.hero[data-layout="stack"] { grid-template-columns: 1fr; }
+.hero[data-layout="stack"] .hero-art { order: -1; }
+
+.status-pill { display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px 6px 10px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: var(--green); border-radius: 999px; font-size: 12.5px; font-weight: 500; margin-bottom: 24px; }
+.status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(16,185,129,0.15); animation: pulse 2.2s infinite; }
+.status-pill .mono { color: var(--green); opacity: 0.9; font-size: 11.5px; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.hero h1 { font-size: clamp(42px, 5.4vw, 68px); line-height: 1.04; letter-spacing: -0.025em; margin: 0 0 22px; font-weight: 800; text-wrap: balance; }
+.hero h1 .accent { background: linear-gradient(180deg, var(--accent-2), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lede { font-size: 18px; color: var(--text-dim); max-width: 560px; line-height: 1.6; margin: 0 0 32px; text-wrap: pretty; }
+
+.hero-cta-row { display: flex; gap: 12px; margin-bottom: 28px; }
+
+.hero-install { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; max-width: 640px; margin-bottom: 24px; position: relative; overflow: hidden; }
+.hero-install::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(255,122,0,0.06), transparent 30%); pointer-events: none; }
+.hero-install-label { font-family: var(--ff-mono); font-size: 10.5px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.12em; padding: 4px 8px; background: rgba(255,122,0,0.1); border: 1px solid rgba(255,122,0,0.25); border-radius: 6px; flex-shrink: 0; position: relative; }
+.hero-install code { font-family: var(--ff-mono); font-size: 12.5px; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: relative; }
+
+.copy-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 10px; border-radius: 8px; font-family: var(--ff-mono); font-size: 11.5px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; position: relative; }
+.copy-btn:hover { color: var(--text); border-color: var(--border-strong); background: rgba(255,255,255,0.04); }
+.copy-btn.copied { color: var(--green); border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.1); }
+
+.hero-meta { display: flex; gap: 10px; flex-wrap: wrap; color: var(--text-mute); font-size: 12px; }
+.hero-meta .sep { color: var(--text-mute); opacity: 0.5; }
+
+/* hive animated art */
+.hero-art { display: flex; flex-direction: column; align-items: center; gap: 32px; }
+.hive-animated { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; }
+.hive-animated img { width: 100%; height: 100%; filter: drop-shadow(0 20px 60px rgba(255,122,0,0.3)); }
+.hive-ring { position: absolute; border: 1px solid rgba(255,122,0,0.3); border-radius: 50%; pointer-events: none; }
+.hive-ring.r1 { width: 360px; height: 360px; animation: ringPulse 4s ease-in-out infinite; }
+.hive-ring.r2 { width: 430px; height: 430px; animation: ringPulse 4s ease-in-out infinite 1.3s; border-color: rgba(255,122,0,0.18); }
+.hive-ring.r3 { width: 520px; height: 520px; animation: ringPulse 4s ease-in-out infinite 2.6s; border-color: rgba(255,122,0,0.08); }
+@keyframes ringPulse { 0%, 100% { transform: scale(0.95); opacity: 0.4; } 50% { transform: scale(1.02); opacity: 1; } }
+.hive-scan { position: absolute; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; pointer-events: none; }
+.hive-scan::after { content: ""; position: absolute; left: -50%; right: -50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,157,0,0.7), transparent); top: 0; animation: scan 3.5s linear infinite; }
+@keyframes scan { 0% { top: 0%; } 100% { top: 100%; } }
+
+body.no-anim .hive-ring, body.no-anim .hive-scan::after { animation: none; }
+
+.hero-stats { display: flex; gap: 24px; padding: 14px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+.stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.stat .n { font-family: var(--ff-mono); font-size: 16px; font-weight: 600; color: var(--accent); letter-spacing: -0.02em; }
+.stat .l { font-size: 10.5px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ============ MARQUEE ============ */
+.marquee { overflow: hidden; padding: 20px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.25); mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); }
+.marquee-track { display: flex; gap: 28px; white-space: nowrap; animation: marquee 40s linear infinite; font-family: var(--ff-mono); font-size: 12.5px; color: var(--text-mute); }
+.marquee-track span { flex-shrink: 0; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+body.no-anim .marquee-track { animation: none; }
+
+/* ============ SECTIONS ============ */
+.section { max-width: 1200px; margin: 0 auto; padding: 120px 28px; }
+.section-head { max-width: 720px; margin: 0 auto 56px; text-align: center; }
+.eyebrow { font-family: var(--ff-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent); display: inline-block; padding: 4px 10px; background: rgba(255,122,0,0.08); border: 1px solid rgba(255,122,0,0.18); border-radius: 999px; margin-bottom: 20px; }
+.section h2 { font-size: clamp(32px, 3.8vw, 48px); line-height: 1.08; letter-spacing: -0.02em; font-weight: 700; margin: 0 0 16px; text-wrap: balance; }
+.section-sub { font-size: 17px; color: var(--text-dim); line-height: 1.6; margin: 0; text-wrap: pretty; }
+
+/* ============ FEATURES ============ */
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.feature { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px 24px; position: relative; overflow: hidden; transition: transform 0.3s, border-color 0.3s, background 0.3s; opacity: 0; transform: translateY(20px); }
+.feature.in { opacity: 1; transform: translateY(0); }
+.feature:hover { border-color: var(--border-strong); background: var(--surface-2); transform: translateY(-2px); }
+.feature::after { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border-strong), transparent); opacity: 0; transition: opacity 0.3s; }
+.feature:hover::after { opacity: 1; }
+
+.feature-icon { width: 40px; height: 40px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: rgba(255,122,0,0.1); color: var(--accent); margin-bottom: 16px; border: 1px solid rgba(255,122,0,0.2); }
+.feature[data-accent="cyan"] .feature-icon { background: rgba(34,211,238,0.1); color: var(--cyan); border-color: rgba(34,211,238,0.2); }
+.feature[data-accent="violet"] .feature-icon { background: rgba(168,85,247,0.1); color: var(--violet); border-color: rgba(168,85,247,0.2); }
+
+.feature h3 { font-size: 17px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+.feature p { font-size: 14.5px; color: var(--text-dim); margin: 0; line-height: 1.55; }
+
+/* ============ DASHBOARD RECREATION ============ */
+.section-dashboard { max-width: 1320px; }
+.browser-frame { background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-2); }
+.browser-chrome { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--border); }
+.browser-chrome .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+.browser-chrome .dot.r { background: #FF5F57; }
+.browser-chrome .dot.y { background: #FEBC2E; }
+.browser-chrome .dot.g { background: #27C840; }
+.browser-url { flex: 1; max-width: 420px; margin: 0 auto; padding: 6px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; text-align: center; color: var(--text-dim); }
+.browser-spacer { width: 60px; }
+.preview-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(255,122,0,0.08); border: 1px solid rgba(255,122,0,0.25); border-radius: 999px; font-family: var(--ff-mono); font-size: 10.5px; letter-spacing: 0.06em; color: var(--accent); text-transform: uppercase; white-space: nowrap; }
+.preview-badge .pv-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+.dash { padding: 28px 36px 32px; background: #0C0D10; font-size: 14px; }
+.dash-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 20px; }
+.dash-site { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.site-mark { width: 22px; height: 22px; }
+.site-mark img { width: 100%; height: 100%; }
+.site-name { background: linear-gradient(180deg, #50A9FF, #2E7BD9); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600; }
+.dash-actions { display: flex; gap: 10px; align-items: center; }
+.btn-chk, .btn-settings { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim); padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 12.5px; cursor: pointer; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 500; font-family: var(--ff-mono); letter-spacing: -0.005em; }
+.pill-ok { background: rgba(16,185,129,0.1); color: #34D399; border: 1px solid rgba(16,185,129,0.25); }
+.pill-ok .dot { width: 6px; height: 6px; border-radius: 50%; background: #34D399; box-shadow: 0 0 8px #34D399; }
+.pill-muted { background: rgba(156,160,170,0.08); color: var(--text-mute); border: 1px solid var(--border); }
+
+.uptodate { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.22); border-radius: 12px; margin-bottom: 28px; }
+.uptodate-icon { width: 28px; height: 28px; border-radius: 50%; background: rgba(16,185,129,0.2); color: #34D399; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.uptodate-title { font-weight: 600; color: var(--text); }
+.uptodate-sub { font-size: 12.5px; color: var(--text-dim); }
+.uptodate-warn { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.25); }
+.uptodate-icon.warn { background: rgba(245,158,11,0.2); color: var(--amber); }
+.uptodate-warn .uptodate-title { color: var(--text); }
+.btn-update-all { margin-left: auto; background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: #1A0D00; border: none; padding: 8px 16px; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 12.5px; cursor: pointer; box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 4px 14px -4px rgba(255,122,0,0.5); }
+.btn-update-all:hover { transform: translateY(-1px); }
+.pill-upd { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+
+.dash-section-label { font-family: var(--ff-mono); font-size: 10.5px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.18em; margin: 24px 0 12px; }
+
+.dash-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.card-left { display: flex; align-items: center; gap: 14px; }
+.app-icon { width: 36px; height: 36px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.card-title { font-weight: 600; font-size: 14.5px; }
+.card-sub { font-family: var(--ff-mono); font-size: 11.5px; color: var(--text-mute); margin-top: 2px; }
+.card-sub .ok { color: #34D399; font-weight: 500; }
+
+.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.dash-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.ct-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; transition: border-color 0.2s, transform 0.2s; }
+.ct-card:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+.ct-card.dim { opacity: 0.55; }
+.ct-ico { width: 30px; height: 30px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(160deg, #3B82F6, #1D4ED8); flex-shrink: 0; font-size: 14px; }
+.ct-ico.vm { background: linear-gradient(160deg, #A855F7, #7E22CE); }
+.ct-card > div:nth-child(2) { flex: 1; min-width: 0; }
+.ct-card .card-title { font-size: 13.5px; }
+.ct-card .card-sub { font-size: 10.5px; }
+
+.dash-footer { text-align: center; color: var(--text-mute); font-size: 11px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+/* ============ DIAGRAM ============ */
+.diagram { display: grid; grid-template-columns: 1fr auto 1.2fr auto 1fr; align-items: center; gap: 20px; padding: 40px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); position: relative; overflow: hidden; }
+.diagram::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(255,122,0,0.08), transparent 60%); pointer-events: none; }
+.diag-col { display: flex; flex-direction: column; gap: 12px; position: relative; }
+.diag-col.center { align-items: center; }
+.diag-node { padding: 20px 22px; background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 12px; min-width: 200px; position: relative; }
+.diag-node.hive { border-color: rgba(255,122,0,0.4); box-shadow: 0 0 60px -10px rgba(255,122,0,0.35); background: linear-gradient(180deg, rgba(255,122,0,0.05), var(--surface-2)); }
+.diag-label { font-family: var(--ff-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--text-mute); margin-bottom: 8px; }
+.diag-node.hive .diag-label { color: var(--accent); }
+.diag-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.diag-title img { width: 20px; height: 20px; }
+.diag-meta { color: var(--text-mute); font-size: 11.5px; }
+.diag-wire { position: relative; height: 2px; width: 80px; background: linear-gradient(90deg, var(--border-strong), var(--accent), var(--border-strong)); }
+.diag-wire::before, .diag-wire::after { content: ""; position: absolute; top: 50%; transform: translateY(-50%); width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.diag-wire::before { left: 0; animation: wireFlow 2.5s ease-in-out infinite; }
+.diag-wire::after { right: 0; animation: wireFlow 2.5s ease-in-out infinite 1.25s; }
+body.no-anim .diag-wire::before, body.no-anim .diag-wire::after { animation: none; }
+@keyframes wireFlow { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+.wire-label { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text-mute); white-space: nowrap; }
+.diag-branch { margin-top: 8px; padding: 12px 14px; background: rgba(255,255,255,0.025); border: 1px dashed var(--border); border-radius: 10px; }
+.diag-sub { font-size: 12px; color: var(--text-dim); padding: 4px 0; }
+
+/* ============ TABS ============ */
+.tabs { max-width: 900px; margin: 0 auto; }
+.tab-list { display: flex; gap: 4px; padding: 5px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; width: fit-content; margin-left: auto; margin-right: auto; flex-wrap: wrap; }
+.tab { background: transparent; border: none; color: var(--text-dim); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13.5px; font-weight: 500; transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px; }
+.tab:hover { color: var(--text); }
+.tab.active { background: var(--surface-2); color: var(--text); box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset; }
+.badge-rec, .badge-warn { font-family: var(--ff-mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+.badge-rec { background: rgba(16,185,129,0.15); color: #34D399; }
+.badge-warn { background: rgba(244,63,94,0.15); color: #FB7185; }
+
+.tab-panel { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px 32px; }
+.tab-panel.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.panel-lede { color: var(--text-dim); font-size: 15px; margin: 0 0 18px; }
+.panel-foot { color: var(--text-mute); margin-top: 16px; font-size: 12px; }
+.panel-foot b { color: var(--accent); font-weight: 600; }
+
+.code { position: relative; background: #06070A; border: 1px solid var(--border); border-radius: 10px; padding: 18px 64px 18px 20px; margin: 0; overflow-x: auto; font-family: var(--ff-mono); font-size: 12.5px; line-height: 1.7; color: #D8DCE3; }
+.step-block { margin-top: 18px; }
+.step-block:first-of-type { margin-top: 0; }
+.step-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.step-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,122,0,0.12); color: var(--accent); border: 1px solid rgba(255,122,0,0.3); display: inline-flex; align-items: center; justify-content: center; font-family: var(--ff-mono); font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.step-title { font-size: 13px; color: var(--text); font-weight: 500; }
+.code code { font-family: inherit; white-space: pre; }
+.code .copy-btn { position: absolute; top: 12px; right: 12px; }
+
+/* ============ SPLIT ============ */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.split-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 32px 28px; }
+.split-card.warn { border-color: rgba(245,158,11,0.25); background: linear-gradient(180deg, rgba(245,158,11,0.04), var(--surface)); }
+.split-card h3 { font-size: 22px; font-weight: 600; margin: 0 0 16px; letter-spacing: -0.01em; }
+.req-table { width: 100%; border-collapse: collapse; }
+.req-table td { padding: 12px 0; font-size: 14px; border-top: 1px solid var(--border); }
+.req-table tr:first-child td { border-top: none; }
+.req-table td:first-child { font-family: var(--ff-mono); font-size: 12px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.1em; width: 140px; }
+.req-table td:last-child { color: var(--text-dim); }
+
+.lim-list { margin: 0; padding: 0; list-style: none; }
+.lim-list li { padding: 12px 0 12px 24px; font-size: 14px; color: var(--text-dim); border-top: 1px solid var(--border); position: relative; }
+.lim-list li:first-child { border-top: none; }
+.lim-list li::before { content: "!"; position: absolute; left: 0; top: 12px; width: 16px; height: 16px; font-family: var(--ff-mono); font-size: 10px; font-weight: 700; background: rgba(245,158,11,0.15); color: var(--amber); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+.lim-list li b { color: var(--text); font-weight: 600; }
+
+/* ============ FAQ ============ */
+.faq { max-width: 820px; margin: 0 auto; }
+.faq details { border-bottom: 1px solid var(--border); padding: 22px 0; }
+.faq details[open] summary { color: var(--accent); }
+.faq summary { cursor: pointer; font-size: 17px; font-weight: 500; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 20px; transition: color 0.15s; }
+.faq summary::after { content: "+"; font-family: var(--ff-mono); font-size: 22px; color: var(--text-mute); transition: transform 0.2s; }
+.faq details[open] summary::after { content: "−"; color: var(--accent); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq p { color: var(--text-dim); font-size: 15px; line-height: 1.65; margin: 14px 0 0; }
+
+/* ============ CTA STRIP ============ */
+.cta-strip { margin: 80px 28px; max-width: 1200px; margin-left: auto; margin-right: auto; padding: 0 28px; }
+.cta-inner { background: linear-gradient(135deg, rgba(255,122,0,0.12), rgba(255,122,0,0.04) 40%, rgba(0,0,0,0) 70%); border: 1px solid rgba(255,122,0,0.25); border-radius: var(--radius-lg); padding: 56px 56px; display: flex; align-items: center; justify-content: space-between; gap: 40px; position: relative; overflow: hidden; }
+.cta-inner::before { content: ""; position: absolute; top: -50%; right: -20%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,122,0,0.2), transparent 60%); filter: blur(40px); }
+.cta-copy { position: relative; }
+.cta-copy h2 { font-size: clamp(26px, 3vw, 38px); line-height: 1.1; margin: 0 0 8px; letter-spacing: -0.015em; }
+.cta-copy p { color: var(--text-dim); margin: 0; font-size: 16px; }
+.cta-row { display: flex; gap: 12px; position: relative; flex-shrink: 0; }
+
+/* ============ FOOTER ============ */
+.footer { border-top: 1px solid var(--border); padding: 64px 28px 32px; max-width: 1200px; margin: 0 auto; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+.footer-brand { display: flex; align-items: center; gap: 14px; }
+.footer-brand .brand-mark { width: 36px; height: 36px; }
+.footer-brand .brand-name { font-size: 17px; }
+.footer-brand .small { font-size: 11px; color: var(--text-mute); margin-top: 2px; }
+.footer-head { font-family: var(--ff-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-mute); margin-bottom: 16px; }
+.footer a { display: block; color: var(--text-dim); padding: 5px 0; font-size: 14px; transition: color 0.15s; }
+.footer a:hover { color: var(--accent); }
+.footer-bottom { padding-top: 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; color: var(--text-mute); font-size: 12px; flex-wrap: wrap; }
+.footer-bottom a { display: inline; color: var(--accent); padding: 0; }
+.footer-bottom .sep { opacity: 0.5; }
+
+/* ============ TWEAKS PANEL ============ */
+.tweaks { position: fixed; right: 20px; bottom: 20px; width: 320px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 14px; box-shadow: 0 20px 60px -10px rgba(0,0,0,0.8); z-index: 100; overflow: hidden; }
+.tweaks-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 14px; }
+.tweaks-close { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 22px; line-height: 1; padding: 0 4px; }
+.tweaks-body { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
+.tw-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; }
+.tw-row > span { color: var(--text-dim); }
+.tw-swatches { display: flex; gap: 6px; }
+.sw { width: 22px; height: 22px; border-radius: 50%; background: var(--c); border: 2px solid transparent; cursor: pointer; padding: 0; transition: transform 0.1s; }
+.sw:hover { transform: scale(1.1); }
+.sw.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--c); }
+.tw-seg { display: flex; gap: 2px; padding: 2px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; }
+.tw-seg button { background: transparent; border: none; color: var(--text-dim); padding: 5px 10px; font-size: 11.5px; border-radius: 6px; cursor: pointer; font-family: inherit; }
+.tw-seg button.active { background: var(--surface); color: var(--text); }
+input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 960px) {
+  .hero { grid-template-columns: 1fr; padding: 72px 24px 40px; gap: 40px; text-align: left; }
+  .hero-art { order: -1; }
+  .nav-links { display: none; }
+  .nav { padding: 12px 20px; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .dash-grid { grid-template-columns: 1fr 1fr; }
+  .diagram { grid-template-columns: 1fr; gap: 24px; padding: 28px; }
+  .diag-wire { display: none; }
+  .split { grid-template-columns: 1fr; }
+  .cta-inner { flex-direction: column; align-items: flex-start; padding: 40px 32px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .section { padding: 80px 24px; }
+  .tweaks { left: 20px; right: 20px; width: auto; }
+}
+@media (max-width: 640px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash { padding: 20px 20px 24px; }
+  .hero h1 { font-size: 40px; }
+  .hive-animated { width: 220px; height: 220px; }
+  .hive-ring.r1 { width: 260px; height: 260px; }
+  .hive-ring.r2 { width: 320px; height: 320px; }
+  .hive-ring.r3 { width: 380px; height: 380px; }
+  .hero-stats { gap: 14px; padding: 10px 16px; font-size: 12px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .cta-inner { padding: 32px 24px; }
+  .code { padding: 14px 14px 14px 16px; font-size: 11.5px; }
+  .code .copy-btn { position: static; margin-top: 12px; }
+  .tab-list { width: 100%; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
+}
+
+</style>
+</head>
+<body>
+  <!-- Tweak defaults persisted by host -->
+  <script>
+  window.__TWEAKS__ = /*EDITMODE-BEGIN*/{
+    "accent": "#FF7A00",
+    "accentGlow": "#ff941a",
+    "heroLayout": "split",
+    "density": "comfortable",
+    "animatedLogo": true,
+    "showVersionBadge": true,
+    "grain": true
+  }/*EDITMODE-END*/;
+  </script>
+
+
+  <!-- background grain + vignette -->
+  <div class="bg-grain" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <!-- NAV -->
+  <header class="nav">
+    <a href="#top" class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9InByZW1pdW0tc2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMiIgZHk9IjUiIHN0ZERldmlhdGlvbj0iNCIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuNiI+PC9mZURyb3BTaGFkb3c+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIxIiBzdGREZXZpYXRpb249IjIiIGZsb29kLWNvbG9yPSIjMDAwMDAwIiBmbG9vZC1vcGFjaXR5PSIwLjQiPjwvZmVEcm9wU2hhZG93PgogICAgPC9maWx0ZXI+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im9yYW5nZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjlEMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIyMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJkYXJrLWdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzU1NUE2NiI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjE1JSIgc3RvcC1jb2xvcj0iIzM2M0E0NCI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxQjFEMjIiPjwvc3RvcD4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJyaWRnZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPHBvbHlnb24gaWQ9ImRhcmstaGV4IiBwb2ludHM9IjAsLTM0IDI5LjQ0NSwtMTcgMjkuNDQ1LDE3IDAsMzQgLTI5LjQ0NSwxNyAtMjkuNDQ1LC0xNyIgZmlsbD0idXJsKCNkYXJrLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8cG9seWdvbiBpZD0iY2VudGVyLWhleCIgcG9pbnRzPSIwLC0zNCAyOS40NDUsLTE3IDI5LjQ0NSwxNyAwLDM0IC0yOS40NDUsMTcgLTI5LjQ0NSwtMTciIGZpbGw9InVybCgjb3JhbmdlLWdyYWQpIiBzdHJva2U9IiNGRjhDMUEiIHN0cm9rZS13aWR0aD0iMS41IiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8ZyBpZD0iYnJpZGdlIj4KICAgICAgPHJlY3QgeD0iLTYiIHk9Ii0xMjAiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMjAiIGZpbGw9InVybCgjYnJpZGdlLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3JlY3Q+CiAgICA8L2c+CiAgPC9kZWZzPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDApIj4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMjUuMjgsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5MC42NCwgMzE2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjIxLjM2LCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxODYuNzIsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyMS4zNiwgMTk2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjkwLjY0LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzOTQuNTYsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyNS4yOCwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTg2LjcyLCAzNzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTcuNDQsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4Ni43MiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzI1LjI4LCAxMzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgwKSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNicmlkZ2UiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSByb3RhdGUoNjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxMjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxODApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgyNDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgzMDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTkuOTIsIDE5NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzU5LjkyLCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTIuMDgsIDMxNikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTUyLjA4LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSI+PC91c2U+CiAgPC9nPgo8L3N2Zz4=" alt="" />
+      </span>
+      <span class="brand-name">Proxmox Hive</span>
+      <span class="brand-version" id="version-badge" data-live-version title="Fetched live from GitHub releases">v…</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#install">Install</a>
+      <a href="#ssh">SSH setup</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="ghost" href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.72-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.09-.12-.3-.52-1.47.11-3.06 0 0 .98-.31 3.2 1.18a11 11 0 0 1 5.82 0c2.21-1.49 3.19-1.18 3.19-1.18.63 1.59.23 2.76.11 3.06.74.8 1.19 1.83 1.19 3.09 0 4.43-2.7 5.4-5.27 5.69.41.35.78 1.05.78 2.13v3.16c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+        GitHub
+      </a>
+      <a class="cta" href="#install">Quick install</a>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="top" data-layout="split">
+    <div class="hero-copy">
+      <div class="status-pill" title="Fetched live from GitHub releases">
+        <span class="dot"></span>
+        <span class="mono" id="hero-release" data-live-release>loading release…</span>
+      </div>
+      <h1>One dashboard for every <span class="accent">Proxmox update</span>.</h1>
+      <p class="lede">
+        Monitor and apply updates across your Proxmox nodes, LXC containers,
+        and VMs - from a single self-hosted interface. Scheduled checks, live
+        terminal, webhooks. Yours to run, yours to own.
+      </p>
+      <div class="hero-cta-row">
+        <a class="cta cta-lg" href="#install">
+          Quick install
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </a>
+        <a class="ghost ghost-lg" href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+      <div class="hero-install">
+        <span class="hero-install-label">one-liner</span>
+        <code id="hero-oneliner">bash -c "$(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"</code>
+        <button class="copy-btn" data-copy="#hero-oneliner" aria-label="Copy install command">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>Copy</span>
+        </button>
+      </div>
+      <div class="hero-meta">
+        <span class="mono">MIT-adjacent · Non-commercial</span>
+        <span class="sep">·</span>
+        <span class="mono">Docker ready</span>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="hive-animated" id="hive-animated" aria-hidden="true">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9InByZW1pdW0tc2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMiIgZHk9IjUiIHN0ZERldmlhdGlvbj0iNCIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuNiI+PC9mZURyb3BTaGFkb3c+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIxIiBzdGREZXZpYXRpb249IjIiIGZsb29kLWNvbG9yPSIjMDAwMDAwIiBmbG9vZC1vcGFjaXR5PSIwLjQiPjwvZmVEcm9wU2hhZG93PgogICAgPC9maWx0ZXI+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im9yYW5nZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjlEMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIyMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJkYXJrLWdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzU1NUE2NiI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjE1JSIgc3RvcC1jb2xvcj0iIzM2M0E0NCI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxQjFEMjIiPjwvc3RvcD4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJyaWRnZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPHBvbHlnb24gaWQ9ImRhcmstaGV4IiBwb2ludHM9IjAsLTM0IDI5LjQ0NSwtMTcgMjkuNDQ1LDE3IDAsMzQgLTI5LjQ0NSwxNyAtMjkuNDQ1LC0xNyIgZmlsbD0idXJsKCNkYXJrLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8cG9seWdvbiBpZD0iY2VudGVyLWhleCIgcG9pbnRzPSIwLC0zNCAyOS40NDUsLTE3IDI5LjQ0NSwxNyAwLDM0IC0yOS40NDUsMTcgLTI5LjQ0NSwtMTciIGZpbGw9InVybCgjb3JhbmdlLWdyYWQpIiBzdHJva2U9IiNGRjhDMUEiIHN0cm9rZS13aWR0aD0iMS41IiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8ZyBpZD0iYnJpZGdlIj4KICAgICAgPHJlY3QgeD0iLTYiIHk9Ii0xMjAiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMjAiIGZpbGw9InVybCgjYnJpZGdlLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3JlY3Q+CiAgICA8L2c+CiAgPC9kZWZzPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDApIj4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMjUuMjgsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5MC42NCwgMzE2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjIxLjM2LCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxODYuNzIsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyMS4zNiwgMTk2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjkwLjY0LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzOTQuNTYsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyNS4yOCwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTg2LjcyLCAzNzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTcuNDQsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4Ni43MiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzI1LjI4LCAxMzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgwKSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNicmlkZ2UiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSByb3RhdGUoNjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxMjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxODApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgyNDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgzMDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTkuOTIsIDE5NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzU5LjkyLCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTIuMDgsIDMxNikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTUyLjA4LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSI+PC91c2U+CiAgPC9nPgo8L3N2Zz4=" alt="" />
+        <div class="hive-ring r1"></div>
+        <div class="hive-ring r2"></div>
+        <div class="hive-ring r3"></div>
+        <div class="hive-scan"></div>
+      </div>
+      <!-- hero-stats removed per feedback -->
+    </div>
+  </section>
+
+  <!-- MARQUEE / TRUST BAR -->
+  <section class="marquee" aria-label="Supported infrastructure">
+    <div class="marquee-track">
+      <span>Proxmox VE</span><span>·</span>
+      <span>LXC</span><span>·</span>
+      <span>QEMU VMs</span><span>·</span>
+      <span>Debian / Ubuntu guests</span><span>·</span>
+      <span>Plex · Jellyfin · Sonarr · Radarr</span><span>·</span>
+      <span>Discord · Slack · Teams webhooks</span><span>·</span>
+      <span>Docker</span><span>·</span>
+      <span>Proxmox VE</span><span>·</span>
+      <span>LXC</span><span>·</span>
+      <span>QEMU VMs</span><span>·</span>
+      <span>Debian / Ubuntu guests</span><span>·</span>
+      <span>Plex · Jellyfin · Sonarr · Radarr</span><span>·</span>
+      <span>Discord · Slack · Teams webhooks</span><span>·</span>
+      <span>Docker</span>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="section-head">
+      <span class="eyebrow">Features</span>
+      <h2>Everything you need. Nothing to babysit.</h2>
+      <p class="section-sub">Built for homelabbers who run multiple Proxmox hosts and got tired of SSHing into every container to run <span class="mono">apt update</span>.</p>
+    </div>
+
+    <div class="features-grid">
+      <article class="feature" data-accent="orange">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <h3>Multi-site</h3>
+        <p>Manage every Proxmox host from one dashboard. Add a site with a name, IP, and SSH key. Switch in a tap.</p>
+      </article>
+
+      <article class="feature" data-accent="orange">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+        <h3>Node updates</h3>
+        <p>Detects available apt packages on the Proxmox host itself. See what’s pending before you touch a shell.</p>
+      </article>
+
+      <article class="feature" data-accent="cyan">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <h3>LXC updates</h3>
+        <p>Tracks package updates inside every container via <span class="mono">pct exec</span>. Running containers only - offline ones skip politely.</p>
+      </article>
+
+      <article class="feature" data-accent="violet">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>VM updates</h3>
+        <p>Detects pending packages via QEMU guest agent. Debian- and Ubuntu-based guests covered out of the box.</p>
+      </article>
+
+      <article class="feature" data-accent="orange">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <h3>Scheduled checks</h3>
+        <p>Automatic scans at 08:00 and 20:00 - configurable. Group targets and stagger their update windows.</p>
+      </article>
+
+      <article class="feature" data-accent="cyan">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        </div>
+        <h3>Live terminal</h3>
+        <p>Watch <span class="mono">apt-get</span> stream straight back over WebSocket. No more “did that actually run?”</p>
+      </article>
+
+      <article class="feature" data-accent="violet">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <h3>Notifications</h3>
+        <p>Discord, Slack, Microsoft Teams, or any generic webhook. Pick which alerts each channel receives.</p>
+      </article>
+
+      <article class="feature" data-accent="orange">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        </div>
+        <h3>App updates</h3>
+        <p>Not just apt. Hive spots new releases of Plex, Jellyfin, Sonarr, Radarr, and friends - right in the grid.</p>
+      </article>
+
+      <article class="feature" data-accent="cyan">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11V7a3 3 0 0 1 6 0v4"/><rect x="4" y="11" width="16" height="10" rx="2"/></svg>
+        </div>
+        <h3>Setup wizard</h3>
+        <p>First-run walks you through site, SSH, schedule, and channels. Up and running in under five minutes.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- DASHBOARD RECREATION -->
+  <section class="section section-dashboard" id="dashboard">
+    <div class="section-head">
+      <span class="eyebrow">The dashboard</span>
+      <h2>What you actually see.</h2>
+      <p class="section-sub">An illustrative recreation of the main view - container names and statuses are examples, not live data.</p>
+    </div>
+
+    <div class="browser-frame">
+      <div class="browser-chrome">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <div class="browser-url"><span class="mono">https://hive.homelab.local</span></div>
+        <div class="preview-badge" title="Illustrative mockup - not live data"><span class="pv-dot"></span>Preview · illustrative</div>
+      </div>
+
+      <div class="dash">
+        <div class="dash-topbar">
+          <div class="dash-site">
+            <span class="site-mark"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9InByZW1pdW0tc2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMiIgZHk9IjUiIHN0ZERldmlhdGlvbj0iNCIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuNiI+PC9mZURyb3BTaGFkb3c+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIxIiBzdGREZXZpYXRpb249IjIiIGZsb29kLWNvbG9yPSIjMDAwMDAwIiBmbG9vZC1vcGFjaXR5PSIwLjQiPjwvZmVEcm9wU2hhZG93PgogICAgPC9maWx0ZXI+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im9yYW5nZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjlEMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIyMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJkYXJrLWdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzU1NUE2NiI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjE1JSIgc3RvcC1jb2xvcj0iIzM2M0E0NCI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxQjFEMjIiPjwvc3RvcD4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJyaWRnZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPHBvbHlnb24gaWQ9ImRhcmstaGV4IiBwb2ludHM9IjAsLTM0IDI5LjQ0NSwtMTcgMjkuNDQ1LDE3IDAsMzQgLTI5LjQ0NSwxNyAtMjkuNDQ1LC0xNyIgZmlsbD0idXJsKCNkYXJrLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8cG9seWdvbiBpZD0iY2VudGVyLWhleCIgcG9pbnRzPSIwLC0zNCAyOS40NDUsLTE3IDI5LjQ0NSwxNyAwLDM0IC0yOS40NDUsMTcgLTI5LjQ0NSwtMTciIGZpbGw9InVybCgjb3JhbmdlLWdyYWQpIiBzdHJva2U9IiNGRjhDMUEiIHN0cm9rZS13aWR0aD0iMS41IiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8ZyBpZD0iYnJpZGdlIj4KICAgICAgPHJlY3QgeD0iLTYiIHk9Ii0xMjAiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMjAiIGZpbGw9InVybCgjYnJpZGdlLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3JlY3Q+CiAgICA8L2c+CiAgPC9kZWZzPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDApIj4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMjUuMjgsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5MC42NCwgMzE2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjIxLjM2LCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxODYuNzIsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyMS4zNiwgMTk2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjkwLjY0LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzOTQuNTYsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyNS4yOCwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTg2LjcyLCAzNzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTcuNDQsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4Ni43MiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzI1LjI4LCAxMzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgwKSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNicmlkZ2UiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSByb3RhdGUoNjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxMjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxODApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgyNDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgzMDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTkuOTIsIDE5NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzU5LjkyLCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTIuMDgsIDMxNikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTUyLjA4LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSI+PC91c2U+CiAgPC9nPgo8L3N2Zz4=" alt="" /></span>
+            <span class="site-name">homelab-01</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="dash-actions">
+            <span class="pill pill-ok"><span class="dot"></span>3h ago</span>
+            <button class="btn-chk">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Check now
+            </button>
+            <button class="btn-settings">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              Settings
+            </button>
+          </div>
+        </div>
+
+        <div class="uptodate uptodate-warn">
+          <span class="uptodate-icon warn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+          </span>
+          <div>
+            <div class="uptodate-title">6 updates available</div>
+            <div class="uptodate-sub">Next check: 08:00 and 20:00</div>
+          </div>
+          <button class="btn-update-all">Update all</button>
+        </div>
+
+        <div class="dash-section-label">NODE</div>
+        <div class="dash-card node-card">
+          <div class="card-left">
+            <span class="app-icon" style="background:linear-gradient(160deg,#FF9D00,#CC5200)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="6" rx="1"/><rect x="3" y="11" width="18" height="6" rx="1"/><line x1="7" y1="6" x2="7.01" y2="6"/><line x1="7" y1="14" x2="7.01" y2="14"/></svg>
+            </span>
+            <div>
+              <div class="card-title">Proxmox Node</div>
+              <div class="card-sub">Host OS packages</div>
+            </div>
+          </div>
+          <span class="pill pill-ok">Up to date</span>
+        </div>
+
+        <div class="dash-section-label">LXC CONTAINERS</div>
+        <div class="dash-grid">
+          <!-- 12 containers matching the screenshot roughly -->
+          <div class="ct-card"><span class="ct-ico">📦</span><div><div class="card-title">web-server</div><div class="card-sub">CT 201 · <b class="ok">running</b></div></div><span class="pill pill-upd">2 updates</span></div>
+          <div class="ct-card"><span class="ct-ico">📦</span><div><div class="card-title">db-primary</div><div class="card-sub">CT 202 · <b class="ok">running</b></div></div><span class="pill pill-ok">Up to date</span></div>
+          <div class="ct-card"><span class="ct-ico">📦</span><div><div class="card-title">reverse-proxy</div><div class="card-sub">CT 203 · <b class="ok">running</b></div></div><span class="pill pill-upd">4 updates</span></div>
+          <div class="ct-card"><span class="ct-ico">📦</span><div><div class="card-title">monitoring</div><div class="card-sub">CT 204 · <b class="ok">running</b></div></div><span class="pill pill-ok">Up to date</span></div>
+          <div class="ct-card"><span class="ct-ico">📦</span><div><div class="card-title">backup-agent</div><div class="card-sub">CT 205 · <b class="ok">running</b></div></div><span class="pill pill-ok">Up to date</span></div>
+          <div class="ct-card dim"><span class="ct-ico">📦</span><div><div class="card-title">staging-env</div><div class="card-sub">CT 206 · stopped</div></div><span class="pill pill-muted">Offline</span></div>
+        </div>
+
+        <div class="dash-section-label">LINUX VMS</div>
+        <div class="dash-grid cols-3">
+          <div class="ct-card"><span class="ct-ico vm">🖥️</span><div><div class="card-title">ubuntu-dev</div><div class="card-sub">VM 301 · <b class="ok">running</b></div></div><span class="pill pill-ok">Up to date</span></div>
+          <div class="ct-card dim"><span class="ct-ico vm">🖥️</span><div><div class="card-title">test-vm</div><div class="card-sub">VM 302 · stopped</div></div><span class="pill pill-muted">Offline</span></div>
+        </div>
+
+        <div class="dash-footer"><span class="mono" data-live-footer>Proxmox Hive · GitHub</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>One SSH key. Everything visible.</h2>
+      <p class="section-sub">Hive runs as a Docker container next to your infrastructure and talks to Proxmox over SSH. No agents inside containers, no cloud round-trips.</p>
+    </div>
+
+    <div class="diagram">
+      <div class="diag-col">
+        <div class="diag-node you">
+          <div class="diag-label">YOU</div>
+          <div class="diag-title">Browser</div>
+          <div class="diag-meta mono">:3000</div>
+        </div>
+      </div>
+      <div class="diag-wire"><span class="wire-label mono">HTTP</span></div>
+      <div class="diag-col center">
+        <div class="diag-node hive">
+          <div class="diag-label">DOCKER HOST</div>
+          <div class="diag-title"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9InByZW1pdW0tc2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMiIgZHk9IjUiIHN0ZERldmlhdGlvbj0iNCIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuNiI+PC9mZURyb3BTaGFkb3c+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIxIiBzdGREZXZpYXRpb249IjIiIGZsb29kLWNvbG9yPSIjMDAwMDAwIiBmbG9vZC1vcGFjaXR5PSIwLjQiPjwvZmVEcm9wU2hhZG93PgogICAgPC9maWx0ZXI+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im9yYW5nZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjlEMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIyMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJkYXJrLWdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzU1NUE2NiI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjE1JSIgc3RvcC1jb2xvcj0iIzM2M0E0NCI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxQjFEMjIiPjwvc3RvcD4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJyaWRnZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPHBvbHlnb24gaWQ9ImRhcmstaGV4IiBwb2ludHM9IjAsLTM0IDI5LjQ0NSwtMTcgMjkuNDQ1LDE3IDAsMzQgLTI5LjQ0NSwxNyAtMjkuNDQ1LC0xNyIgZmlsbD0idXJsKCNkYXJrLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8cG9seWdvbiBpZD0iY2VudGVyLWhleCIgcG9pbnRzPSIwLC0zNCAyOS40NDUsLTE3IDI5LjQ0NSwxNyAwLDM0IC0yOS40NDUsMTcgLTI5LjQ0NSwtMTciIGZpbGw9InVybCgjb3JhbmdlLWdyYWQpIiBzdHJva2U9IiNGRjhDMUEiIHN0cm9rZS13aWR0aD0iMS41IiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8ZyBpZD0iYnJpZGdlIj4KICAgICAgPHJlY3QgeD0iLTYiIHk9Ii0xMjAiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMjAiIGZpbGw9InVybCgjYnJpZGdlLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3JlY3Q+CiAgICA8L2c+CiAgPC9kZWZzPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDApIj4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMjUuMjgsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5MC42NCwgMzE2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjIxLjM2LCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxODYuNzIsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyMS4zNiwgMTk2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjkwLjY0LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzOTQuNTYsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyNS4yOCwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTg2LjcyLCAzNzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTcuNDQsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4Ni43MiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzI1LjI4LCAxMzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgwKSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNicmlkZ2UiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSByb3RhdGUoNjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxMjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxODApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgyNDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgzMDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTkuOTIsIDE5NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzU5LjkyLCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTIuMDgsIDMxNikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTUyLjA4LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSI+PC91c2U+CiAgPC9nPgo8L3N2Zz4=" alt=""/>Proxmox Hive</div>
+          <div class="diag-meta mono">scheduler · websocket · webhooks</div>
+        </div>
+      </div>
+      <div class="diag-wire"><span class="wire-label mono">SSH · key</span></div>
+      <div class="diag-col">
+        <div class="diag-node pve">
+          <div class="diag-label">PROXMOX VE</div>
+          <div class="diag-title">Node</div>
+          <div class="diag-meta mono">apt · pct · qm</div>
+        </div>
+        <div class="diag-branch">
+          <div class="diag-sub">LXC · <span class="mono">pct exec</span></div>
+          <div class="diag-sub">VM · <span class="mono">qemu-guest-agent</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="section" id="install">
+    <div class="section-head">
+      <span class="eyebrow">Installation</span>
+      <h2>Up in under five minutes.</h2>
+      <p class="section-sub">Three ways to run it. The automatic installer is the one most people want.</p>
+    </div>
+
+    <div class="tabs" data-tabs="install">
+      <div class="tab-list" role="tablist">
+        <button class="tab active" data-tab="auto" role="tab">Automatic</button>
+        <button class="tab" data-tab="lxc" role="tab">New LXC</button>
+        <button class="tab" data-tab="manual" role="tab">Manual (Compose)</button>
+      </div>
+
+      <div class="tab-panel active" data-panel="auto">
+        <p class="panel-lede">Run on your Proxmox node. The installer detects what you have and asks once whether to drop Hive into a dedicated LXC or install directly on the node.</p>
+        <pre class="code"><code id="code-auto">bash -c "$(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"</code><button class="copy-btn" data-copy="#code-auto">Copy</button></pre>
+        <p class="panel-foot mono">→ opens http://&lt;ip&gt;:3000 · setup wizard handles the rest</p>
+      </div>
+
+      <div class="tab-panel" data-panel="lxc">
+        <p class="panel-lede">Recommended. Creates a Debian 12 container, installs Docker and Hive inside it, configures console auto-login.</p>
+        <pre class="code"><code id="code-lxc"># on the Proxmox node:
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"
+
+# pick:  [1] New LXC container</code><button class="copy-btn" data-copy="#code-lxc">Copy</button></pre>
+        <p class="panel-foot mono">→ dedicated container · isolated from host · auto-login on console</p>
+      </div>
+
+      <div class="tab-panel" data-panel="manual">
+        <p class="panel-lede">You already have a Docker host. Clone and <span class="mono">docker compose up</span>.</p>
+        <pre class="code"><code id="code-manual">git clone https://github.com/macokay/proxmox-hive.git
+cd proxmox-hive
+docker compose up -d</code><button class="copy-btn" data-copy="#code-manual">Copy</button></pre>
+        <p class="panel-foot mono">→ open http://&lt;your-server&gt;:3000 and run the setup wizard</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SSH -->
+  <section class="section" id="ssh">
+    <div class="section-head">
+      <span class="eyebrow">SSH access</span>
+      <h2>Pick how Hive reaches Proxmox.</h2>
+      <p class="section-sub">Run these in the Proxmox <span class="mono">Shell</span> tab or over <span class="mono">ssh root@PROXMOX-IP</span>. Option A is the recommended path.</p>
+    </div>
+
+    <div class="tabs" data-tabs="ssh">
+      <div class="tab-list" role="tablist">
+        <button class="tab active" data-tab="a" role="tab"><span class="badge-rec">Recommended</span>A · Restricted user + key</button>
+        <button class="tab" data-tab="b" role="tab">B · Root + SSH key</button>
+        <button class="tab" data-tab="c" role="tab"><span class="badge-warn">Not recommended</span>C · Password</button>
+      </div>
+
+      <div class="tab-panel active" data-panel="a">
+        <p class="panel-lede">A dedicated low-privilege user. SSH key only. Limits blast radius if credentials ever leak.</p>
+        <div class="step-block">
+          <div class="step-head"><span class="step-num">1</span><span class="step-title">Create user + restricted sudo</span></div>
+          <pre class="code"><code id="code-a1">apt install sudo -y
+adduser pvedash --disabled-password --gecos ""
+echo "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash
+chmod 440 /etc/sudoers.d/pvedash</code><button class="copy-btn" data-copy="#code-a1">Copy</button></pre>
+        </div>
+        <div class="step-block">
+          <div class="step-head"><span class="step-num">2</span><span class="step-title">Generate &amp; install SSH key</span></div>
+          <pre class="code"><code id="code-a2">ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""
+mkdir -p /home/pvedash/.ssh
+cat ~/.ssh/pvedash.pub &gt;&gt; /home/pvedash/.ssh/authorized_keys
+chmod 700 /home/pvedash/.ssh &amp;&amp; chmod 600 /home/pvedash/.ssh/authorized_keys
+chown -R pvedash:pvedash /home/pvedash/.ssh</code><button class="copy-btn" data-copy="#code-a2">Copy</button></pre>
+        </div>
+        <div class="step-block">
+          <div class="step-head"><span class="step-num">3</span><span class="step-title">Print private key (paste into Hive)</span></div>
+          <pre class="code"><code id="code-a3">cat ~/.ssh/pvedash</code><button class="copy-btn" data-copy="#code-a3">Copy</button></pre>
+        </div>
+        <p class="panel-foot mono">→ wizard: username <b>pvedash</b>, paste private key</p>
+      </div>
+
+      <div class="tab-panel" data-panel="b">
+        <p class="panel-lede">No extra user. The SSH key has full root access to the host - simpler, heavier blast radius.</p>
+        <div class="step-block">
+          <div class="step-head"><span class="step-num">1</span><span class="step-title">Allow root SSH key login</span></div>
+          <pre class="code"><code id="code-b1">sed -i 's/^#*PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+systemctl reload sshd</code><button class="copy-btn" data-copy="#code-b1">Copy</button></pre>
+        </div>
+        <div class="step-block">
+          <div class="step-head"><span class="step-num">2</span><span class="step-title">Generate &amp; install SSH key</span></div>
+          <pre class="code"><code id="code-b2">ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""
+cat ~/.ssh/pvedash.pub &gt;&gt; ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys</code><button class="copy-btn" data-copy="#code-b2">Copy</button></pre>
+        </div>
+        <div class="step-block">
+          <div class="step-head"><span class="step-num">3</span><span class="step-title">Print private key (paste into Hive)</span></div>
+          <pre class="code"><code id="code-b3">cat ~/.ssh/pvedash</code><button class="copy-btn" data-copy="#code-b3">Copy</button></pre>
+        </div>
+        <p class="panel-foot mono">→ wizard: username <b>root</b>, paste private key</p>
+      </div>
+
+      <div class="tab-panel" data-panel="c">
+        <p class="panel-lede">Password auth. Works, less secure. Switch to Option A as soon as possible.</p>
+        <div class="step-block">
+          <div class="step-head"><span class="step-num">1</span><span class="step-title">Create user with password</span></div>
+          <pre class="code"><code id="code-c1">apt install sudo -y
+adduser pvedash --gecos ""
+echo "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash
+chmod 440 /etc/sudoers.d/pvedash
+passwd pvedash</code><button class="copy-btn" data-copy="#code-c1">Copy</button></pre>
+        </div>
+        <div class="step-block">
+          <div class="step-head"><span class="step-num">2</span><span class="step-title">Enable password authentication</span></div>
+          <pre class="code"><code id="code-c2">sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+systemctl reload sshd</code><button class="copy-btn" data-copy="#code-c2">Copy</button></pre>
+        </div>
+        <p class="panel-foot mono">→ wizard: username <b>pvedash</b>, select <b>Password</b> auth</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUIREMENTS + LIMITATIONS SIDE BY SIDE -->
+  <section class="section section-split">
+    <div class="split">
+      <div class="split-card">
+        <span class="eyebrow">Requirements</span>
+        <h3>What you need</h3>
+        <table class="req-table">
+          <tr><td>Server</td><td>Any host that can run Docker</td></tr>
+          <tr><td>Proxmox</td><td>Reachable via SSH from the Docker host</td></tr>
+          <tr><td>SSH access</td><td>Key-based (recommended) or password</td></tr>
+          <tr><td>Guest agent</td><td>Required on VMs for package detection</td></tr>
+        </table>
+      </div>
+      <div class="split-card warn">
+        <span class="eyebrow">Known limitations</span>
+        <h3>What to expect</h3>
+        <ul class="lim-list">
+          <li>LXC containers must be <b>running</b> to have packages checked or updated.</li>
+          <li>VM package detection requires the <b>QEMU guest agent</b>.</li>
+          <li>One Proxmox node per site.</li>
+          <li>Unrecognised guest OSes show an <span class="mono">Unsupported OS</span> badge and are skipped.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="section-head">
+      <span class="eyebrow">FAQ</span>
+      <h2>Questions people actually ask.</h2>
+    </div>
+    <div class="faq">
+      <details open>
+        <summary>Is this safe to point at my production Proxmox?</summary>
+        <p>Option A (restricted user + SSH key) was designed for exactly this. The <span class="mono">pvedash</span> user can only run <span class="mono">apt</span> and <span class="mono">pct</span> via sudo - nothing else. Start there.</p>
+      </details>
+      <details>
+        <summary>Does it actually apply updates or just show them?</summary>
+        <p>Both. By default it reports what’s pending. When you trigger an update - manually from the UI or automatically via an Auto-Update Group - it runs <span class="mono">apt-get dist-upgrade</span> on the selected targets and streams the log to your browser.</p>
+      </details>
+      <details>
+        <summary>Will it work with Jellyfin / Plex / the *arr stack?</summary>
+        <p>Yes. Hive detects new releases of Plex, Jellyfin, Sonarr, Radarr, Prowlarr, Bazarr, qBittorrent, and more - alongside regular apt packages.</p>
+      </details>
+      <details>
+        <summary>How does self-update work?</summary>
+        <p>When a new release ships, a banner shows up in the dashboard with an <b>Update now</b> button. It pulls the new image and restarts the container. You can also schedule Hive to update itself in an Auto-Update Group.</p>
+      </details>
+      <details>
+        <summary>Where is my configuration stored?</summary>
+        <p>In a Docker volume called <span class="mono">proxmox-hive-data</span>, at <span class="mono">/data/config.json</span> inside the container. Back that up; it’s all the state there is.</p>
+      </details>
+      <details>
+        <summary>What’s the license?</summary>
+        <p>Free for personal, non-commercial use. Attribution appreciated. Commercial use is not permitted. See the repo for full terms.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- CTA STRIP -->
+  <section class="cta-strip">
+    <div class="cta-inner">
+      <div class="cta-copy">
+        <h2>Stop chasing updates. Run Hive.</h2>
+        <p>One command. Five minutes. Every Proxmox host in one place - forever.</p>
+      </div>
+      <div class="cta-row">
+        <a class="cta cta-lg" href="#install">Quick install</a>
+        <a class="ghost ghost-lg" href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <span class="brand-mark"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIj4KICA8ZGVmcz4KICAgIDxmaWx0ZXIgaWQ9InByZW1pdW0tc2hhZG93IiB4PSItMzAlIiB5PSItMzAlIiB3aWR0aD0iMTYwJSIgaGVpZ2h0PSIxNjAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMiIgZHk9IjUiIHN0ZERldmlhdGlvbj0iNCIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuNiI+PC9mZURyb3BTaGFkb3c+CiAgICAgIDxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIxIiBzdGREZXZpYXRpb249IjIiIGZsb29kLWNvbG9yPSIjMDAwMDAwIiBmbG9vZC1vcGFjaXR5PSIwLjQiPjwvZmVEcm9wU2hhZG93PgogICAgPC9maWx0ZXI+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im9yYW5nZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjlEMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIyMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJkYXJrLWdyYWQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzU1NUE2NiI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjE1JSIgc3RvcC1jb2xvcj0iIzM2M0E0NCI+PC9zdG9wPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMxQjFEMjIiPjwvc3RvcD4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJyaWRnZS1ncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjAlIiB5Mj0iMTAwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjdBMDAiPjwvc3RvcD4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQ0M1MjAwIj48L3N0b3A+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPHBvbHlnb24gaWQ9ImRhcmstaGV4IiBwb2ludHM9IjAsLTM0IDI5LjQ0NSwtMTcgMjkuNDQ1LDE3IDAsMzQgLTI5LjQ0NSwxNyAtMjkuNDQ1LC0xNyIgZmlsbD0idXJsKCNkYXJrLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8cG9seWdvbiBpZD0iY2VudGVyLWhleCIgcG9pbnRzPSIwLC0zNCAyOS40NDUsLTE3IDI5LjQ0NSwxNyAwLDM0IC0yOS40NDUsMTcgLTI5LjQ0NSwtMTciIGZpbGw9InVybCgjb3JhbmdlLWdyYWQpIiBzdHJva2U9IiNGRjhDMUEiIHN0cm9rZS13aWR0aD0iMS41IiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3BvbHlnb24+CiAgICA8ZyBpZD0iYnJpZGdlIj4KICAgICAgPHJlY3QgeD0iLTYiIHk9Ii0xMjAiIHdpZHRoPSIxMiIgaGVpZ2h0PSIxMjAiIGZpbGw9InVybCgjYnJpZGdlLWdyYWQpIiBmaWx0ZXI9InVybCgjcHJlbWl1bS1zaGFkb3cpIj48L3JlY3Q+CiAgICA8L2c+CiAgPC9kZWZzPgogIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIDApIj4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMjUuMjgsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI5MC42NCwgMzE2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjIxLjM2LCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxODYuNzIsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIyMS4zNiwgMTk2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjkwLjY0LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzOTQuNTYsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMyNS4yOCwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTg2LjcyLCAzNzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2RhcmstaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMTcuNDQsIDI1NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjZGFyay1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4Ni43MiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNkYXJrLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzI1LjI4LCAxMzYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgwKSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNicmlkZ2UiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSByb3RhdGUoNjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxMjApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgxODApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgyNDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2JyaWRnZSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjU2LCAyNTYpIHJvdGF0ZSgzMDApIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMTM2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNTkuOTIsIDE5NikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzU5LjkyLCAzMTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMzc2KSI+PC91c2U+CiAgICA8dXNlIGhyZWY9IiNjZW50ZXItaGV4IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTIuMDgsIDMxNikiPjwvdXNlPgogICAgPHVzZSBocmVmPSIjY2VudGVyLWhleCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTUyLjA4LCAxOTYpIj48L3VzZT4KICAgIDx1c2UgaHJlZj0iI2NlbnRlci1oZXgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDI1NiwgMjU2KSI+PC91c2U+CiAgPC9nPgo8L3N2Zz4=" alt=""/></span>
+        <div>
+          <div class="brand-name">Proxmox Hive</div>
+          <div class="mono small" data-live-footer-small>© 2026 Mac O Kay</div>
+        </div>
+      </div>
+      <div>
+        <div class="footer-head">Project</div>
+        <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/macokay/proxmox-hive/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/macokay/proxmox-hive/blob/main/README.md" target="_blank" rel="noopener">Documentation</a>
+        <a href="https://github.com/macokay/proxmox-hive/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
+      </div>
+      <div>
+        <div class="footer-head">Install</div>
+        <a href="#install">Automatic</a>
+        <a href="#install">New LXC</a>
+        <a href="#install">Manual (Compose)</a>
+        <a href="#ssh">SSH setup</a>
+      </div>
+      <div>
+        <div class="footer-head">Support</div>
+        <a href="https://www.buymeacoffee.com/macokay" target="_blank" rel="noopener">Buy Me A Coffee</a>
+        <a href="https://github.com/macokay/proxmox-hive/issues" target="_blank" rel="noopener">Report an issue</a>
+        <a href="https://github.com/macokay/proxmox-hive/blob/main/LICENSE" target="_blank" rel="noopener">License</a>
+      </div>
+    </div>
+    <div class="footer-bottom mono">
+      <span>Built by <a href="https://github.com/macokay" target="_blank" rel="noopener">Mac O Kay</a>.</span>
+      <span class="sep">·</span>
+      <span>Non-commercial · attribution appreciated.</span>
+    </div>
+  </footer>
+
+  <!-- Tweaks panel (hidden by default; host toggle shows it) -->
+  <div class="tweaks" id="tweaks" hidden>
+    <div class="tweaks-head">
+      <span>Tweaks</span>
+      <button class="tweaks-close" id="tweaks-close" aria-label="Close tweaks">×</button>
+    </div>
+    <div class="tweaks-body">
+      <label class="tw-row">
+        <span>Accent</span>
+        <div class="tw-swatches" id="tw-accent">
+          <button data-val="#FF7A00" style="--c:#FF7A00" class="sw active" aria-label="Orange"></button>
+          <button data-val="#22D3EE" style="--c:#22D3EE" class="sw" aria-label="Cyan"></button>
+          <button data-val="#A855F7" style="--c:#A855F7" class="sw" aria-label="Violet"></button>
+          <button data-val="#10B981" style="--c:#10B981" class="sw" aria-label="Green"></button>
+          <button data-val="#F43F5E" style="--c:#F43F5E" class="sw" aria-label="Rose"></button>
+        </div>
+      </label>
+      <label class="tw-row">
+        <span>Hero layout</span>
+        <div class="tw-seg" id="tw-hero">
+          <button data-val="split" class="active">Split</button>
+          <button data-val="center">Centered</button>
+          <button data-val="stack">Stacked</button>
+        </div>
+      </label>
+      <label class="tw-row">
+        <span>Density</span>
+        <div class="tw-seg" id="tw-density">
+          <button data-val="comfortable" class="active">Comfortable</button>
+          <button data-val="compact">Compact</button>
+        </div>
+      </label>
+      <label class="tw-row">
+        <span>Animated logo</span>
+        <input type="checkbox" id="tw-anim" checked />
+      </label>
+      <label class="tw-row">
+        <span>Version badge</span>
+        <input type="checkbox" id="tw-badge" checked />
+      </label>
+      <label class="tw-row">
+        <span>Film grain</span>
+        <input type="checkbox" id="tw-grain" checked />
+      </label>
+    </div>
+  </div>
+
+  
+  <script>
+(() => {
+  // ========== Copy buttons ==========
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const targetSel = btn.getAttribute('data-copy');
+      const target = targetSel && document.querySelector(targetSel);
+      if (!target) return;
+      const text = target.textContent.trim();
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (_) {}
+        document.body.removeChild(ta);
+      }
+      const label = btn.querySelector('span');
+      const orig = label ? label.textContent : btn.textContent;
+      btn.classList.add('copied');
+      if (label) label.textContent = 'Copied'; else btn.textContent = 'Copied';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        if (label) label.textContent = orig; else btn.textContent = orig;
+      }, 1400);
+    });
+  });
+
+  // ========== Tabs ==========
+  document.querySelectorAll('.tabs').forEach(group => {
+    const tabs = group.querySelectorAll('.tab');
+    const panels = group.querySelectorAll('.tab-panel');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const key = tab.getAttribute('data-tab');
+        tabs.forEach(t => t.classList.toggle('active', t === tab));
+        panels.forEach(p => p.classList.toggle('active', p.getAttribute('data-panel') === key));
+      });
+    });
+  });
+
+  // ========== Feature scroll-in ==========
+  const io = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('in'), (i % 9) * 60);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.feature').forEach(f => io.observe(f));
+
+  // ========== Parallax on hive logo ==========
+  const hive = document.getElementById('hive-animated');
+  const hiveImg = hive && hive.querySelector('img');
+  let tick = false;
+  window.addEventListener('scroll', () => {
+    if (tick || !hiveImg) return;
+    tick = true;
+    requestAnimationFrame(() => {
+      const y = window.scrollY;
+      if (y < 800) {
+        hiveImg.style.transform = `translateY(${y * 0.08}px) rotate(${y * 0.04}deg)`;
+      }
+      tick = false;
+    });
+  });
+
+  // ========== Live release info from GitHub ==========
+  async function fetchLatestRelease() {
+    try {
+      const r = await fetch('https://api.github.com/repos/macokay/proxmox-hive/releases/latest', { headers: { Accept: 'application/vnd.github+json' } });
+      if (!r.ok) throw new Error('api ' + r.status);
+      const data = await r.json();
+      const tag = data.tag_name || data.name || '';
+      const published = data.published_at ? new Date(data.published_at) : null;
+      return { tag, published };
+    } catch (e) { return null; }
+  }
+  function fmtDate(d) {
+    if (!d) return '';
+    try { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return d.toDateString(); }
+  }
+  (async () => {
+    const release = await fetchLatestRelease();
+    const v = release && release.tag ? (release.tag.startsWith('v') ? release.tag : 'v' + release.tag) : 'v1.0.4';
+    const dateStr = release && release.published ? fmtDate(release.published) : '';
+    document.querySelectorAll('[data-live-version]').forEach(el => { el.textContent = v; });
+    document.querySelectorAll('[data-live-release]').forEach(el => {
+      el.textContent = dateStr ? (v + ' · latest release · ' + dateStr) : (v + ' · latest release');
+    });
+    document.querySelectorAll('[data-live-footer]').forEach(el => { el.textContent = 'Proxmox Hive ' + v + ' · GitHub'; });
+    document.querySelectorAll('[data-live-footer-small]').forEach(el => { el.textContent = v + ' · © 2026 Mac O Kay'; });
+  })();
+
+  // ========== Badge soft pulse ==========
+  const badge = document.getElementById('version-badge');
+  const statuses = [null];
+  let si = 0;
+  // Disable fake rotation; version is now live from GitHub
+  if (false && badge) {
+    setInterval(() => {
+      si = (si + 1) % statuses.length;
+      badge.textContent = statuses[si];
+      badge.style.color = si === 1 ? '#34D399' : '';
+    }, 3800);
+  }
+
+  // ========== TWEAKS ==========
+  const tweaks = window.__TWEAKS__ || {};
+
+  function applyTweaks(t) {
+    const root = document.documentElement;
+    root.style.setProperty('--accent', t.accent);
+    // derive a lighter tint for gradient
+    root.style.setProperty('--accent-2', t.accentGlow || lighten(t.accent, 10));
+    document.body.classList.toggle('no-anim', t.animatedLogo === false);
+    document.body.classList.toggle('hide-version', t.showVersionBadge === false);
+    document.body.classList.toggle('no-grain', t.grain === false);
+    document.body.setAttribute('data-density', t.density || 'comfortable');
+    const hero = document.querySelector('.hero');
+    if (hero) hero.setAttribute('data-layout', t.heroLayout || 'split');
+  }
+  function lighten(hex, pct) {
+    const n = parseInt(hex.slice(1), 16);
+    let r = (n >> 16) + Math.round(255 * pct / 100);
+    let g = ((n >> 8) & 0xff) + Math.round(255 * pct / 100);
+    let b = (n & 0xff) + Math.round(255 * pct / 100);
+    r = Math.min(255, r); g = Math.min(255, g); b = Math.min(255, b);
+    return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+  }
+  applyTweaks(tweaks);
+
+  function save(partial) {
+    Object.assign(tweaks, partial);
+    applyTweaks(tweaks);
+    try {
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: partial }, '*');
+    } catch (e) {}
+  }
+
+  // Hook up tweaks UI
+  document.querySelectorAll('#tw-accent .sw').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tw-accent .sw').forEach(b => b.classList.toggle('active', b === btn));
+      const v = btn.dataset.val;
+      save({ accent: v, accentGlow: lighten(v, 10) });
+    });
+  });
+  document.querySelectorAll('#tw-hero button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tw-hero button').forEach(b => b.classList.toggle('active', b === btn));
+      save({ heroLayout: btn.dataset.val });
+    });
+  });
+  document.querySelectorAll('#tw-density button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#tw-density button').forEach(b => b.classList.toggle('active', b === btn));
+      save({ density: btn.dataset.val });
+    });
+  });
+  const twAnim = document.getElementById('tw-anim');
+  const twBadge = document.getElementById('tw-badge');
+  const twGrain = document.getElementById('tw-grain');
+  if (twAnim) { twAnim.checked = tweaks.animatedLogo !== false; twAnim.addEventListener('change', e => save({ animatedLogo: e.target.checked })); }
+  if (twBadge) { twBadge.checked = tweaks.showVersionBadge !== false; twBadge.addEventListener('change', e => save({ showVersionBadge: e.target.checked })); }
+  if (twGrain) { twGrain.checked = tweaks.grain !== false; twGrain.addEventListener('change', e => save({ grain: e.target.checked })); }
+
+  // sync current state to UI
+  function syncTweaksUI() {
+    document.querySelectorAll('#tw-accent .sw').forEach(b => b.classList.toggle('active', b.dataset.val.toLowerCase() === (tweaks.accent || '').toLowerCase()));
+    document.querySelectorAll('#tw-hero button').forEach(b => b.classList.toggle('active', b.dataset.val === (tweaks.heroLayout || 'split')));
+    document.querySelectorAll('#tw-density button').forEach(b => b.classList.toggle('active', b.dataset.val === (tweaks.density || 'comfortable')));
+  }
+  syncTweaksUI();
+
+  // ========== Host edit-mode protocol ==========
+  const panel = document.getElementById('tweaks');
+  const closeBtn = document.getElementById('tweaks-close');
+  window.addEventListener('message', e => {
+    const d = e.data || {};
+    if (d.type === '__activate_edit_mode') panel.hidden = false;
+    if (d.type === '__deactivate_edit_mode') panel.hidden = true;
+  });
+  closeBtn && closeBtn.addEventListener('click', () => {
+    panel.hidden = true;
+    try { window.parent.postMessage({ type: '__deactivate_edit_mode' }, '*'); } catch (e) {}
+  });
+  try { window.parent.postMessage({ type: '__edit_mode_available' }, '*'); } catch (e) {}
+})();
+
+</script>
+</body>
+</html>
