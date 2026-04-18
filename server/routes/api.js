@@ -4,12 +4,12 @@ import os from 'os'
 import { createSSHConnection } from '../services/ssh.js'
 import {
   isConfigured, getAllSites, getSite, saveSite, deleteSite,
-  resetAll, safeSiteForClient, newSiteId
+  resetAll, safeSiteForClient, newSiteId, getAppSettings, saveAppSettings
 } from '../services/config.js'
 import { initScheduler, initSiteScheduler, runCheck, runTargetUpdate, runGroupUpdate, parseLXCList, parseQMList } from '../services/scheduler.js'
 import { testChannel } from '../services/notifications.js'
 import { broadcast } from '../broadcast.js'
-import { getCurrentVersion, fetchLatestRelease, isUpdateAvailable, applySelfUpdate } from '../services/selfUpdate.js'
+import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, applySelfUpdate } from '../services/selfUpdate.js'
 
 const router = Router()
 
@@ -17,6 +17,18 @@ const router = Router()
 
 router.get('/version', (req, res) => {
   res.json({ version: getCurrentVersion() })
+})
+
+// ─── App settings ─────────────────────────────────────────────────────────────
+
+router.get('/app-settings', (req, res) => {
+  res.json(getAppSettings())
+})
+
+router.patch('/app-settings', (req, res) => {
+  saveAppSettings(req.body)
+  _updateCache = null
+  res.json(getAppSettings())
 })
 
 // ─── App self-update ──────────────────────────────────────────────────────────
@@ -31,22 +43,31 @@ router.get('/app-update', async (req, res) => {
   const now = Date.now()
   if (_updateCache && now - _updateCacheAt < 60 * 60 * 1000) return res.json(_updateCache)
 
+  const { betaUpdates } = getAppSettings()
   try {
-    const latest = await fetchLatestRelease()
-    const updateAvailable = isUpdateAvailable(current, latest)
-    _updateCache = { current, latest, updateAvailable }
+    let result
+    if (betaUpdates) {
+      const latestSha = await fetchLatestDevCommit()
+      result = { current, latest: 'dev', latestSha, updateAvailable: isDevUpdateAvailable(current, latestSha), beta: true }
+    } else {
+      const latest = await fetchLatestRelease()
+      result = { current, latest, updateAvailable: isUpdateAvailable(current, latest), beta: false }
+    }
+    _updateCache = result
     _updateCacheAt = now
-    res.json(_updateCache)
+    res.json(result)
   } catch (e) {
     res.json({ current, latest: null, updateAvailable: false, error: e.message })
   }
 })
 
 router.post('/app-update/apply', (req, res) => {
+  const { betaUpdates } = getAppSettings()
   res.json({ started: true })
   ;(async () => {
     try {
-      await applySelfUpdate(data => broadcast({ type: 'app_update_log', data }))
+      await applySelfUpdate(data => broadcast({ type: 'app_update_log', data }), betaUpdates)
+      broadcast({ type: 'app_update_done', success: true })
     } catch (e) {
       broadcast({ type: 'app_update_log', data: `\nError: ${e.message}\n` })
       broadcast({ type: 'app_update_done', success: false })

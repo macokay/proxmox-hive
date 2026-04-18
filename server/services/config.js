@@ -111,3 +111,14 @@ export function safeSiteForClient(site) {
 export function newSiteId() {
   return `site-${Date.now()}`
 }
+
+export function getAppSettings() {
+  const data = readData()
+  return data.appSettings || { betaUpdates: false }
+}
+
+export function saveAppSettings(settings) {
+  const data = readData()
+  data.appSettings = { ...getAppSettings(), ...settings }
+  writeData(data)
+}

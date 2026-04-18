@@ -711,8 +711,18 @@ function SiteSettings({ site, onSaved, onDeleted }) {
 
 export default function Settings({ sites, activeSiteId, onBack, onSitesChanged, onReset, openAddSite }) {
   const [selectedSiteId, setSelectedSiteId] = useState(activeSiteId || sites[0]?.id)
-  // If openAddSite prop is true, start directly in add-site mode
   const [showAddSite, setShowAddSite] = useState(openAddSite || false)
+  const [appSettings, setAppSettings] = useState({ betaUpdates: false })
+
+  useEffect(() => {
+    fetch('/api/app-settings').then(r => r.json()).then(setAppSettings).catch(() => {})
+  }, [])
+
+  async function patchAppSettings(patch) {
+    const updated = { ...appSettings, ...patch }
+    setAppSettings(updated)
+    await fetch('/api/app-settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) })
+  }
 
   const selectedSite = sites.find(s => s.id === selectedSiteId) || sites[0]
 
@@ -743,6 +753,15 @@ export default function Settings({ sites, activeSiteId, onBack, onSitesChanged, 
             + New site
           </button>
         </div>
+
+        <Section title="Proxmox Hive Updates" description="Controls how Proxmox Hive checks for and applies its own updates.">
+          <Toggle
+            value={appSettings.betaUpdates || false}
+            onChange={v => patchAppSettings({ betaUpdates: v })}
+            label="Beta updates"
+            description="Pull from the dev branch instead of stable releases. Enables early access to new features — may be less stable."
+          />
+        </Section>
 
         {selectedSite && (
           <SiteSettings

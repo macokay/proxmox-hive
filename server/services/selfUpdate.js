@@ -44,14 +44,29 @@ export async function fetchLatestRelease() {
   return data.tag_name?.replace(/^v/, '') || null
 }
 
+export async function fetchLatestDevCommit() {
+  const r = await fetch('https://api.github.com/repos/macokay/proxmox-hive/commits/dev', {
+    headers: { 'User-Agent': 'proxmox-hive' }
+  })
+  if (!r.ok) throw new Error(`GitHub API ${r.status}`)
+  const data = await r.json()
+  return data.sha?.slice(0, 7) || null
+}
+
 export function isUpdateAvailable(current, latest) {
   if (!latest) return false
   const base = current.split('-')[0]
   return versionIsNewer(latest, base)
 }
 
-export async function applySelfUpdate(onLog) {
-  const latest = await fetchLatestRelease()
+export function isDevUpdateAvailable(current, latestSha) {
+  if (!latestSha) return false
+  const currentSha = current.includes('-') ? current.split('-').pop() : null
+  return currentSha !== latestSha
+}
+
+export async function applySelfUpdate(onLog, beta = false) {
+  const latest = beta ? 'dev' : await fetchLatestRelease()
   if (!latest) throw new Error('Could not fetch latest release')
 
   function run(cmd, args) {
