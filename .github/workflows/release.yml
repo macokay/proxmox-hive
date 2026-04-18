@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          ref: main
+
+      - name: Configure git
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+      - name: Bump package versions
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          version = os.environ["RELEASE_TAG"].lstrip("v")
+
+          for path in ["server/package.json", "client/package.json"]:
+              p = Path(path)
+              with p.open() as f:
+                  pkg = json.load(f)
+              pkg["version"] = version
+              with p.open("w") as f:
+                  json.dump(pkg, f, indent=2)
+                  f.write("\n")
+              print(f"Bumped {path} to {version}")
+          PY
+
+      - name: Commit and push version bump
+        id: commit
+        run: |
+          if git diff --quiet -- server/package.json client/package.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git add server/package.json client/package.json
+          git commit -m "chore: bump version to $RELEASE_TAG"
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Move tag to bump commit
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          git tag -f "$RELEASE_TAG" HEAD
+          git push origin "refs/tags/$RELEASE_TAG" --force
+
+      - name: Create zip asset
+        run: |
+          zip -r proxmox-hive.zip \
+            docker-compose.yml Dockerfile .dockerignore install.sh README.md CHANGELOG.md \
+            server/ client/
+
+      - name: Upload zip to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            proxmox-hive.zip \
+            --repo "${{ github.repository }}" \
+            --clobber
