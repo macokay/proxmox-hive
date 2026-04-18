@@ -34,7 +34,9 @@ function UpdateBanner({ info, onDismiss }) {
     <div className="border-b border-accent/30 bg-accent/5 px-5 py-2.5 flex flex-col gap-2">
       <div className="flex items-center justify-between gap-4">
         <span className="text-sm text-accent font-medium">
-          Proxmox Hive v{info.latest} is available
+          <a href={`https://github.com/macokay/proxmox-hive/releases/tag/v${info.latest}`} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+            Proxmox Hive v{info.latest}
+          </a>{' '}is available
           <span className="text-muted font-normal ml-2">(current: v{info.current})</span>
         </span>
         <div className="flex items-center gap-2">
