@@ -29,7 +29,8 @@ router.get('/app-update', async (req, res) => {
   if (current === 'dev') return res.json({ current, latest: null, updateAvailable: false })
 
   const now = Date.now()
-  if (_updateCache && now - _updateCacheAt < 60 * 60 * 1000) return res.json(_updateCache)
+  const force = req.query.force === '1'
+  if (!force && _updateCache && now - _updateCacheAt < 60 * 60 * 1000) return res.json(_updateCache)
 
   try {
     const latest = await fetchLatestRelease()

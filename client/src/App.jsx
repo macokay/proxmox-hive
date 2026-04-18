@@ -92,9 +92,16 @@ export default function App() {
 
   useEffect(() => {
     loadSites()
-    fetch('/api/app-update').then(r => r.json()).then(d => {
-      if (d.updateAvailable) setUpdateInfo(d)
-    }).catch(() => {})
+
+    function checkUpdate(force = false) {
+      fetch(`/api/app-update${force ? '?force=1' : ''}`).then(r => r.json()).then(d => {
+        if (d.updateAvailable) setUpdateInfo(d)
+      }).catch(() => {})
+    }
+
+    checkUpdate(false)
+    const interval = setInterval(() => checkUpdate(true), 30 * 60 * 1000)
+    return () => clearInterval(interval)
   }, [])
 
   if (configured === null) return (
