@@ -110,7 +110,7 @@ export default function App() {
       }).catch(() => {})
     }
 
-    checkUpdate(false)
+    checkUpdate(true)
     const interval = setInterval(() => checkUpdate(true), 30 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
