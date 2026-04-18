@@ -750,23 +750,23 @@ docker compose up -d</code><button class="copy-btn" data-copy="#code-manual">Cop
         <div class="step-block">
           <div class="step-head"><span class="step-num">1</span><span class="step-title">Create user + restricted sudo</span></div>
           <pre class="code"><code id="code-a1">apt install sudo -y
-adduser pvedash --disabled-password --gecos ""
-echo "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash
-chmod 440 /etc/sudoers.d/pvedash</code><button class="copy-btn" data-copy="#code-a1">Copy</button></pre>
+adduser pvehive --disabled-password --gecos ""
+echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive
+chmod 440 /etc/sudoers.d/pvehive</code><button class="copy-btn" data-copy="#code-a1">Copy</button></pre>
         </div>
         <div class="step-block">
           <div class="step-head"><span class="step-num">2</span><span class="step-title">Generate &amp; install SSH key</span></div>
-          <pre class="code"><code id="code-a2">ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""
-mkdir -p /home/pvedash/.ssh
-cat ~/.ssh/pvedash.pub &gt;&gt; /home/pvedash/.ssh/authorized_keys
-chmod 700 /home/pvedash/.ssh &amp;&amp; chmod 600 /home/pvedash/.ssh/authorized_keys
-chown -R pvedash:pvedash /home/pvedash/.ssh</code><button class="copy-btn" data-copy="#code-a2">Copy</button></pre>
+          <pre class="code"><code id="code-a2">ssh-keygen -t ed25519 -f ~/.ssh/pvehive -N ""
+mkdir -p /home/pvehive/.ssh
+cat ~/.ssh/pvehive.pub &gt;&gt; /home/pvehive/.ssh/authorized_keys
+chmod 700 /home/pvehive/.ssh &amp;&amp; chmod 600 /home/pvehive/.ssh/authorized_keys
+chown -R pvehive:pvehive /home/pvehive/.ssh</code><button class="copy-btn" data-copy="#code-a2">Copy</button></pre>
         </div>
         <div class="step-block">
           <div class="step-head"><span class="step-num">3</span><span class="step-title">Print private key (paste into Hive)</span></div>
-          <pre class="code"><code id="code-a3">cat ~/.ssh/pvedash</code><button class="copy-btn" data-copy="#code-a3">Copy</button></pre>
+          <pre class="code"><code id="code-a3">cat ~/.ssh/pvehive</code><button class="copy-btn" data-copy="#code-a3">Copy</button></pre>
         </div>
-        <p class="panel-foot mono">→ wizard: username <b>pvedash</b>, paste private key</p>
+        <p class="panel-foot mono">→ wizard: username <b>pvehive</b>, paste private key</p>
       </div>
 
       <div class="tab-panel" data-panel="b">
@@ -778,13 +778,13 @@ systemctl reload sshd</code><button class="copy-btn" data-copy="#code-b1">Copy</
         </div>
         <div class="step-block">
           <div class="step-head"><span class="step-num">2</span><span class="step-title">Generate &amp; install SSH key</span></div>
-          <pre class="code"><code id="code-b2">ssh-keygen -t ed25519 -f ~/.ssh/pvedash -N ""
-cat ~/.ssh/pvedash.pub &gt;&gt; ~/.ssh/authorized_keys
+          <pre class="code"><code id="code-b2">ssh-keygen -t ed25519 -f ~/.ssh/pvehive -N ""
+cat ~/.ssh/pvehive.pub &gt;&gt; ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys</code><button class="copy-btn" data-copy="#code-b2">Copy</button></pre>
         </div>
         <div class="step-block">
           <div class="step-head"><span class="step-num">3</span><span class="step-title">Print private key (paste into Hive)</span></div>
-          <pre class="code"><code id="code-b3">cat ~/.ssh/pvedash</code><button class="copy-btn" data-copy="#code-b3">Copy</button></pre>
+          <pre class="code"><code id="code-b3">cat ~/.ssh/pvehive</code><button class="copy-btn" data-copy="#code-b3">Copy</button></pre>
         </div>
         <p class="panel-foot mono">→ wizard: username <b>root</b>, paste private key</p>
       </div>
@@ -794,17 +794,17 @@ chmod 600 ~/.ssh/authorized_keys</code><button class="copy-btn" data-copy="#code
         <div class="step-block">
           <div class="step-head"><span class="step-num">1</span><span class="step-title">Create user with password</span></div>
           <pre class="code"><code id="code-c1">apt install sudo -y
-adduser pvedash --gecos ""
-echo "pvedash ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvedash
-chmod 440 /etc/sudoers.d/pvedash
-passwd pvedash</code><button class="copy-btn" data-copy="#code-c1">Copy</button></pre>
+adduser pvehive --gecos ""
+echo "pvehive ALL=(ALL) NOPASSWD: /usr/bin/apt*,/usr/sbin/pct" | tee /etc/sudoers.d/pvehive
+chmod 440 /etc/sudoers.d/pvehive
+passwd pvehive</code><button class="copy-btn" data-copy="#code-c1">Copy</button></pre>
         </div>
         <div class="step-block">
           <div class="step-head"><span class="step-num">2</span><span class="step-title">Enable password authentication</span></div>
           <pre class="code"><code id="code-c2">sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
 systemctl reload sshd</code><button class="copy-btn" data-copy="#code-c2">Copy</button></pre>
         </div>
-        <p class="panel-foot mono">→ wizard: username <b>pvedash</b>, select <b>Password</b> auth</p>
+        <p class="panel-foot mono">→ wizard: username <b>pvehive</b>, select <b>Password</b> auth</p>
       </div>
     </div>
   </section>
@@ -844,7 +844,7 @@ systemctl reload sshd</code><button class="copy-btn" data-copy="#code-c2">Copy</
     <div class="faq">
       <details open>
         <summary>Is this safe to point at my production Proxmox?</summary>
-        <p>Option A (restricted user + SSH key) was designed for exactly this. The <span class="mono">pvedash</span> user can only run <span class="mono">apt</span> and <span class="mono">pct</span> via sudo - nothing else. Start there.</p>
+        <p>Option A (restricted user + SSH key) was designed for exactly this. The <span class="mono">pvehive</span> user can only run <span class="mono">apt</span> and <span class="mono">pct</span> via sudo - nothing else. Start there.</p>
       </details>
       <details>
         <summary>Does it actually apply updates or just show them?</summary>
