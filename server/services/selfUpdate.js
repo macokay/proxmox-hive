@@ -94,29 +94,40 @@ export async function applySelfUpdate(onLog, beta = false) {
   }
 
   const compose = findComposeFile()
+  const image = `ghcr.io/macokay/proxmox-hive:${latest}`
 
   if (compose) {
-    // Update the image tag in the compose file so it stays pinned to releases
     try {
       let content = readFileSync(compose, 'utf8')
       content = content.replace(
         /image:\s*ghcr\.io\/macokay\/proxmox-hive:[^\s\n]+/,
-        `image: ghcr.io/macokay/proxmox-hive:${latest}`
+        `image: ${image}`
       )
       writeFileSync(compose, content)
-      onLog(`Pinned image to v${latest}\n`)
+      onLog(`Pinned image to ${latest}\n`)
     } catch (e) {
       onLog(`Warning: could not update compose file: ${e.message}\n`)
     }
     onLog('--- Pulling latest image ---\n')
     await run('docker', ['compose', '-f', compose, 'pull'])
-    onLog('--- Restarting container ---\n')
-    await run('docker', ['compose', '-f', compose, 'up', '-d', '--remove-orphans'])
+
+    // Spawn a detached helper container that restarts us after we finish.
+    // Running compose up -d from inside the container kills our process mid-execution;
+    // the helper is independent of our container's lifecycle.
+    onLog('--- Scheduling restart ---\n')
+    await run('docker', [
+      'run', '--rm', '--detach',
+      '--entrypoint', 'sh',
+      '-v', '/var/run/docker.sock:/var/run/docker.sock',
+      '-v', `${compose}:${compose}`,
+      image,
+      '-c', `sleep 3 && docker compose -f ${compose} up -d --remove-orphans`
+    ])
+    onLog('Restarting in a few seconds…\n')
   } else {
-    // No compose file found — pull directly and restart the container
     onLog('Compose file not found, using docker pull directly\n')
     onLog('--- Pulling latest image ---\n')
-    await run('docker', ['pull', `ghcr.io/macokay/proxmox-hive:${latest}`])
+    await run('docker', ['pull', image])
     onLog('--- Restarting container ---\n')
     await run('docker', ['restart', 'proxmox-hive'])
   }
