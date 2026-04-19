@@ -2,6 +2,20 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.7] - 2026-04-19
+
+### Added
+- Beta updates toggle in Settings — enable to receive dev-branch builds instead of stable releases, useful for testing new features before they ship
+- Docker socket warning banner — existing installs without socket access see a persistent yellow banner with a one-liner to re-run the installer and fix the missing volume mounts automatically
+- Self-update banner shows commit SHA with link for dev builds, release name with link for stable builds
+
+### Fixed
+- Self-update now survives container restart — a short-lived detached helper container runs `docker compose up -d` independently so the process is not killed mid-execution when the current container stops
+- `docker compose` subcommand now available inside container (`docker-cli-compose` added to image)
+- `--force-recreate` ensures the new image is always used even when the compose tag has not changed
+- Page auto-reloads after a successful self-update — polls `/api/version` until server goes down and comes back up, with a 60-second fallback
+- Update failed banner shows "Update failed — see error above" instead of the restart message on error
+
 ## [1.0.6] - 2026-04-18
 
 ### Fixed
