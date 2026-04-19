@@ -8,6 +8,7 @@ function UpdateBanner({ info, onDismiss }) {
   const [applying, setApplying] = useState(false)
   const [logs, setLogs] = useState([])
   const [done, setDone] = useState(false)
+  const [success, setSuccess] = useState(null)
   const logRef = useRef(null)
 
   useWebSocket((msg) => {
@@ -16,6 +17,7 @@ function UpdateBanner({ info, onDismiss }) {
     }
     if (msg.type === 'app_update_done') {
       setDone(true)
+      setSuccess(msg.success)
     }
   })
 
@@ -27,6 +29,7 @@ function UpdateBanner({ info, onDismiss }) {
     setApplying(true)
     setLogs([])
     setDone(false)
+    setSuccess(null)
     await fetch('/api/app-update/apply', { method: 'POST' })
   }
 
@@ -72,8 +75,11 @@ function UpdateBanner({ info, onDismiss }) {
           >
             {logs.join('') || 'Starting update…'}
           </div>
-          {done && (
+          {done && success && (
             <p className="text-xs text-muted mt-1">Restarting — page will reload shortly…</p>
+          )}
+          {done && !success && (
+            <p className="text-xs text-red-400 mt-1">Update failed — see error above.</p>
           )}
         </div>
       )}
