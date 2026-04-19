@@ -18,6 +18,15 @@ function UpdateBanner({ info, onDismiss }) {
     if (msg.type === 'app_update_done') {
       setDone(true)
       setSuccess(msg.success)
+      if (msg.success) {
+        // Poll until server goes down then comes back up, then reload
+        let wasDown = false
+        const poll = setInterval(() => {
+          fetch('/api/version').then(() => {
+            if (wasDown) { clearInterval(poll); window.location.reload() }
+          }).catch(() => { wasDown = true })
+        }, 2000)
+      }
     }
   })
 
