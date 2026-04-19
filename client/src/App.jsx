@@ -87,6 +87,27 @@ function UpdateBanner({ info, onDismiss }) {
   )
 }
 
+function DockerSocketBanner() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="border-b border-yellow-500/30 bg-yellow-500/5 px-5 py-2.5 flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-sm text-yellow-400 font-medium">
+          Self-update unavailable — Docker socket not mounted
+        </span>
+        <button onClick={() => setOpen(o => !o)} className="text-muted hover:text-white text-xs transition-colors">
+          {open ? 'Hide' : 'How to fix'}
+        </button>
+      </div>
+      {open && (
+        <div className="bg-base-900 rounded font-mono text-xs text-muted p-3 whitespace-pre">
+          {'Re-run the installer on your host — it will patch the compose file automatically:\n\n  bash <(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)'}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function App() {
   const [configured, setConfigured] = useState(null)
   const [sites, setSites] = useState([])
@@ -95,6 +116,7 @@ export default function App() {
   const [openAddSite, setOpenAddSite] = useState(false)
   const [updateInfo, setUpdateInfo] = useState(null)
   const [bannerDismissed, setBannerDismissed] = useState(false)
+  const [dockerSocketMissing, setDockerSocketMissing] = useState(false)
 
   async function loadSites() {
     const [status, sitesRes] = await Promise.all([
@@ -109,6 +131,10 @@ export default function App() {
 
   useEffect(() => {
     loadSites()
+
+    fetch('/api/diagnostics').then(r => r.json()).then(d => {
+      if (!d.dockerSocket) setDockerSocketMissing(true)
+    }).catch(() => {})
 
     function checkUpdate(force = false) {
       fetch(`/api/app-update${force ? '?force=1' : ''}`).then(r => r.json()).then(d => {
@@ -136,6 +162,7 @@ export default function App() {
   if (page === 'settings') {
     return (
       <>
+        {dockerSocketMissing && <DockerSocketBanner />}
         {showBanner && (
           <UpdateBanner info={updateInfo} onDismiss={() => setBannerDismissed(true)} />
         )}
@@ -153,6 +180,7 @@ export default function App() {
 
   return (
     <>
+      {dockerSocketMissing && <DockerSocketBanner />}
       {showBanner && (
         <UpdateBanner info={updateInfo} onDismiss={() => setBannerDismissed(true)} />
       )}

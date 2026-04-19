@@ -9,7 +9,7 @@ import {
 import { initScheduler, initSiteScheduler, runCheck, runTargetUpdate, runGroupUpdate, parseLXCList, parseQMList } from '../services/scheduler.js'
 import { testChannel } from '../services/notifications.js'
 import { broadcast } from '../broadcast.js'
-import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, applySelfUpdate } from '../services/selfUpdate.js'
+import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, applySelfUpdate, checkDockerSocket } from '../services/selfUpdate.js'
 
 const router = Router()
 
@@ -17,6 +17,12 @@ const router = Router()
 
 router.get('/version', (req, res) => {
   res.json({ version: getCurrentVersion() })
+})
+
+// ─── Diagnostics ──────────────────────────────────────────────────────────────
+
+router.get('/diagnostics', (req, res) => {
+  res.json({ dockerSocket: checkDockerSocket() })
 })
 
 // ─── App settings ─────────────────────────────────────────────────────────────
