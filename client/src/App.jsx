@@ -19,13 +19,17 @@ function UpdateBanner({ info, onDismiss }) {
       setDone(true)
       setSuccess(msg.success)
       if (msg.success) {
-        // Poll until server goes down then comes back up, then reload
-        let wasDown = false
-        const poll = setInterval(() => {
-          fetch('/api/version').then(() => {
-            if (wasDown) { clearInterval(poll); window.location.reload() }
-          }).catch(() => { wasDown = true })
-        }, 2000)
+        // Wait for restart to begin, then poll until server is back up
+        setTimeout(() => {
+          let wasDown = false
+          const poll = setInterval(() => {
+            fetch('/api/version').then(() => {
+              if (wasDown) { clearInterval(poll); window.location.reload() }
+            }).catch(() => { wasDown = true })
+          }, 500)
+          // Fallback: reload after 60s regardless
+          setTimeout(() => { clearInterval(poll); window.location.reload() }, 60000)
+        }, 5000)
       }
     }
   })
