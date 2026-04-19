@@ -16,7 +16,7 @@ RUN npm install --omit=dev
 COPY server/ ./
 COPY --from=frontend-builder /build/client/dist ./public
 
-RUN apk add --no-cache docker-cli && mkdir -p /data
+RUN apk add --no-cache docker-cli docker-cli-compose && mkdir -p /data
 
 EXPOSE 3000
 CMD ["node", "server.js"]
