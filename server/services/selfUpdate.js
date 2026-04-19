@@ -121,7 +121,7 @@ export async function applySelfUpdate(onLog, beta = false) {
       '-v', '/var/run/docker.sock:/var/run/docker.sock',
       '-v', `${compose}:${compose}`,
       image,
-      '-c', `sleep 3 && docker compose -f ${compose} up -d --remove-orphans`
+      '-c', `sleep 3 && docker compose -f ${compose} up -d --remove-orphans --force-recreate`
     ])
     onLog('Restarting in a few seconds…\n')
   } else {
