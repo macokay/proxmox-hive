@@ -2,6 +2,18 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.8] - 2026-04-30
+
+### Added
+- Live relative-time ticker in dashboard header — "last checked X ago" updates every second without a page reload
+- QEMU guest agent setup guide — a step-by-step modal explains how to install and enable the agent on VMs, with a reboot reminder; guide is generalized across distros
+- App update banner now pushed to newly connected WebSocket clients — joining the dashboard mid-update still shows the notification
+- Update check runs when the browser tab regains focus — no need to reload to see a new release banner
+
+### Fixed
+- Relative-time ticker resets immediately when a new check completes instead of waiting for the next tick
+- Update banner for beta channel only shows after the dev Docker image is confirmed published on GHCR, preventing false positives
+
 ## [1.0.7] - 2026-04-19
 
 ### Added
