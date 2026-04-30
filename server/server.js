@@ -8,7 +8,7 @@ import apiRouter from './routes/api.js'
 import { wsClients, broadcast, sendToClient } from './broadcast.js'
 import { initScheduler } from './services/scheduler.js'
 import { isConfigured, getAppSettings } from './services/config.js'
-import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable } from './services/selfUpdate.js'
+import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable, isDevDockerImageReady } from './services/selfUpdate.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -46,9 +46,9 @@ async function checkAndBroadcastUpdate() {
     const { betaUpdates } = getAppSettings()
     let result
     if (betaUpdates) {
-      const latestSha = await fetchLatestDevCommit()
+      const { sha: latestSha, fullSha } = await fetchLatestDevCommit()
       const updateAvailable = isDevUpdateAvailable(current, latestSha)
-        && await isDockerImageAvailable('dev')
+        && await isDevDockerImageReady(fullSha)
       result = { current, latest: 'dev', latestSha, updateAvailable, beta: true }
     } else {
       const latest = await fetchLatestRelease()

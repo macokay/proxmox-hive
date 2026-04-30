@@ -50,7 +50,22 @@ export async function fetchLatestDevCommit() {
   })
   if (!r.ok) throw new Error(`GitHub API ${r.status}`)
   const data = await r.json()
-  return data.sha?.slice(0, 7) || null
+  return { sha: data.sha?.slice(0, 7) || null, fullSha: data.sha || null }
+}
+
+export async function isDevDockerImageReady(fullSha) {
+  if (!fullSha) return false
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/macokay/proxmox-hive/actions/workflows/docker-publish.yml/runs?head_sha=${fullSha}&status=success&per_page=1`,
+      { headers: { 'User-Agent': 'proxmox-hive' } }
+    )
+    if (!r.ok) return false
+    const data = await r.json()
+    return (data.total_count || 0) > 0
+  } catch {
+    return false
+  }
 }
 
 export async function isDockerImageAvailable(tag) {
