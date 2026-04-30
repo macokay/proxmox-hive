@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.17] - 2026-04-30
+
+### Fixed
+- "Update now" no longer triggers a GitHub API call — version already known from the banner is passed directly, preventing 403 rate limit errors during the update apply step
+
 ## [1.0.16] - 2026-04-30
 
 ### Fixed
