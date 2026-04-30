@@ -153,9 +153,19 @@ export default function App() {
       if (!d.dockerSocket) setDockerSocketMissing(true)
     }).catch(() => {})
 
-    fetch('/api/app-update?force=1').then(r => r.json()).then(d => {
-      if (d.updateAvailable) setUpdateInfo(d)
-    }).catch(() => {})
+    function checkUpdate() {
+      fetch('/api/app-update?force=1').then(r => r.json()).then(d => {
+        if (d.updateAvailable) setUpdateInfo(d)
+      }).catch(() => {})
+    }
+
+    checkUpdate()
+
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') checkUpdate()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
   }, [])
 
   if (configured === null) return (
