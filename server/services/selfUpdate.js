@@ -53,6 +53,24 @@ export async function fetchLatestDevCommit() {
   return data.sha?.slice(0, 7) || null
 }
 
+export async function isDockerImageAvailable(tag) {
+  try {
+    const tokenRes = await fetch(
+      'https://ghcr.io/token?scope=repository:macokay/proxmox-hive:pull&service=ghcr.io',
+      { headers: { 'User-Agent': 'proxmox-hive' } }
+    )
+    if (!tokenRes.ok) return false
+    const { token } = await tokenRes.json()
+    const manifestRes = await fetch(
+      `https://ghcr.io/v2/macokay/proxmox-hive/manifests/${tag}`,
+      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.oci.image.index.v1+json,application/vnd.docker.distribution.manifest.v2+json' } }
+    )
+    return manifestRes.ok
+  } catch {
+    return false
+  }
+}
+
 export function isUpdateAvailable(current, latest) {
   if (!latest) return false
   const base = current.split('-')[0]
