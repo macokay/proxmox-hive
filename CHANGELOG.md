@@ -2,6 +2,12 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.14] - 2026-04-30
+
+### Fixed
+- Server now checks for updates every 5 minutes instead of hourly — banner appears much faster after a new release
+- Update check logs result to Docker logs for easier debugging
+
 ## [1.0.13] - 2026-04-30
 
 ### Fixed
