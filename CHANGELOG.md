@@ -2,6 +2,15 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.21] - 2026-04-30
+
+### Added
+- install.sh now sets "Mac O Kay" tag and Notes panel (logo, buy us a coffee, GitHub, Issues) on the LXC automatically after creation
+
+### Changed
+- install.sh release version lookup now uses redirect URL instead of GitHub API to avoid rate limit errors
+- Removed Discussions link from about modal (GitHub, Issues only)
+
 ## [1.0.20] - 2026-04-30
 
 ### Changed

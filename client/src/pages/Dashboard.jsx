@@ -802,16 +802,10 @@ function closeTerminal(key) {
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm text-muted hover:text-white bg-base-800 hover:bg-base-700 border border-border transition-colors">
                 GitHub
               </a>
-              <div className="grid grid-cols-2 gap-2">
-                <a href="https://github.com/macokay/proxmox-hive/discussions" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs text-muted hover:text-white bg-base-800 hover:bg-base-700 border border-border transition-colors">
-                  💬 Discussions
-                </a>
-                <a href="https://github.com/macokay/proxmox-hive/issues" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs text-muted hover:text-white bg-base-800 hover:bg-base-700 border border-border transition-colors">
-                  ⚠ Issues
-                </a>
-              </div>
+              <a href="https://github.com/macokay/proxmox-hive/issues" target="_blank" rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs text-muted hover:text-white bg-base-800 hover:bg-base-700 border border-border transition-colors">
+                ⚠ Issues
+              </a>
             </div>
             <div className="px-4 pb-4">
               <button onClick={() => setShowAbout(false)}

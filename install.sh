@@ -81,9 +81,10 @@ PORT="${PORT:-3000}"
 
 resolve_image() {
   local tag
-  tag=$(curl -fsSL https://api.github.com/repos/macokay/proxmox-hive/releases/latest \
-    | grep -o '"tag_name": *"[^"]*"' | grep -o '[0-9][^"]*')
-  if [[ -n "$tag" ]]; then
+  tag=$(curl -fsSL -o /dev/null -w '%{url_effective}' \
+    https://github.com/macokay/proxmox-hive/releases/latest \
+    | grep -o '[^/]*$' | sed 's/^v//')
+  if [[ -n "$tag" && "$tag" =~ ^[0-9] ]]; then
     echo "ghcr.io/macokay/proxmox-hive:${tag}"
   else
     echo "ghcr.io/macokay/proxmox-hive:latest"
@@ -220,6 +221,20 @@ EOF
   msg_info "Installing Proxmox Hive inside LXC ${ctid}"
   pct exec "$ctid" -- bash -c \
     "export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 && bash <(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"
+
+  msg_info "Setting Proxmox tag and notes for CT ${ctid}"
+  pct set "$ctid" --tags "Mac O Kay"
+  pct set "$ctid" --description "<div align='center'>
+<a href='https://github.com/macokay/proxmox-hive' target='_blank'>
+<img src='https://raw.githubusercontent.com/macokay/proxmox-hive/main/client/public/hive.svg' width='96'/>
+</a>
+<h2>Proxmox Hive</h2>
+<a href='https://www.buymeacoffee.com/macokay' target='_blank'>☕ Buy us a coffee</a>
+<br><br>
+<a href='https://github.com/macokay/proxmox-hive' target='_blank'>GitHub</a> &nbsp;
+<a href='https://github.com/macokay/proxmox-hive/issues' target='_blank'>Issues</a>
+</div>"
+  msg_ok "Tag and notes set for CT ${ctid}"
 }
 
 # ─── Entry point ─────────────────────────────────────────────────────────────
