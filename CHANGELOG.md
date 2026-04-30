@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.13] - 2026-04-30
+
+### Fixed
+- Added 15-minute client-side polling as fallback — update banner now appears even when staying on the same tab without switching focus
+
 ## [1.0.12] - 2026-04-30
 
 ### Fixed
