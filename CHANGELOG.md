@@ -2,6 +2,12 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.11] - 2026-04-30
+
+### Fixed
+- Stable release now takes priority over dev build in beta mode — banner correctly shows "Proxmox Hive vX.Y.Z is available" instead of "New dev build available" when a release is pending
+- After updating to a stable release in beta mode, the version number now reflects the release and the banner no longer reappears
+
 ## [1.0.10] - 2026-04-30
 
 ### Fixed
