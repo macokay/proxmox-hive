@@ -52,7 +52,6 @@ async function checkAndBroadcastUpdate() {
     if (betaUpdates) {
       const latestSha = await fetchLatestDevCommit()
       if (releaseNewer) {
-        // Release takes priority — show stable update even in beta mode
         result = { current, latest, updateAvailable: true, beta: false }
       } else {
         const devReady = isDevUpdateAvailable(current, latestSha) && await isDockerImageAvailable('dev')
@@ -61,18 +60,21 @@ async function checkAndBroadcastUpdate() {
     } else {
       result = { current, latest, updateAvailable: releaseReady, beta: false }
     }
+    console.log(`[update check] current=${current} latest=${latest} releaseNewer=${releaseNewer} updateAvailable=${result.updateAvailable} beta=${result.beta}`)
     if (result.updateAvailable) {
       pendingUpdate = result
       broadcast({ type: 'app_update_available', ...result })
     } else {
       pendingUpdate = null
     }
-  } catch {}
+  } catch (e) {
+    console.error('[update check] failed:', e.message)
+  }
 }
 
-// Check on startup and every hour
+// Check on startup and every 5 minutes
 checkAndBroadcastUpdate()
-setInterval(checkAndBroadcastUpdate, 60 * 60 * 1000)
+setInterval(checkAndBroadcastUpdate, 5 * 60 * 1000)
 
 const PORT = process.env.PORT || 3000
 server.listen(PORT, () => console.log(`Proxmox Hive running on http://localhost:${PORT}`))
