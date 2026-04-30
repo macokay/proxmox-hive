@@ -74,6 +74,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh release create "$RELEASE_TAG" \
+            --repo "${{ github.repository }}" \
+            --generate-notes \
+            --title "$RELEASE_TAG" \
+            2>/dev/null || true
           gh release upload "$RELEASE_TAG" \
             proxmox-hive.zip \
             --repo "${{ github.repository }}" \
