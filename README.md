@@ -32,12 +32,13 @@
 
 - **Multi-site** — manage multiple Proxmox hosts from one dashboard
 - **Node updates** — detects available apt packages on the Proxmox host
-- **LXC updates** — tracks package updates inside containers via `pct exec`
+- **LXC updates** — tracks package updates inside containers via `pct exec` (apt, apk, dnf/yum supported)
 - **VM updates** — detects packages via QEMU guest agent
 - **App updates** — detects new versions of Plex, Jellyfin, Sonarr, Radarr, and more
-- **Scheduled checks** — automatic checks at 08:00 and 20:00 (configurable)
+- **Scheduled checks** — automatic checks at 08:00 and 20:00 (configurable per site, with timezone support)
 - **Live terminal** — real-time log output during updates via WebSocket
 - **Notifications** — Discord, Slack, Microsoft Teams, and generic webhooks
+- **Self-update** — update banner in the dashboard with one-click update; supports stable and beta channels
 - **Setup wizard** — guided first-time configuration
 
 ---
@@ -201,7 +202,7 @@ You can also include **Proxmox Hive** as a target in an auto-update group (Setti
 ### Manual update to latest release
 
 ```bash
-TAG=$(curl -fsSL https://api.github.com/repos/macokay/proxmox-hive/releases/latest | grep -o '"tag_name": *"[^"]*"' | grep -o '[0-9][^"]*') && [ -n "$TAG" ] && sed -i "s|image: .*proxmox-hive:.*|image: ghcr.io/macokay/proxmox-hive:${TAG}|" /opt/proxmox-hive/docker-compose.yml && docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
+TAG=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/macokay/proxmox-hive/releases/latest | grep -o '[^/]*$' | sed 's/^v//') && [ -n "$TAG" ] && sed -i "s|image: .*proxmox-hive:.*|image: ghcr.io/macokay/proxmox-hive:${TAG}|" /opt/proxmox-hive/docker-compose.yml && docker compose -f /opt/proxmox-hive/docker-compose.yml pull && docker compose -f /opt/proxmox-hive/docker-compose.yml up -d
 ```
 
 ### Update to latest commit (pre-release)
