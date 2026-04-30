@@ -223,13 +223,13 @@ EOF
     "export LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 && bash <(curl -fsSL https://raw.githubusercontent.com/macokay/proxmox-hive/main/install.sh)"
 
   msg_info "Setting Proxmox tag and notes for CT ${ctid}"
-  pct set "$ctid" --tags "Mac O Kay"
+  pct set "$ctid" --tags "mac-o-kay"
   pct set "$ctid" --description "<div align='center'>
 <a href='https://github.com/macokay/proxmox-hive' target='_blank'>
-<img src='https://raw.githubusercontent.com/macokay/proxmox-hive/main/client/public/hive.svg' width='96'/>
+<img src='https://raw.githubusercontent.com/macokay/proxmox-hive/main/client/public/hive.svg' width='64'/>
 </a>
 <h2>Proxmox Hive</h2>
-<a href='https://www.buymeacoffee.com/macokay' target='_blank'>☕ Buy us a coffee</a>
+<a href='https://www.buymeacoffee.com/macokay' target='_blank'>☕ Buy me a coffee</a>
 <br><br>
 <a href='https://github.com/macokay/proxmox-hive' target='_blank'>GitHub</a> &nbsp;
 <a href='https://github.com/macokay/proxmox-hive/issues' target='_blank'>Issues</a>

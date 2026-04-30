@@ -796,7 +796,7 @@ function closeTerminal(key) {
               <a href="https://www.buymeacoffee.com/macokay" target="_blank" rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
                 style={{ background: '#FFDD00', color: '#000' }}>
-                ☕ Buy us a coffee
+                ☕ Buy me a coffee
               </a>
               <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm text-muted hover:text-white bg-base-800 hover:bg-base-700 border border-border transition-colors">

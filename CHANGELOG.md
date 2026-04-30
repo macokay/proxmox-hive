@@ -2,6 +2,13 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.22] - 2026-04-30
+
+### Fixed
+- Proxmox tag now uses `mac-o-kay` (hyphenated) instead of "Mac O Kay" — spaces caused Proxmox to split it into three separate tags
+- Reduced Notes logo size from 96 to 64px
+- "Buy us a coffee" corrected to "Buy me a coffee" in both Notes and about modal
+
 ## [1.0.21] - 2026-04-30
 
 ### Added
