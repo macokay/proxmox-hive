@@ -80,10 +80,11 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
               <p className="font-medium text-warning/80">How to fix:</p>
               <ol className="space-y-1.5 list-none">
                 <li><span className="text-warning/40 mr-1.5">1.</span>In Proxmox: VM → <span className="font-medium text-warning/80">Options</span> → QEMU Guest Agent → <span className="font-medium text-warning/80">Enable ✓</span></li>
-                <li><span className="text-warning/40 mr-1.5">2.</span>If the VM has no network (Cloud-Init): VM → <span className="font-medium text-warning/80">Cloud-Init</span> → IP Config (net0) → Edit → set to <span className="font-mono font-medium text-warning/80">DHCP</span> → Regenerate Image → reboot</li>
+                <li><span className="text-warning/40 mr-1.5">2.</span>If the VM has no network (Cloud-Init): VM → <span className="font-medium text-warning/80">Cloud-Init</span> → IP Config → Edit → set to <span className="font-mono font-medium text-warning/80">DHCP</span> → Regenerate Image → reboot</li>
                 <li><span className="text-warning/40 mr-1.5">3.</span>Inside the VM, run:
                   <div className="mt-1 font-mono bg-base-900/60 rounded px-2 py-1 text-warning/80 select-all">sudo apt update && sudo apt install -y qemu-guest-agent</div>
                 </li>
+                <li><span className="text-warning/40 mr-1.5">4.</span>Reboot the VM — the agent starts automatically on boot.</li>
               </ol>
             </div>
           )}

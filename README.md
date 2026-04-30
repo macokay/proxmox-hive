@@ -170,7 +170,7 @@ VM → Options → QEMU Guest Agent → Enable ✓ → OK
 
 **2. Configure network (Cloud-Init VMs)**
 
-If the VM was created from a Cloud-Init template and has no network: VM → Cloud-Init → IP Config (net0) → Edit → set to DHCP → Regenerate Image → reboot.
+If the VM was created from a Cloud-Init template and has no network: VM → Cloud-Init → IP Config → Edit → set to DHCP → Regenerate Image → reboot.
 
 **3. Install the agent inside the VM**
 
@@ -178,7 +178,9 @@ If the VM was created from a Cloud-Init template and has no network: VM → Clou
 sudo apt update && sudo apt install -y qemu-guest-agent
 ```
 
-The service starts automatically. If not, reboot the VM.
+**4. Reboot the VM**
+
+The agent starts automatically on boot.
 
 ---
 
