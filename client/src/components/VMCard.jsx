@@ -5,6 +5,7 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
   const hasUpdates = totalUpdates > 0
 
   const [selectedPkgs, setSelectedPkgs] = useState(null)
+  const [showAgentHelp, setShowAgentHelp] = useState(false)
 
   const allPkgNames = (vm.packages || []).map(p => p.name)
   const effectiveSelected = selectedPkgs ?? new Set(allPkgNames)
@@ -68,7 +69,24 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
 
       {vm.noAgent && (
         <div className="mb-3 text-xs text-warning/70 bg-warning/5 border border-warning/10 rounded-md px-3 py-2">
-          QEMU guest agent not running. Install <span className="font-mono">qemu-guest-agent</span> inside the VM and enable it in Proxmox VM Options.
+          <div className="flex items-center justify-between gap-2">
+            <span>QEMU guest agent not running. Install <span className="font-mono">qemu-guest-agent</span> inside the VM and enable it in Proxmox VM Options.</span>
+            <button onClick={() => setShowAgentHelp(v => !v)} className="flex-shrink-0 text-warning/50 hover:text-warning transition-colors" title="How to fix">
+              {showAgentHelp ? '▲' : '▼'}
+            </button>
+          </div>
+          {showAgentHelp && (
+            <div className="mt-2.5 pt-2.5 border-t border-warning/10 space-y-2 text-warning/60">
+              <p className="font-medium text-warning/80">How to fix:</p>
+              <ol className="space-y-1.5 list-none">
+                <li><span className="text-warning/40 mr-1.5">1.</span>In Proxmox: VM → <span className="font-medium text-warning/80">Options</span> → QEMU Guest Agent → <span className="font-medium text-warning/80">Enable ✓</span></li>
+                <li><span className="text-warning/40 mr-1.5">2.</span>If the VM has no network (Cloud-Init): VM → <span className="font-medium text-warning/80">Cloud-Init</span> → IP Config (net0) → Edit → set to <span className="font-mono font-medium text-warning/80">DHCP</span> → Regenerate Image → reboot</li>
+                <li><span className="text-warning/40 mr-1.5">3.</span>Inside the VM, run:
+                  <div className="mt-1 font-mono bg-base-900/60 rounded px-2 py-1 text-warning/80 select-all">sudo apt update && sudo apt install -y qemu-guest-agent</div>
+                </li>
+              </ol>
+            </div>
+          )}
         </div>
       )}
 

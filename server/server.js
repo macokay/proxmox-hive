@@ -5,9 +5,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import apiRouter from './routes/api.js'
-import { wsClients } from './broadcast.js'
+import { wsClients, broadcast } from './broadcast.js'
 import { initScheduler } from './services/scheduler.js'
-import { isConfigured } from './services/config.js'
+import { isConfigured, getAppSettings } from './services/config.js'
+import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable } from './services/selfUpdate.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -34,6 +35,27 @@ if (isConfigured()) {
   try { initScheduler(); console.log('Scheduler initialized') }
   catch (e) { console.error('Scheduler init failed:', e.message) }
 }
+
+async function checkAndBroadcastUpdate() {
+  const current = getCurrentVersion()
+  if (current === 'dev') return
+  try {
+    const { betaUpdates } = getAppSettings()
+    let result
+    if (betaUpdates) {
+      const latestSha = await fetchLatestDevCommit()
+      result = { current, latest: 'dev', latestSha, updateAvailable: isDevUpdateAvailable(current, latestSha), beta: true }
+    } else {
+      const latest = await fetchLatestRelease()
+      result = { current, latest, updateAvailable: isUpdateAvailable(current, latest), beta: false }
+    }
+    if (result.updateAvailable) broadcast({ type: 'app_update_available', ...result })
+  } catch {}
+}
+
+// Check on startup and every hour
+checkAndBroadcastUpdate()
+setInterval(checkAndBroadcastUpdate, 60 * 60 * 1000)
 
 const PORT = process.env.PORT || 3000
 server.listen(PORT, () => console.log(`Proxmox Hive running on http://localhost:${PORT}`))
