@@ -226,7 +226,7 @@ EOF
   pct set "$ctid" --tags "mac-o-kay"
   pct set "$ctid" --description "<div align='center'>
 <a href='https://github.com/macokay/proxmox-hive' target='_blank'>
-<img src='https://raw.githubusercontent.com/macokay/proxmox-hive/main/client/public/hive.svg' width='64'/>
+<img src='https://raw.githubusercontent.com/macokay/proxmox-hive/main/misc/logo-80x80.png' width='80' height='80'/>
 </a>
 <h2>Proxmox Hive</h2>
 <a href='https://www.buymeacoffee.com/macokay' target='_blank'>☕ Buy me a coffee</a>
