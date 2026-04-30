@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.12] - 2026-04-30
+
+### Fixed
+- "Update now" now installs the correct Docker image — previously beta mode would always pull the `dev` tag even when the banner was showing a stable release
+
 ## [1.0.11] - 2026-04-30
 
 ### Fixed
