@@ -8,7 +8,7 @@ import apiRouter from './routes/api.js'
 import { wsClients, broadcast, sendToClient } from './broadcast.js'
 import { initScheduler } from './services/scheduler.js'
 import { isConfigured, getAppSettings } from './services/config.js'
-import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable, isDevDockerImageReady } from './services/selfUpdate.js'
+import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable } from './services/selfUpdate.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -50,12 +50,11 @@ async function checkAndBroadcastUpdate() {
     const releaseReady = releaseNewer && await isDockerImageAvailable(`v${latest}`)
 
     if (betaUpdates) {
-      const { sha: latestSha, fullSha } = await fetchLatestDevCommit()
-      const devReady = isDevUpdateAvailable(current, latestSha) && await isDevDockerImageReady(fullSha)
+      const latestSha = await fetchLatestDevCommit()
+      const devReady = isDevUpdateAvailable(current, latestSha) && await isDockerImageAvailable('dev')
       if (devReady) {
         result = { current, latest: 'dev', latestSha, updateAvailable: true, beta: true }
       } else if (releaseNewer) {
-        // Show release update in beta mode based on version number alone — image check skipped
         result = { current, latest, updateAvailable: true, beta: false }
       } else {
         result = { current, latest: 'dev', latestSha, updateAvailable: false, beta: true }

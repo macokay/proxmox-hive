@@ -9,7 +9,7 @@ import {
 import { initScheduler, initSiteScheduler, runCheck, runTargetUpdate, runGroupUpdate, parseLXCList, parseQMList } from '../services/scheduler.js'
 import { testChannel } from '../services/notifications.js'
 import { broadcast } from '../broadcast.js'
-import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable, isDevDockerImageReady, applySelfUpdate, checkDockerSocket } from '../services/selfUpdate.js'
+import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable, applySelfUpdate, checkDockerSocket } from '../services/selfUpdate.js'
 
 const router = Router()
 
@@ -58,8 +58,8 @@ router.get('/app-update', async (req, res) => {
     const releaseReady = releaseNewer && await isDockerImageAvailable(`v${latest}`)
 
     if (betaUpdates) {
-      const { sha: latestSha, fullSha } = await fetchLatestDevCommit()
-      const devReady = isDevUpdateAvailable(current, latestSha) && await isDevDockerImageReady(fullSha)
+      const latestSha = await fetchLatestDevCommit()
+      const devReady = isDevUpdateAvailable(current, latestSha) && await isDockerImageAvailable('dev')
       if (devReady) {
         result = { current, latest: 'dev', latestSha, updateAvailable: true, beta: true }
       } else if (releaseNewer) {
