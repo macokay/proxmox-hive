@@ -2,6 +2,12 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.10] - 2026-04-30
+
+### Fixed
+- Beta update check simplified — uses GHCR `dev` tag existence instead of GitHub Actions API, which was unreliable and caused update banners to never appear
+- Release updates in beta mode now show immediately based on version number alone, without waiting for GHCR image verification
+
 ## [1.0.9] - 2026-04-30
 
 ### Fixed
