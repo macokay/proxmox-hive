@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.16] - 2026-04-30
+
+### Fixed
+- Dev update banner no longer appears when running a clean release — beta updates only offered when already on a dev build, breaking the infinite update loop
+
 ## [1.0.15] - 2026-04-30
 
 ### Fixed
