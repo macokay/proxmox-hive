@@ -59,13 +59,11 @@ router.get('/app-update', async (req, res) => {
 
     if (betaUpdates) {
       const latestSha = await fetchLatestDevCommit()
-      const devReady = isDevUpdateAvailable(current, latestSha) && await isDockerImageAvailable('dev')
-      if (devReady) {
-        result = { current, latest: 'dev', latestSha, updateAvailable: true, beta: true }
-      } else if (releaseNewer) {
+      if (releaseNewer) {
         result = { current, latest, updateAvailable: true, beta: false }
       } else {
-        result = { current, latest: 'dev', latestSha, updateAvailable: false, beta: true }
+        const devReady = isDevUpdateAvailable(current, latestSha) && await isDockerImageAvailable('dev')
+        result = { current, latest: 'dev', latestSha, updateAvailable: devReady, beta: true }
       }
     } else {
       result = { current, latest, updateAvailable: releaseReady, beta: false }
