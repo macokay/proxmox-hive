@@ -72,9 +72,9 @@ async function checkAndBroadcastUpdate() {
   }
 }
 
-// Check on startup and every 5 minutes
+// Check on startup and every 15 minutes
 checkAndBroadcastUpdate()
-setInterval(checkAndBroadcastUpdate, 5 * 60 * 1000)
+setInterval(checkAndBroadcastUpdate, 15 * 60 * 1000)
 
 const PORT = process.env.PORT || 3000
 server.listen(PORT, () => console.log(`Proxmox Hive running on http://localhost:${PORT}`))

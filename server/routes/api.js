@@ -48,7 +48,7 @@ router.get('/app-update', async (req, res) => {
 
   const now = Date.now()
   const force = req.query.force === '1'
-  if (!force && _updateCache && now - _updateCacheAt < 60 * 60 * 1000) return res.json(_updateCache)
+  if (!force && _updateCache && now - _updateCacheAt < 10 * 60 * 1000) return res.json(_updateCache)
 
   const { betaUpdates } = getAppSettings()
   try {

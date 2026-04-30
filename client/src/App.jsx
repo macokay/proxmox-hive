@@ -158,7 +158,7 @@ export default function App() {
     }).catch(() => {})
 
     function checkUpdate() {
-      fetch('/api/app-update?force=1').then(r => r.json()).then(d => {
+      fetch('/api/app-update').then(r => r.json()).then(d => {
         if (d.updateAvailable) setUpdateInfo(d)
       }).catch(() => {})
     }
