@@ -700,6 +700,7 @@ function closeTerminal(key) {
   useEffect(() => {
     const ts = latestCheck?.timestamp
     if (!ts) return
+    setNow(Date.now())
     function getInterval() {
       const diff = Date.now() - new Date(ts).getTime()
       return diff < 3600000 ? 60000 : 3600000
