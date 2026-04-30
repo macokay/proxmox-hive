@@ -45,16 +45,21 @@ async function checkAndBroadcastUpdate() {
   try {
     const { betaUpdates } = getAppSettings()
     let result
+    const latest = await fetchLatestRelease()
+    const releaseReady = isUpdateAvailable(current, latest) && await isDockerImageAvailable(`v${latest}`)
+
     if (betaUpdates) {
       const { sha: latestSha, fullSha } = await fetchLatestDevCommit()
-      const updateAvailable = isDevUpdateAvailable(current, latestSha)
-        && await isDevDockerImageReady(fullSha)
-      result = { current, latest: 'dev', latestSha, updateAvailable, beta: true }
+      const devReady = isDevUpdateAvailable(current, latestSha) && await isDevDockerImageReady(fullSha)
+      if (devReady) {
+        result = { current, latest: 'dev', latestSha, updateAvailable: true, beta: true }
+      } else if (releaseReady) {
+        result = { current, latest, updateAvailable: true, beta: false }
+      } else {
+        result = { current, latest: 'dev', latestSha, updateAvailable: false, beta: true }
+      }
     } else {
-      const latest = await fetchLatestRelease()
-      const updateAvailable = isUpdateAvailable(current, latest)
-        && await isDockerImageAvailable(`v${latest}`)
-      result = { current, latest, updateAvailable, beta: false }
+      result = { current, latest, updateAvailable: releaseReady, beta: false }
     }
     if (result.updateAvailable) {
       pendingUpdate = result
