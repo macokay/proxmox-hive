@@ -78,12 +78,12 @@ router.get('/app-update', async (req, res) => {
 })
 
 router.post('/app-update/apply', (req, res) => {
-  // Use beta flag from request body — banner knows whether it's a dev or release update
   const useBeta = req.body?.beta === true
+  const knownVersion = req.body?.latest || null
   res.json({ started: true })
   ;(async () => {
     try {
-      await applySelfUpdate(data => broadcast({ type: 'app_update_log', data }), useBeta)
+      await applySelfUpdate(data => broadcast({ type: 'app_update_log', data }), useBeta, knownVersion)
       broadcast({ type: 'app_update_done', success: true })
     } catch (e) {
       broadcast({ type: 'app_update_log', data: `\nError: ${e.message}\n` })

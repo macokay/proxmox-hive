@@ -88,7 +88,7 @@ export function checkDockerSocket() {
   return existsSync('/var/run/docker.sock')
 }
 
-export async function applySelfUpdate(onLog, beta = false) {
+export async function applySelfUpdate(onLog, beta = false, knownVersion = null) {
   if (!checkDockerSocket()) {
     onLog('ERROR: Docker socket not mounted into container.\n\n')
     onLog('Your docker-compose.yml is missing required volume mounts.\n')
@@ -99,7 +99,7 @@ export async function applySelfUpdate(onLog, beta = false) {
     throw new Error('Docker socket not accessible — see instructions above')
   }
 
-  const latest = beta ? 'dev' : await fetchLatestRelease()
+  const latest = beta ? 'dev' : (knownVersion || await fetchLatestRelease())
   if (!latest) throw new Error('Could not fetch latest release')
 
   function run(cmd, args) {

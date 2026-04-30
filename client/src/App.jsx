@@ -46,7 +46,7 @@ function UpdateBanner({ info, onDismiss }) {
     await fetch('/api/app-update/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ beta: info.beta === true })
+      body: JSON.stringify({ beta: info.beta === true, latest: info.latest || null })
     })
   }
 
