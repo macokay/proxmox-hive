@@ -1,4 +1,3 @@
-// Shared broadcast state - avoids circular deps between server.js and services
 export const wsClients = new Set()
 
 export function broadcast(data) {
@@ -6,4 +5,8 @@ export function broadcast(data) {
   wsClients.forEach(ws => {
     if (ws.readyState === 1) ws.send(msg)
   })
+}
+
+export function sendToClient(ws, data) {
+  if (ws.readyState === 1) ws.send(JSON.stringify(data))
 }

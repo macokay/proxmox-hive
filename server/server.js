@@ -5,7 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import apiRouter from './routes/api.js'
-import { wsClients, broadcast } from './broadcast.js'
+import { wsClients, broadcast, sendToClient } from './broadcast.js'
 import { initScheduler } from './services/scheduler.js'
 import { isConfigured, getAppSettings } from './services/config.js'
 import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable } from './services/selfUpdate.js'
@@ -25,10 +25,13 @@ if (fs.existsSync(staticPath)) {
   app.get('*', (req, res) => res.sendFile(path.join(staticPath, 'index.html')))
 }
 
+let pendingUpdate = null
+
 wss.on('connection', (ws) => {
   wsClients.add(ws)
   ws.on('close', () => wsClients.delete(ws))
   ws.on('error', () => wsClients.delete(ws))
+  if (pendingUpdate) sendToClient(ws, { type: 'app_update_available', ...pendingUpdate })
 })
 
 if (isConfigured()) {
@@ -49,7 +52,12 @@ async function checkAndBroadcastUpdate() {
       const latest = await fetchLatestRelease()
       result = { current, latest, updateAvailable: isUpdateAvailable(current, latest), beta: false }
     }
-    if (result.updateAvailable) broadcast({ type: 'app_update_available', ...result })
+    if (result.updateAvailable) {
+      pendingUpdate = result
+      broadcast({ type: 'app_update_available', ...result })
+    } else {
+      pendingUpdate = null
+    }
   } catch {}
 }
 
