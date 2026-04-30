@@ -2,6 +2,12 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.15] - 2026-04-30
+
+### Fixed
+- Client no longer bypasses server cache when polling for updates — removes direct GitHub API calls that caused 403 rate limit errors
+- API cache TTL reduced to 10 minutes so update banner appears faster without hitting rate limits
+
 ## [1.0.14] - 2026-04-30
 
 ### Fixed
