@@ -169,7 +169,11 @@ export default function App() {
       if (document.visibilityState === 'visible') checkUpdate()
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+    const interval = setInterval(checkUpdate, 15 * 60 * 1000)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      clearInterval(interval)
+    }
   }, [])
 
   if (configured === null) return (
