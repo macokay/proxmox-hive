@@ -160,6 +160,30 @@ In the setup wizard: username `pvehive`, select **Password** auth and enter the 
 
 ---
 
+### VM setup (QEMU guest agent)
+
+VM package detection requires the QEMU guest agent running inside each VM. Without it the VM shows a warning and packages cannot be checked.
+
+**1. Enable in Proxmox**
+
+VM → Options → QEMU Guest Agent → Enable ✓ → OK
+
+**2. Configure network (Cloud-Init VMs)**
+
+If the VM was created from a Cloud-Init template and has no network: VM → Cloud-Init → IP Config → Edit → set to DHCP → Regenerate Image → reboot.
+
+**3. Install the agent inside the VM**
+
+```bash
+sudo apt update && sudo apt install -y qemu-guest-agent
+```
+
+**4. Reboot the VM**
+
+The agent starts automatically on boot.
+
+---
+
 ### Data
 
 Configuration is stored in a Docker volume (`proxmox-hive-data`) at `/data/config.json` inside the container.

@@ -5,9 +5,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import apiRouter from './routes/api.js'
-import { wsClients } from './broadcast.js'
+import { wsClients, broadcast, sendToClient } from './broadcast.js'
 import { initScheduler } from './services/scheduler.js'
-import { isConfigured } from './services/config.js'
+import { isConfigured, getAppSettings } from './services/config.js'
+import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable, isDevDockerImageReady } from './services/selfUpdate.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -24,16 +25,49 @@ if (fs.existsSync(staticPath)) {
   app.get('*', (req, res) => res.sendFile(path.join(staticPath, 'index.html')))
 }
 
+let pendingUpdate = null
+
 wss.on('connection', (ws) => {
   wsClients.add(ws)
   ws.on('close', () => wsClients.delete(ws))
   ws.on('error', () => wsClients.delete(ws))
+  if (pendingUpdate) sendToClient(ws, { type: 'app_update_available', ...pendingUpdate })
 })
 
 if (isConfigured()) {
   try { initScheduler(); console.log('Scheduler initialized') }
   catch (e) { console.error('Scheduler init failed:', e.message) }
 }
+
+async function checkAndBroadcastUpdate() {
+  const current = getCurrentVersion()
+  if (current === 'dev') return
+  try {
+    const { betaUpdates } = getAppSettings()
+    let result
+    if (betaUpdates) {
+      const { sha: latestSha, fullSha } = await fetchLatestDevCommit()
+      const updateAvailable = isDevUpdateAvailable(current, latestSha)
+        && await isDevDockerImageReady(fullSha)
+      result = { current, latest: 'dev', latestSha, updateAvailable, beta: true }
+    } else {
+      const latest = await fetchLatestRelease()
+      const updateAvailable = isUpdateAvailable(current, latest)
+        && await isDockerImageAvailable(`v${latest}`)
+      result = { current, latest, updateAvailable, beta: false }
+    }
+    if (result.updateAvailable) {
+      pendingUpdate = result
+      broadcast({ type: 'app_update_available', ...result })
+    } else {
+      pendingUpdate = null
+    }
+  } catch {}
+}
+
+// Check on startup and every hour
+checkAndBroadcastUpdate()
+setInterval(checkAndBroadcastUpdate, 60 * 60 * 1000)
 
 const PORT = process.env.PORT || 3000
 server.listen(PORT, () => console.log(`Proxmox Hive running on http://localhost:${PORT}`))

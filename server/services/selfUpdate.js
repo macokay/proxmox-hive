@@ -50,7 +50,40 @@ export async function fetchLatestDevCommit() {
   })
   if (!r.ok) throw new Error(`GitHub API ${r.status}`)
   const data = await r.json()
-  return data.sha?.slice(0, 7) || null
+  return { sha: data.sha?.slice(0, 7) || null, fullSha: data.sha || null }
+}
+
+export async function isDevDockerImageReady(fullSha) {
+  if (!fullSha) return false
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/macokay/proxmox-hive/actions/workflows/docker-publish.yml/runs?head_sha=${fullSha}&status=success&per_page=1`,
+      { headers: { 'User-Agent': 'proxmox-hive' } }
+    )
+    if (!r.ok) return false
+    const data = await r.json()
+    return (data.total_count || 0) > 0
+  } catch {
+    return false
+  }
+}
+
+export async function isDockerImageAvailable(tag) {
+  try {
+    const tokenRes = await fetch(
+      'https://ghcr.io/token?scope=repository:macokay/proxmox-hive:pull&service=ghcr.io',
+      { headers: { 'User-Agent': 'proxmox-hive' } }
+    )
+    if (!tokenRes.ok) return false
+    const { token } = await tokenRes.json()
+    const manifestRes = await fetch(
+      `https://ghcr.io/v2/macokay/proxmox-hive/manifests/${tag}`,
+      { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.oci.image.index.v1+json,application/vnd.docker.distribution.manifest.v2+json' } }
+    )
+    return manifestRes.ok
+  } catch {
+    return false
+  }
 }
 
 export function isUpdateAvailable(current, latest) {

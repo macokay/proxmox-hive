@@ -5,9 +5,9 @@ import LXCCard from '../components/LXCCard.jsx'
 import VMCard from '../components/VMCard.jsx'
 import Terminal from '../components/Terminal.jsx'
 
-function formatRelative(ts) {
+function formatRelative(ts, now = Date.now()) {
   if (!ts) return null
-  const diff = Date.now() - new Date(ts).getTime()
+  const diff = now - new Date(ts).getTime()
   const mins = Math.floor(diff / 60000)
   const hours = Math.floor(mins / 60)
   if (hours > 0) return `${hours}h ago`
@@ -602,6 +602,7 @@ export default function Dashboard({ sites, activeSiteId, onSiteChange, onSetting
   const [checking, setChecking] = useState({})     // siteId → bool
   const [terminals, setTerminals] = useState({})   // updateKey → terminal data
   const [activeUpdates, setActiveUpdates] = useState({}) // key → bool
+  const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
     fetch('/api/version').then(r => r.json()).then(d => setAppVersion(d.version)).catch(() => {})
@@ -695,6 +696,24 @@ function closeTerminal(key) {
   // Latest check for display in header
   const latestCheck = activeSiteWithCheck?.lastCheck
 
+  // Live relative-time ticker: every minute if < 1h old, else every hour
+  useEffect(() => {
+    const ts = latestCheck?.timestamp
+    if (!ts) return
+    setNow(Date.now())
+    function getInterval() {
+      const diff = Date.now() - new Date(ts).getTime()
+      return diff < 3600000 ? 60000 : 3600000
+    }
+    let id
+    function tick() {
+      setNow(Date.now())
+      id = setTimeout(tick, getInterval())
+    }
+    id = setTimeout(tick, getInterval())
+    return () => clearTimeout(id)
+  }, [latestCheck?.timestamp])
+
   const terminalCount = Object.keys(terminals).length
 
   return (
@@ -715,7 +734,7 @@ function closeTerminal(key) {
           {!isGlobal && latestCheck && (
             <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted">
               <span className="w-1.5 h-1.5 rounded-full bg-success block" />
-              {formatRelative(latestCheck.timestamp)}
+              {formatRelative(latestCheck.timestamp, now)}
             </div>
           )}
           {!isGlobal && (

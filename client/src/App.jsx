@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Setup from './pages/Setup.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Settings from './pages/Settings.jsx'
@@ -142,6 +142,10 @@ export default function App() {
     if (s.length > 0 && !activeSiteId) setActiveSiteId(s[0].id)
   }
 
+  useWebSocket(useCallback((msg) => {
+    if (msg.type === 'app_update_available') setUpdateInfo(msg)
+  }, []))
+
   useEffect(() => {
     loadSites()
 
@@ -149,15 +153,19 @@ export default function App() {
       if (!d.dockerSocket) setDockerSocketMissing(true)
     }).catch(() => {})
 
-    function checkUpdate(force = false) {
-      fetch(`/api/app-update${force ? '?force=1' : ''}`).then(r => r.json()).then(d => {
+    function checkUpdate() {
+      fetch('/api/app-update?force=1').then(r => r.json()).then(d => {
         if (d.updateAvailable) setUpdateInfo(d)
       }).catch(() => {})
     }
 
-    checkUpdate(true)
-    const interval = setInterval(() => checkUpdate(true), 30 * 60 * 1000)
-    return () => clearInterval(interval)
+    checkUpdate()
+
+    function onVisibilityChange() {
+      if (document.visibilityState === 'visible') checkUpdate()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
   }, [])
 
   if (configured === null) return (
