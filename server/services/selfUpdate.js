@@ -36,12 +36,15 @@ export function getCurrentVersion() {
 }
 
 export async function fetchLatestRelease() {
-  const r = await fetch('https://api.github.com/repos/macokay/proxmox-hive/releases/latest', {
-    headers: { 'User-Agent': 'proxmox-hive' }
+  // Use the redirect URL — no API key, no rate limit
+  const r = await fetch('https://github.com/macokay/proxmox-hive/releases/latest', {
+    headers: { 'User-Agent': 'proxmox-hive' },
+    redirect: 'manual'
   })
-  if (!r.ok) throw new Error(`GitHub API ${r.status}`)
-  const data = await r.json()
-  return data.tag_name?.replace(/^v/, '') || null
+  const location = r.headers.get('location') || ''
+  const match = location.match(/\/releases\/tag\/v?([\d.]+)$/)
+  if (!match) throw new Error('Could not parse latest release')
+  return match[1]
 }
 
 export async function fetchLatestDevCommit() {

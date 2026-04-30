@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.19] - 2026-04-30
+
+### Fixed
+- Update check no longer uses GitHub REST API — uses the releases redirect URL instead, eliminating 403 rate limit errors
+
 ## [1.0.18] - 2026-04-30
 
 ### Added
