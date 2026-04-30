@@ -769,23 +769,17 @@ function closeTerminal(key) {
         ) : null}
       </main>
 
-      <footer className="border-t border-border px-5 py-3">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
-          <span className="text-xs text-muted">
-            {(() => {
-              const isRelease = appVersion && /^\d+\.\d+\.\d+$/.test(appVersion)
-              const href = isRelease
-                ? `https://github.com/macokay/proxmox-hive/releases/tag/v${appVersion}`
-                : 'https://github.com/macokay/proxmox-hive'
-              const label = appVersion ? `Proxmox Hive v${appVersion}` : 'Proxmox Hive'
-              return <a href={href} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{label}</a>
-            })()} · <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
-          </span>
-          <button onClick={() => setShowAbout(true)}
-            className="text-[10px] px-2 py-0.5 rounded border border-accent/30 bg-accent/10 text-accent hover:bg-accent/20 transition-colors flex-shrink-0">
-            Mac O Kay
-          </button>
-        </div>
+      <footer className="border-t border-border px-5 py-3 text-center">
+        <span className="text-xs text-muted">
+          {(() => {
+            const isRelease = appVersion && /^\d+\.\d+\.\d+$/.test(appVersion)
+            const href = isRelease
+              ? `https://github.com/macokay/proxmox-hive/releases/tag/v${appVersion}`
+              : 'https://github.com/macokay/proxmox-hive'
+            const label = appVersion ? `Proxmox Hive v${appVersion}` : 'Proxmox Hive'
+            return <a href={href} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{label}</a>
+          })()} · <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+        </span>
       </footer>
 
       {showAbout && (

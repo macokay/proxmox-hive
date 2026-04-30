@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.20] - 2026-04-30
+
+### Changed
+- Revert footer Mac O Kay badge — about panel accessible via hive logo click in header only
+
 ## [1.0.19] - 2026-04-30
 
 ### Fixed
