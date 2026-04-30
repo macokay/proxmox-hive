@@ -2,6 +2,12 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.9] - 2026-04-30
+
+### Fixed
+- Beta update check now falls back to stable release detection — running a dev build no longer blocks the banner when a new stable release is available
+- Docker image existence verified on GHCR before showing update banner — prevents prompting for an update before the build pipeline has finished publishing
+
 ## [1.0.8] - 2026-04-30
 
 ### Added
