@@ -603,6 +603,7 @@ export default function Dashboard({ sites, activeSiteId, onSiteChange, onSetting
   const [terminals, setTerminals] = useState({})   // updateKey → terminal data
   const [activeUpdates, setActiveUpdates] = useState({}) // key → bool
   const [now, setNow] = useState(Date.now())
+  const [showAbout, setShowAbout] = useState(false)
 
   useEffect(() => {
     fetch('/api/version').then(r => r.json()).then(d => setAppVersion(d.version)).catch(() => {})
@@ -728,7 +729,9 @@ function closeTerminal(key) {
 
       <header className="border-b border-border bg-base-900/80 backdrop-blur-md sticky top-0" style={{ zIndex: 10 }}>
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center gap-4" style={{ overflow: 'visible' }}>
-          <img src="/hive.svg" className="w-7 h-7 flex-shrink-0" alt="Proxmox Hive" />
+          <button onClick={() => setShowAbout(true)} className="flex-shrink-0 opacity-90 hover:opacity-100 transition-opacity" title="About Proxmox Hive">
+            <img src="/hive.svg" className="w-7 h-7" alt="Proxmox Hive" />
+          </button>
           <SiteDropdown sites={sites} activeSiteId={activeSiteId} onSiteChange={onSiteChange} onAddSite={onAddSite} />
           <div className="flex-1" />
           {!isGlobal && latestCheck && (
@@ -766,18 +769,65 @@ function closeTerminal(key) {
         ) : null}
       </main>
 
-      <footer className="border-t border-border px-5 py-3 text-center">
-        <span className="text-xs text-muted">
-          {(() => {
-            const isRelease = appVersion && /^\d+\.\d+\.\d+$/.test(appVersion)
-            const href = isRelease
-              ? `https://github.com/macokay/proxmox-hive/releases/tag/v${appVersion}`
-              : 'https://github.com/macokay/proxmox-hive'
-            const label = appVersion ? `Proxmox Hive v${appVersion}` : 'Proxmox Hive'
-            return <a href={href} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{label}</a>
-          })()} · <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
-        </span>
+      <footer className="border-t border-border px-5 py-3">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+          <span className="text-xs text-muted">
+            {(() => {
+              const isRelease = appVersion && /^\d+\.\d+\.\d+$/.test(appVersion)
+              const href = isRelease
+                ? `https://github.com/macokay/proxmox-hive/releases/tag/v${appVersion}`
+                : 'https://github.com/macokay/proxmox-hive'
+              const label = appVersion ? `Proxmox Hive v${appVersion}` : 'Proxmox Hive'
+              return <a href={href} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{label}</a>
+            })()} · <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
+          </span>
+          <button onClick={() => setShowAbout(true)}
+            className="text-[10px] px-2 py-0.5 rounded border border-accent/30 bg-accent/10 text-accent hover:bg-accent/20 transition-colors flex-shrink-0">
+            Mac O Kay
+          </button>
+        </div>
       </footer>
+
+      {showAbout && (
+        <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 200, background: 'rgba(8,8,10,0.85)', backdropFilter: 'blur(6px)' }}
+          onClick={e => { if (e.target === e.currentTarget) setShowAbout(false) }}>
+          <div className="slide-up w-full max-w-xs card border-border overflow-hidden">
+            <div className="px-6 pt-8 pb-5 text-center border-b border-border">
+              <img src="/hive.svg" className="w-16 h-16 mx-auto mb-4" alt="Proxmox Hive" />
+              <h2 className="text-base font-semibold text-white mb-1">Proxmox Hive</h2>
+              <p className="text-xs text-muted mb-3">Update manager for Proxmox VE</p>
+              <span className="inline-block text-[10px] px-2 py-0.5 rounded border border-accent/30 bg-accent/10 text-accent">Mac O Kay</span>
+            </div>
+            <div className="p-4 space-y-2">
+              <a href="https://www.buymeacoffee.com/macokay" target="_blank" rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+                style={{ background: '#FFDD00', color: '#000' }}>
+                ☕ Buy us a coffee
+              </a>
+              <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm text-muted hover:text-white bg-base-800 hover:bg-base-700 border border-border transition-colors">
+                GitHub
+              </a>
+              <div className="grid grid-cols-2 gap-2">
+                <a href="https://github.com/macokay/proxmox-hive/discussions" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs text-muted hover:text-white bg-base-800 hover:bg-base-700 border border-border transition-colors">
+                  💬 Discussions
+                </a>
+                <a href="https://github.com/macokay/proxmox-hive/issues" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs text-muted hover:text-white bg-base-800 hover:bg-base-700 border border-border transition-colors">
+                  ⚠ Issues
+                </a>
+              </div>
+            </div>
+            <div className="px-4 pb-4">
+              <button onClick={() => setShowAbout(false)}
+                className="w-full text-xs py-2 rounded-lg border border-border text-muted hover:text-white hover:border-accent/40 transition-colors">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

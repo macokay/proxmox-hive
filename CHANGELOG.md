@@ -2,6 +2,12 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.18] - 2026-04-30
+
+### Added
+- About panel with logo, Buy us a coffee, GitHub, Discussions and Issues links — open by clicking the hive logo in the header or the "Mac O Kay" badge in the footer
+- "Mac O Kay" author badge in footer
+
 ## [1.0.17] - 2026-04-30
 
 ### Fixed
