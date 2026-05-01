@@ -43,7 +43,15 @@ jobs:
         id: appver
         run: |
           DESC=$(git describe --tags --always 2>/dev/null || echo "dev")
-          if [[ "$DESC" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+          SHA=$(git rev-parse --short HEAD)
+          if [[ "$GITHUB_REF" == "refs/heads/dev" ]]; then
+            # Dev builds always carry SHA so they never look like a clean release
+            if [[ "$DESC" =~ ^v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+              echo "value=${BASH_REMATCH[1]}-${SHA}" >> $GITHUB_OUTPUT
+            else
+              echo "value=${SHA}" >> $GITHUB_OUTPUT
+            fi
+          elif [[ "$DESC" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
             echo "value=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
           elif [[ "$DESC" =~ ^v([0-9]+\.[0-9]+\.[0-9]+)-[0-9]+-g([a-f0-9]+)$ ]]; then
             echo "value=${BASH_REMATCH[1]}-${BASH_REMATCH[2]}" >> $GITHUB_OUTPUT
