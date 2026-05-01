@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.24] - 2026-04-30
+
+### Fixed
+- Dev Docker builds always include commit SHA in app version — updating to a dev build no longer rolls back to a clean stable release version
+
 ## [1.0.22] - 2026-04-30
 
 ### Fixed
