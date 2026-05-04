@@ -1,11 +1,27 @@
+# Dependencies
+node_modules/
 
-# Claude Code + Ruflo (local only, not for repo)
-.claude/
-.claude-flow/
-CLAUDE.md
+# Build output
+dist/
+build/
 
-# Ruflo agent files
-.mcp.json
-.swarm/
-agentdb.rvf
-agentdb.rvf.lock
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Docker local overrides
+docker-compose.override.yml
+
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
