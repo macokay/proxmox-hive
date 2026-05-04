@@ -1,0 +1,67 @@
+name: Security Audit
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run npm audit
+        id: audit
+        run: |
+          python3 << 'PYEOF'
+          import subprocess, json, glob, os
+
+          findings = []
+          for pkg_path in sorted(glob.glob('**/package.json', recursive=True)):
+              if any(x in pkg_path for x in ['node_modules', '.git']):
+                  continue
+              d = os.path.dirname(pkg_path) or '.'
+              subprocess.run(
+                  ['npm', 'install', '--package-lock-only', '--ignore-scripts', '--quiet'],
+                  cwd=d, capture_output=True
+              )
+              r = subprocess.run(['npm', 'audit', '--json'], cwd=d, capture_output=True, text=True)
+              try:
+                  data = json.loads(r.stdout)
+                  for name, v in data.get('vulnerabilities', {}).items():
+                      if v.get('severity') in ('high', 'critical'):
+                          fix = 'yes' if v.get('fixAvailable') else 'no'
+                          findings.append(f'| `{name}` | {v["severity"].upper()} | `{d}` | {fix} |')
+              except Exception:
+                  pass
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              if findings:
+                  rows = '\n'.join(findings)
+                  table = f'| Package | Severity | Directory | Fix Available |\n|---|---|---|---|\n{rows}'
+                  f.write(f'findings<<EOF\n{table}\nEOF\n')
+              else:
+                  f.write('findings=\n')
+          PYEOF
+
+      - name: Create issue if findings
+        if: steps.audit.outputs.findings != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RELEASE="${{ github.event.release.tag_name }}"
+          TRIGGER="${RELEASE:-manual (workflow_dispatch)}"
+          gh issue create \
+            --title "[Security] npm audit HIGH/CRITICAL — $(date +%Y-%m-%d)" \
+            --body "$(printf '## npm audit findings\n\nTriggered by: %s\n\n%s\n\nRun `npm audit fix` in the affected directory to resolve.' "$TRIGGER" "${{ steps.audit.outputs.findings }}")"

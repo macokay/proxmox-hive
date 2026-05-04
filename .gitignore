@@ -1,0 +1,11 @@
+
+# Claude Code + Ruflo (local only, not for repo)
+.claude/
+.claude-flow/
+CLAUDE.md
+
+# Ruflo agent files
+.mcp.json
+.swarm/
+agentdb.rvf
+agentdb.rvf.lock
