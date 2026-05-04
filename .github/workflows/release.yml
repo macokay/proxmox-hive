@@ -64,6 +64,11 @@ jobs:
           git tag -f "$RELEASE_TAG" HEAD
           git push origin "refs/tags/$RELEASE_TAG" --force
 
+      - name: npm audit
+        run: |
+          npm audit --audit-level=high --prefix client
+          npm audit --audit-level=high --prefix server
+
       - name: Create zip asset
         run: |
           zip -r proxmox-hive.zip \
