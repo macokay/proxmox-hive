@@ -52,27 +52,35 @@ export function initSiteScheduler(site) {
 
 // ─── SSH helpers per site ──────────────────────────────────────────────────────
 
-async function siteExec(site, cmd) {
+async function siteExec(site, cmd, execTimeout = 60000) {
   const conn = await createSSHConnection(site.ssh)
   return new Promise((resolve, reject) => {
     let stdout = '', stderr = ''
+    const t = setTimeout(() => {
+      conn.destroy()
+      reject(new Error(`Command timed out after ${execTimeout / 1000}s: ${cmd.slice(0, 80)}`))
+    }, execTimeout)
     conn.exec(cmd, (err, stream) => {
-      if (err) { conn.end(); return reject(err) }
+      if (err) { clearTimeout(t); conn.end(); return reject(err) }
       stream.on('data', d => { stdout += d })
       stream.stderr.on('data', d => { stderr += d })
-      stream.on('close', (code) => { conn.end(); resolve({ stdout, stderr, code }) })
+      stream.on('close', (code) => { clearTimeout(t); conn.end(); resolve({ stdout, stderr, code }) })
     })
   })
 }
 
-async function siteExecStream(site, cmd, onData, onDone) {
+async function siteExecStream(site, cmd, onData, onDone, execTimeout = 300000) {
   const conn = await createSSHConnection(site.ssh)
   return new Promise((resolve, reject) => {
+    const t = setTimeout(() => {
+      conn.destroy()
+      reject(new Error(`Stream command timed out after ${execTimeout / 1000}s`))
+    }, execTimeout)
     conn.exec(cmd, (err, stream) => {
-      if (err) { conn.end(); return reject(err) }
+      if (err) { clearTimeout(t); conn.end(); return reject(err) }
       stream.on('data', d => onData(d.toString(), 'stdout'))
       stream.stderr.on('data', d => onData(d.toString(), 'stderr'))
-      stream.on('close', (code) => { conn.end(); onDone(code); resolve(code) })
+      stream.on('close', (code) => { clearTimeout(t); conn.end(); onDone(code); resolve(code) })
     })
   })
 }

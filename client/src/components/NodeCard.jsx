@@ -4,6 +4,10 @@ export default function NodeCard({ node, onUpdate, updating }) {
   const hasUpdates = node?.updates > 0
   const allPkgNames = (node?.packages || []).map(p => p.name)
   const [selectedPkgs, setSelectedPkgs] = useState(null)
+  const [expanded, setExpanded] = useState(false)
+
+  const SHOW_COUNT = 5
+  const hiddenCount = (node?.packages?.length || 0) - SHOW_COUNT
 
   const effectiveSelected = selectedPkgs ?? new Set(allPkgNames)
   const selectionCount = effectiveSelected.size
@@ -58,7 +62,7 @@ export default function NodeCard({ node, onUpdate, updating }) {
                 onClick={() => setSelectedPkgs(new Set())}>None</button>
             </div>
           </div>
-          {node.packages.map((pkg, i) => (
+          {node.packages.slice(0, expanded ? undefined : SHOW_COUNT).map((pkg, i) => (
             <button key={i} onClick={() => togglePkg(pkg.name)}
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
@@ -70,6 +74,13 @@ export default function NodeCard({ node, onUpdate, updating }) {
               <span className="text-muted flex-shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
             </button>
           ))}
+
+          {hiddenCount > 0 && (
+            <button onClick={() => setExpanded(v => !v)}
+              className="w-full text-[11px] text-accent/70 hover:text-accent py-1.5 px-2.5 rounded-md border border-dashed border-border/40 hover:border-accent/30 transition-all text-center">
+              {expanded ? '↑ Show less' : `↓ Show ${hiddenCount} more`}
+            </button>
+          )}
         </div>
       )}
 

@@ -234,8 +234,21 @@ function MultiTerminal({ terminals, onCloseAll, onClose }) {
 }
 
 function TerminalPanel({ term, onClose }) {
-  const bottomRef = useRef(null)
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [term.logs])
+  const containerRef = useRef(null)
+  const userScrolledUp = useRef(false)
+
+  const handleScroll = () => {
+    const el = containerRef.current
+    if (!el) return
+    userScrolledUp.current = el.scrollHeight - el.scrollTop - el.clientHeight > 50
+  }
+
+  useEffect(() => {
+    if (!userScrolledUp.current) {
+      const el = containerRef.current
+      if (el) el.scrollTop = el.scrollHeight
+    }
+  }, [term.logs])
 
   return (
     <div className="card border-border flex flex-col" style={{ minHeight: '320px', maxHeight: '480px' }}>
@@ -255,12 +268,11 @@ function TerminalPanel({ term, onClose }) {
           {term.done && <button onClick={onClose} className="text-muted hover:text-white transition-colors text-sm px-2">✕</button>}
         </div>
       </div>
-      <div className="terminal flex-1 overflow-y-auto p-4 text-xs">
+      <div ref={containerRef} onScroll={handleScroll} className="terminal flex-1 overflow-y-auto p-4 text-xs">
         {term.logs.length === 0 && <span className="text-muted">Starting...</span>}
         {term.logs.map((entry, i) => (
           <span key={i} className={entry.type === 'stderr' ? 'stderr' : ''}>{entry.text}</span>
         ))}
-        <div ref={bottomRef} />
       </div>
     </div>
   )

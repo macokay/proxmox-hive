@@ -25,6 +25,12 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
 
   const [selectedPkgs, setSelectedPkgs] = useState(null)
   const [confirmFullUpgrade, setConfirmFullUpgrade] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
+  const SHOW_COUNT = 5
+  const visibleAppCount = expanded ? appCount : Math.min(appCount, SHOW_COUNT)
+  const visibleAptCount = expanded ? aptCount : Math.max(0, SHOW_COUNT - appCount)
+  const hiddenCount = totalUpdates - SHOW_COUNT
 
   const allPkgNames = [
     ...(lxc.appUpdates || []).map(p => p.name),
@@ -121,7 +127,7 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
             </div>
           </div>
 
-          {lxc.appUpdates?.map((pkg, i) => (
+          {lxc.appUpdates?.slice(0, visibleAppCount).map((pkg, i) => (
             <button key={`app-${i}`} onClick={() => togglePkg(pkg.name)}
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
@@ -135,7 +141,7 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
             </button>
           ))}
 
-          {lxc.packages?.map((pkg, i) => (
+          {lxc.packages?.slice(0, visibleAptCount).map((pkg, i) => (
             <button key={`apt-${i}`} onClick={() => togglePkg(pkg.name)}
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
@@ -150,6 +156,13 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
               <span className="text-muted flex-shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
             </button>
           ))}
+
+          {hiddenCount > 0 && (
+            <button onClick={() => setExpanded(v => !v)}
+              className="w-full text-[11px] text-accent/70 hover:text-accent py-1.5 px-2.5 rounded-md border border-dashed border-border/40 hover:border-accent/30 transition-all text-center">
+              {expanded ? '↑ Show less' : `↓ Show ${hiddenCount} more`}
+            </button>
+          )}
         </div>
       )}
 

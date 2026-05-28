@@ -579,15 +579,20 @@ router.post('/reset', (req, res) => {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-async function siteExecSimple(sshConfig, cmd) {
+async function siteExecSimple(sshConfig, cmd, execTimeout = 60000) {
   const conn = await createSSHConnection(sshConfig)
   return new Promise((resolve, reject) => {
     let out = '', err = ''
+    const t = setTimeout(() => {
+      conn.destroy()
+      reject(new Error(`Command timed out after ${execTimeout / 1000}s`))
+    }, execTimeout)
     conn.exec(cmd, (e, stream) => {
-      if (e) { conn.end(); return reject(e) }
+      if (e) { clearTimeout(t); conn.end(); return reject(e) }
       stream.on('data', d => { out += d })
       stream.stderr.on('data', d => { err += d })
       stream.on('close', code => {
+        clearTimeout(t)
         conn.end()
         if (code !== 0 && !out.trim()) reject(new Error(err.trim() || `exit ${code}`))
         else resolve(out)

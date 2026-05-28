@@ -260,7 +260,17 @@ function ContainerList({ items, selectedSet, onToggle, onRetry, loading, error, 
       {loading && <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="shimmer h-12 rounded-lg bg-base-800" />)}</div>}
       {error && (
         <div className="p-3 rounded-lg bg-danger/10 text-danger border border-danger/20 text-sm space-y-1">
-          <div className="flex justify-between"><span className="flex items-center gap-1.5"><img src="/cross.svg" className="w-4 h-4 flex-shrink-0" alt="" />{error}</span><button className="underline text-xs" onClick={onRetry}>Retry</button></div>
+          <div className="flex justify-between items-start gap-2">
+            <span className="flex items-start gap-1.5">
+              <img src="/cross.svg" className="w-4 h-4 flex-shrink-0 mt-0.5" alt="" />
+              <span>
+                {/handshake|timed out/i.test(error)
+                  ? 'SSH handshake timed out — the host is reachable but not responding to SSH. Check that the IP and port are correct, that SSH is running on the host, and that no firewall is blocking port 22. Then test the connection above.'
+                  : error}
+              </span>
+            </span>
+            <button className="underline text-xs flex-shrink-0" onClick={onRetry}>Retry</button>
+          </div>
         </div>
       )}
       {!loading && !error && items.length > 0 && (
@@ -503,7 +513,9 @@ function SiteSettings({ site, onSaved, onDeleted }) {
     setTestingSSH(true); setSSHResult(null)
     try {
       const r = await fetch('/api/setup/test-ssh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config.ssh) })
-      setSSHResult(await r.json())
+      const d = await r.json()
+      setSSHResult(d)
+      if (d.ok) { fetchLXC(); fetchVMs() }
     } catch { setSSHResult({ ok: false, error: 'Connection error' }) }
     setTestingSSH(false)
   }
