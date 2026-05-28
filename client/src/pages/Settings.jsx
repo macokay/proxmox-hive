@@ -522,14 +522,19 @@ function SiteSettings({ site, onSaved, onDeleted }) {
     setTestingSSH(false)
   }
 
+  const hasChanges = JSON.stringify(config) !== JSON.stringify(site)
+
+  function showSaved() { setSaved(true); setTimeout(() => setSaved(false), 3000) }
+
   async function save() {
+    if (!hasChanges) { showSaved(); return }
     setSaving(true); setSaved(false); setSaveError(null)
     try {
       const r = await fetch(`/api/sites/${site.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) })
       const d = await r.json()
-      if (d.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); onSaved(d.site) }
-      else setSaveError(d.error || 'Save failed')
-    } catch (e) { setSaveError(e.message || 'Network error') }
+      if (d.ok) { showSaved(); onSaved(d.site) }
+      else setSaveError(true)
+    } catch { setSaveError(true) }
     setSaving(false)
   }
 
@@ -717,8 +722,8 @@ function SiteSettings({ site, onSaved, onDeleted }) {
       </Section>
 
       <div className="flex items-center justify-end gap-3 pt-2 pb-8">
-        {saved && <span className="text-xs text-success fade-up flex items-center gap-1"><img src="/check.svg" className="w-3.5 h-3.5" alt="" />Saved</span>}
-        {saveError && <span className="text-xs text-danger flex items-center gap-1"><img src="/cross.svg" className="w-3.5 h-3.5" alt="" />{saveError}</span>}
+        {saved && <span className="text-sm text-success fade-up flex items-center gap-1.5 font-medium"><img src="/check.svg" className="w-4 h-4" alt="" />Saved!</span>}
+        {saveError && <span className="text-sm text-danger fade-up flex items-center gap-1.5 font-medium"><img src="/cross.svg" className="w-4 h-4" alt="" />Save failed</span>}
         <button className="btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving...' : 'Save changes'}</button>
       </div>
     </div>
