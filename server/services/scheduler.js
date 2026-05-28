@@ -57,7 +57,7 @@ async function siteExec(site, cmd, execTimeout = 60000) {
   return new Promise((resolve, reject) => {
     let stdout = '', stderr = ''
     const t = setTimeout(() => {
-      conn.destroy()
+      conn.end()
       reject(new Error(`Command timed out after ${execTimeout / 1000}s: ${cmd.slice(0, 80)}`))
     }, execTimeout)
     conn.exec(cmd, (err, stream) => {
@@ -73,7 +73,7 @@ async function siteExecStream(site, cmd, onData, onDone, execTimeout = 300000) {
   const conn = await createSSHConnection(site.ssh)
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => {
-      conn.destroy()
+      conn.end()
       reject(new Error(`Stream command timed out after ${execTimeout / 1000}s`))
     }, execTimeout)
     conn.exec(cmd, (err, stream) => {

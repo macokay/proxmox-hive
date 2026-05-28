@@ -584,7 +584,7 @@ async function siteExecSimple(sshConfig, cmd, execTimeout = 60000) {
   return new Promise((resolve, reject) => {
     let out = '', err = ''
     const t = setTimeout(() => {
-      conn.destroy()
+      conn.end()
       reject(new Error(`Command timed out after ${execTimeout / 1000}s`))
     }, execTimeout)
     conn.exec(cmd, (e, stream) => {
