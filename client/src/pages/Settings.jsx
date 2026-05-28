@@ -451,6 +451,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
   const [vmError, setVmError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState(null)
   const [testingSSH, setTestingSSH] = useState(false)
   const [sshResult, setSSHResult] = useState(null)
   const [fixingSudo, setFixingSudo] = useState(false)
@@ -522,12 +523,13 @@ function SiteSettings({ site, onSaved, onDeleted }) {
   }
 
   async function save() {
-    setSaving(true); setSaved(false)
+    setSaving(true); setSaved(false); setSaveError(null)
     try {
       const r = await fetch(`/api/sites/${site.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) })
       const d = await r.json()
       if (d.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); onSaved(d.site) }
-    } catch { }
+      else setSaveError(d.error || 'Save failed')
+    } catch (e) { setSaveError(e.message || 'Network error') }
     setSaving(false)
   }
 
@@ -715,7 +717,8 @@ function SiteSettings({ site, onSaved, onDeleted }) {
       </Section>
 
       <div className="flex items-center justify-end gap-3 pt-2 pb-8">
-        {saved && <span className="text-xs text-success fade-up">✓ Saved</span>}
+        {saved && <span className="text-xs text-success fade-up flex items-center gap-1"><img src="/check.svg" className="w-3.5 h-3.5" alt="" />Saved</span>}
+        {saveError && <span className="text-xs text-danger flex items-center gap-1"><img src="/cross.svg" className="w-3.5 h-3.5" alt="" />{saveError}</span>}
         <button className="btn-primary" onClick={save} disabled={saving}>{saving ? 'Saving...' : 'Save changes'}</button>
       </div>
     </div>
