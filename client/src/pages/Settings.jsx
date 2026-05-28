@@ -726,27 +726,25 @@ function SiteSettings({ site, onSaved, onDeleted }) {
 }
 
 function ForceUpdateButton({ beta }) {
-  const [applying, setApplying] = useState(false)
+  const [state, setState] = useState('idle') // idle | checking | uptodate | applying | done-ok | done-fail
   const [logs, setLogs] = useState([])
-  const [done, setDone] = useState(false)
-  const [success, setSuccess] = useState(null)
   const logRef = useRef(null)
 
   useWebSocket((msg) => {
     if (msg.type === 'app_update_log') setLogs(prev => [...prev, msg.data])
     if (msg.type === 'app_update_done') {
-      setDone(true)
-      setSuccess(msg.success)
       if (msg.success) {
-        setTimeout(() => {
-          let wasDown = false
-          const poll = setInterval(() => {
-            fetch('/api/version').then(() => {
-              if (wasDown) { clearInterval(poll); window.location.reload() }
-            }).catch(() => { wasDown = true })
-          }, 500)
-          setTimeout(() => { clearInterval(poll); window.location.reload() }, 60000)
-        }, 5000)
+        setState('done-ok')
+        let wasDown = false
+        const poll = setInterval(() => {
+          fetch('/api/version').then(() => {
+            if (wasDown) { clearInterval(poll); window.location.reload() }
+          }).catch(() => { wasDown = true })
+        }, 500)
+        // Stop polling after 90s — server may not have restarted
+        setTimeout(() => clearInterval(poll), 90000)
+      } else {
+        setState('done-fail')
       }
     }
   })
@@ -756,36 +754,48 @@ function ForceUpdateButton({ beta }) {
   }, [logs])
 
   async function handleForce() {
-    setApplying(true)
+    setState('checking')
     setLogs([])
-    setDone(false)
-    setSuccess(null)
-    await fetch('/api/app-update/apply', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ beta })
-    })
+    try {
+      const r = await fetch('/api/app-update?force=1')
+      const d = await r.json()
+      if (!d.updateAvailable) {
+        setState('uptodate')
+        return
+      }
+      setState('applying')
+      await fetch('/api/app-update/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ beta: d.beta === true, latest: d.latest || null })
+      })
+    } catch {
+      setState('done-fail')
+    }
   }
+
+  const busy = state === 'checking' || state === 'applying'
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
-        <button
-          className="btn-ghost text-xs"
-          onClick={handleForce}
-          disabled={applying}
-        >
-          {applying ? <><span className="pulse-dot w-1.5 h-1.5 rounded-full bg-accent inline-block mr-1.5" />Updating…</> : '↑ Force update now'}
+        <button className="btn-ghost text-xs" onClick={handleForce} disabled={busy}>
+          {state === 'checking'
+            ? <><span className="pulse-dot w-1.5 h-1.5 rounded-full bg-accent inline-block mr-1.5" />Checking…</>
+            : state === 'applying'
+            ? <><span className="pulse-dot w-1.5 h-1.5 rounded-full bg-accent inline-block mr-1.5" />Updating…</>
+            : '↑ Force update now'}
         </button>
-        <span className="text-[10px] text-muted">{beta ? 'Pulls latest dev image' : 'Pulls latest stable image'}</span>
+        {state === 'uptodate' && <span className="text-xs text-success flex items-center gap-1"><img src="/check.svg" className="w-3.5 h-3.5" alt="" />Already up to date</span>}
+        {state === 'idle' && <span className="text-[10px] text-muted">{beta ? 'Pulls latest dev image' : 'Pulls latest stable image'}</span>}
       </div>
-      {applying && (
+      {(state === 'applying' || state === 'done-ok' || state === 'done-fail') && (
         <div>
           <div ref={logRef} className="bg-base-900 rounded font-mono text-xs text-muted p-3 max-h-48 overflow-y-auto whitespace-pre-wrap border border-border">
             {logs.join('') || 'Starting…'}
           </div>
-          {done && success && <p className="text-xs text-muted mt-1">Restarting — page will reload shortly…</p>}
-          {done && !success && <p className="text-xs text-danger mt-1">Update failed — see error above.</p>}
+          {state === 'done-ok' && <p className="text-xs text-muted mt-1">Restarting — page will reload when server is back up…</p>}
+          {state === 'done-fail' && <p className="text-xs text-danger mt-1">Update failed — see error above.</p>}
         </div>
       )}
     </div>

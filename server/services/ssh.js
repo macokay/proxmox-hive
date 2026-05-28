@@ -36,7 +36,7 @@ export function createSSHConnection(sshConfig) {
   return new Promise((resolve, reject) => {
     const conn = new Client()
     const timeout = setTimeout(() => {
-      conn.destroy()
+      try { conn.end() } catch (_) {}
       reject(new Error('SSH connection timed out'))
     }, 12000)
 
