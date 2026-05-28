@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Setup from './Setup.jsx'
 import { SSHHowButton } from '../components/SSHHowModal.jsx'
+import { useWebSocket } from '../hooks/useWebSocket.js'
 
 export const CHANNEL_TYPES = [
   { value: 'discord', label: 'Discord',         placeholder: 'https://discord.com/api/webhooks/...' },
@@ -721,6 +722,73 @@ function SiteSettings({ site, onSaved, onDeleted }) {
   )
 }
 
+function ForceUpdateButton({ beta }) {
+  const [applying, setApplying] = useState(false)
+  const [logs, setLogs] = useState([])
+  const [done, setDone] = useState(false)
+  const [success, setSuccess] = useState(null)
+  const logRef = useRef(null)
+
+  useWebSocket((msg) => {
+    if (msg.type === 'app_update_log') setLogs(prev => [...prev, msg.data])
+    if (msg.type === 'app_update_done') {
+      setDone(true)
+      setSuccess(msg.success)
+      if (msg.success) {
+        setTimeout(() => {
+          let wasDown = false
+          const poll = setInterval(() => {
+            fetch('/api/version').then(() => {
+              if (wasDown) { clearInterval(poll); window.location.reload() }
+            }).catch(() => { wasDown = true })
+          }, 500)
+          setTimeout(() => { clearInterval(poll); window.location.reload() }, 60000)
+        }, 5000)
+      }
+    }
+  })
+
+  useEffect(() => {
+    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight
+  }, [logs])
+
+  async function handleForce() {
+    setApplying(true)
+    setLogs([])
+    setDone(false)
+    setSuccess(null)
+    await fetch('/api/app-update/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ beta })
+    })
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-3">
+        <button
+          className="btn-ghost text-xs"
+          onClick={handleForce}
+          disabled={applying}
+        >
+          {applying ? <><span className="pulse-dot w-1.5 h-1.5 rounded-full bg-accent inline-block mr-1.5" />Updating…</> : '↑ Force update now'}
+        </button>
+        <span className="text-[10px] text-muted">{beta ? 'Pulls latest dev image' : 'Pulls latest stable image'}</span>
+      </div>
+      {applying && (
+        <div>
+          <div ref={logRef} className="bg-base-900 rounded font-mono text-xs text-muted p-3 max-h-48 overflow-y-auto whitespace-pre-wrap border border-border">
+            {logs.join('') || 'Starting…'}
+          </div>
+          {done && success && <p className="text-xs text-muted mt-1">Restarting — page will reload shortly…</p>}
+          {done && !success && <p className="text-xs text-danger mt-1">Update failed — see error above.</p>}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Settings({ sites, activeSiteId, onBack, onSitesChanged, onReset, openAddSite }) {
   const [selectedSiteId, setSelectedSiteId] = useState(activeSiteId || sites[0]?.id)
   const [showAddSite, setShowAddSite] = useState(openAddSite || false)
@@ -773,6 +841,7 @@ export default function Settings({ sites, activeSiteId, onBack, onSitesChanged, 
             label="Beta updates"
             description="Pull from the dev branch instead of stable releases. Enables early access to new features — may be less stable."
           />
+          <ForceUpdateButton beta={appSettings.betaUpdates || false} />
         </Section>
 
         {selectedSite && (
