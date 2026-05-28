@@ -31,6 +31,7 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
   const visibleAppCount = expanded ? appCount : Math.min(appCount, SHOW_COUNT)
   const visibleAptCount = expanded ? aptCount : Math.max(0, SHOW_COUNT - appCount)
   const hiddenCount = totalUpdates - SHOW_COUNT
+  const sortedPackages = [...(lxc.packages || [])].sort((a, b) => (b.keptBack ? 1 : 0) - (a.keptBack ? 1 : 0))
 
   const allPkgNames = [
     ...(lxc.appUpdates || []).map(p => p.name),
@@ -141,7 +142,7 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
             </button>
           ))}
 
-          {lxc.packages?.slice(0, visibleAptCount).map((pkg, i) => (
+          {sortedPackages.slice(0, visibleAptCount).map((pkg, i) => (
             <button key={`apt-${i}`} onClick={() => togglePkg(pkg.name)}
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
