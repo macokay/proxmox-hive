@@ -277,7 +277,7 @@ export async function runCheck(siteId) {
 
         let packages = []
         if (pm === 'apt') {
-          await siteExec(site, pctExecCmd(site, vmid, 'apt-get update -qq -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 2>/dev/null || true'))
+          await siteExec(site, pctExecCmd(site, vmid, 'apt-get update -qq -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 2>/dev/null || true'), 120000)
           const { stdout } = await siteExec(site, pctExecCmd(site, vmid, 'apt list --upgradable 2>/dev/null'))
           packages = parseAptOutput(stdout)
         } else if (pm === 'apk') {
