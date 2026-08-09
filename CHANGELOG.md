@@ -2,6 +2,18 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.25] - 2026-08-09
+
+### Fixed
+- Updates no longer stall silently when a target cannot resolve its repository hosts. A DNS probe runs first and reports the unreachable host plus the `pct set --nameserver` fix, instead of letting every apt lookup block for ~40s (a container that inherits a host-only resolver such as Tailscale MagicDNS turned an upgrade into a multi-minute freeze with nothing on screen)
+- apt, apk, dnf and yum now run under a timeout inside the target — 3 minutes for package lists, 30 minutes for the upgrade — so a stalled package manager is killed there instead of surviving as an orphaned `pct exec` after the SSH stream gives up
+- SSH stream timeout raised from 5 to 35 minutes; large upgrades were abandoned mid-download while the remote apt kept running unsupervised
+- App updates (Plex, Jellyfin, *arr) time out after 15 minutes instead of hanging indefinitely, and a Plex download that fails on name resolution now says so
+
+### Changed
+- Update terminals show numbered stage markers and `apt-get update` output (`-q` instead of `-qq`), so a slow phase no longer looks frozen
+- A failing `apt-get update` is reported in the terminal instead of being swallowed silently
+
 ## [1.0.24] - 2026-04-30
 
 ### Fixed
