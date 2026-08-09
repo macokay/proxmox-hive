@@ -3,17 +3,30 @@ import { execInLXC, findArrConfig, ARR_PORTS } from './appUpdates.js'
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
 
-async function execStreamInLXC(sshConfig, vmid, cmd, onLog) {
+const APP_STREAM_TIMEOUT_MS = 15 * 60 * 1000
+
+async function execStreamInLXC(sshConfig, vmid, cmd, onLog, timeoutMs = APP_STREAM_TIMEOUT_MS) {
   const isRoot = !sshConfig.username || sshConfig.username === 'root'
   const prefix = isRoot ? '' : 'sudo '
   const full = `${prefix}pct exec ${vmid} -- ${cmd}`
   const conn = await createSSHConnection(sshConfig)
   return new Promise((resolve, reject) => {
+    let settled = false
+    const t = setTimeout(() => {
+      settled = true
+      onLog(`\n[app-updater] Command timed out after ${timeoutMs / 1000}s — giving up on this app.\n`)
+      conn.end()
+      resolve(124)
+    }, timeoutMs)
     conn.exec(full, (err, stream) => {
-      if (err) { conn.end(); return reject(err) }
+      if (err) { clearTimeout(t); conn.end(); return reject(err) }
       stream.on('data', d => onLog(d.toString()))
       stream.stderr.on('data', d => onLog(d.toString()))
-      stream.on('close', code => { conn.end(); resolve(code) })
+      stream.on('close', code => {
+        clearTimeout(t)
+        conn.end()
+        if (!settled) resolve(code)
+      })
     })
   })
 }
@@ -103,7 +116,13 @@ async function updatePlex(sshConfig, vmid, newVersion, downloadUrl, onLog) {
 
   onLog(`[app-updater] Downloading ${downloadUrl}\n`)
   const { code: dlCode } = await execInLXC(sshConfig, vmid, `curl -sfL --max-time 300 "${downloadUrl}" -o /tmp/plex.deb`)
-  if (dlCode !== 0) { onLog(`[app-updater] Download failed (exit ${dlCode})\n`); return false }
+  if (dlCode !== 0) {
+    onLog(`[app-updater] Download failed (exit ${dlCode})\n`)
+    // curl exit 6 is a name resolution failure — the usual cause is a container
+    // that inherited a nameserver only the host can reach.
+    if (dlCode === 6) onLog(`[app-updater] Could not resolve the download host — DNS is broken inside CT ${vmid}.\n`)
+    return false
+  }
 
   await execInLXC(sshConfig, vmid, 'systemctl stop plexmediaserver 2>/dev/null')
   onLog(`[app-updater] Installing...\n`)

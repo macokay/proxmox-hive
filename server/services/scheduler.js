@@ -52,6 +52,26 @@ export function initSiteScheduler(site) {
 
 // ─── SSH helpers per site ──────────────────────────────────────────────────────
 
+// Package commands carry their own timeout on the remote side, so a stalled apt
+// is killed inside the container instead of surviving as an orphan when the SSH
+// stream gives up. The stream timeout is the outer safety net and must stay
+// above the remote ones so the remote timeout is always the one that fires.
+const REMOTE_UPDATE_TIMEOUT = 180
+const REMOTE_UPGRADE_TIMEOUT = 1800
+const STREAM_TIMEOUT_MS = 35 * 60 * 1000
+
+// busybox and coreutils both ship `timeout`, but not every minimal image does —
+// fall back to running unguarded rather than failing the whole upgrade.
+const TIMEOUT_VARS = `if command -v timeout >/dev/null 2>&1; then TU="timeout ${REMOTE_UPDATE_TIMEOUT}"; TG="timeout ${REMOTE_UPGRADE_TIMEOUT}"; else TU=""; TG=""; fi`
+
+function updateRcReport(varName) {
+  return [
+    `[ $${varName} -eq 124 ] && echo "ERROR: apt-get update timed out after ${REMOTE_UPDATE_TIMEOUT}s - DNS or repositories unreachable from this target"`,
+    `[ $${varName} -ne 0 ] && [ $${varName} -ne 124 ] && echo "WARNING: apt-get update failed (exit $${varName}) - continuing with cached package lists"`,
+    `true`,
+  ].join('; ')
+}
+
 async function siteExec(site, cmd, execTimeout = 60000) {
   const conn = await createSSHConnection(site.ssh)
   return new Promise((resolve, reject) => {
@@ -69,7 +89,7 @@ async function siteExec(site, cmd, execTimeout = 60000) {
   })
 }
 
-async function siteExecStream(site, cmd, onData, onDone, execTimeout = 300000) {
+async function siteExecStream(site, cmd, onData, onDone, execTimeout = STREAM_TIMEOUT_MS) {
   const conn = await createSSHConnection(site.ssh)
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => {
@@ -150,11 +170,18 @@ function aptUpgradeCmd(site) {
   const isRoot = !site.ssh.username || site.ssh.username === 'root'
   const p = isRoot ? '' : 'sudo '
   const script = [
-    `DEBIAN_FRONTEND=noninteractive ${p}dpkg --configure -a 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive ${p}apt-get install -f -y ${DPKG_OPTS} 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive ${p}apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive ${p}apt-get dist-upgrade -y ${DPKG_OPTS} 2>&1; RC=$?`,
-    `DEBIAN_FRONTEND=noninteractive ${p}apt-get autoremove -y 2>&1 || true`,
+    TIMEOUT_VARS,
+    `echo "[1/4] Repairing interrupted installs..."`,
+    `DEBIAN_FRONTEND=noninteractive ${p}$TG dpkg --configure -a 2>&1 || true`,
+    `DEBIAN_FRONTEND=noninteractive ${p}$TG apt-get install -f -y ${DPKG_OPTS} 2>&1 || true`,
+    `echo "[2/4] Updating package lists..."`,
+    `DEBIAN_FRONTEND=noninteractive ${p}$TU apt-get update -q ${APT_TIMEOUT_OPTS} 2>&1; UR=$?`,
+    updateRcReport('UR'),
+    `echo "[3/4] Upgrading packages..."`,
+    `DEBIAN_FRONTEND=noninteractive ${p}$TG apt-get dist-upgrade -y ${DPKG_OPTS} 2>&1; RC=$?`,
+    `[ $RC -eq 124 ] && echo "ERROR: upgrade timed out after ${REMOTE_UPGRADE_TIMEOUT}s and was killed"`,
+    `echo "[4/4] Removing unused packages..."`,
+    `DEBIAN_FRONTEND=noninteractive ${p}$TG apt-get autoremove -y 2>&1 || true`,
     `exit $RC`,
   ].join('; ')
   return `sh -c '${script}'`
@@ -164,11 +191,18 @@ function lxcAptUpgradeCmd(site, vmid) {
   const isRoot = !site.ssh.username || site.ssh.username === 'root'
   const p = isRoot ? '' : 'sudo '
   const script = [
-    `DEBIAN_FRONTEND=noninteractive dpkg --configure -a 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive apt-get install -f -y ${DPKG_OPTS} 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y ${DPKG_OPTS} 2>&1; RC=$?`,
-    `DEBIAN_FRONTEND=noninteractive apt-get autoremove -y 2>&1 || true`,
+    TIMEOUT_VARS,
+    `echo "[1/4] Repairing interrupted installs..."`,
+    `DEBIAN_FRONTEND=noninteractive $TG dpkg --configure -a 2>&1 || true`,
+    `DEBIAN_FRONTEND=noninteractive $TG apt-get install -f -y ${DPKG_OPTS} 2>&1 || true`,
+    `echo "[2/4] Updating package lists..."`,
+    `DEBIAN_FRONTEND=noninteractive $TU apt-get update -q ${APT_TIMEOUT_OPTS} 2>&1; UR=$?`,
+    updateRcReport('UR'),
+    `echo "[3/4] Upgrading packages..."`,
+    `DEBIAN_FRONTEND=noninteractive $TG apt-get dist-upgrade -y ${DPKG_OPTS} 2>&1; RC=$?`,
+    `[ $RC -eq 124 ] && echo "ERROR: upgrade timed out after ${REMOTE_UPGRADE_TIMEOUT}s and was killed"`,
+    `echo "[4/4] Removing unused packages..."`,
+    `DEBIAN_FRONTEND=noninteractive $TG apt-get autoremove -y 2>&1 || true`,
     `exit $RC`,
   ].join('; ')
   return `${p}pct exec ${vmid} -- sh -c '${script}'`
@@ -179,7 +213,9 @@ function lxcAptForceInstallCmd(site, vmid, packages) {
   const p = isRoot ? '' : 'sudo '
   const pkgList = packages.map(pkg => pkg.replace(/[^a-zA-Z0-9._:+~-]/g, '')).filter(Boolean).join(' ')
   const script = [
-    `DEBIAN_FRONTEND=noninteractive apt-get install -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
+    TIMEOUT_VARS,
+    `DEBIAN_FRONTEND=noninteractive $TG apt-get install -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
+    `[ $RC -eq 124 ] && echo "ERROR: install timed out after ${REMOTE_UPGRADE_TIMEOUT}s and was killed"`,
     `exit $RC`,
   ].join('; ')
   return `${p}pct exec ${vmid} -- sh -c '${script}'`
@@ -191,8 +227,13 @@ function lxcAptSelectiveUpgradeCmd(site, vmid, packages) {
   // Sanitize package names
   const pkgList = packages.map(pkg => pkg.replace(/[^a-zA-Z0-9._:+~-]/g, '')).filter(Boolean).join(' ')
   const script = [
-    `DEBIAN_FRONTEND=noninteractive apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
+    TIMEOUT_VARS,
+    `echo "[1/2] Updating package lists..."`,
+    `DEBIAN_FRONTEND=noninteractive $TU apt-get update -q ${APT_TIMEOUT_OPTS} 2>&1; UR=$?`,
+    updateRcReport('UR'),
+    `echo "[2/2] Upgrading selected packages..."`,
+    `DEBIAN_FRONTEND=noninteractive $TG apt-get install --only-upgrade -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
+    `[ $RC -eq 124 ] && echo "ERROR: upgrade timed out after ${REMOTE_UPGRADE_TIMEOUT}s and was killed"`,
     `exit $RC`,
   ].join('; ')
   return `${p}pct exec ${vmid} -- sh -c '${script}'`
@@ -203,8 +244,13 @@ function nodeAptSelectiveUpgradeCmd(site, packages) {
   const p = isRoot ? '' : 'sudo '
   const pkgList = packages.map(pkg => pkg.replace(/[^a-zA-Z0-9._:+~-]/g, '')).filter(Boolean).join(' ')
   const script = [
-    `DEBIAN_FRONTEND=noninteractive ${p}apt-get update -qq ${APT_TIMEOUT_OPTS} 2>&1 || true`,
-    `DEBIAN_FRONTEND=noninteractive ${p}apt-get install --only-upgrade -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
+    TIMEOUT_VARS,
+    `echo "[1/2] Updating package lists..."`,
+    `DEBIAN_FRONTEND=noninteractive ${p}$TU apt-get update -q ${APT_TIMEOUT_OPTS} 2>&1; UR=$?`,
+    updateRcReport('UR'),
+    `echo "[2/2] Upgrading selected packages..."`,
+    `DEBIAN_FRONTEND=noninteractive ${p}$TG apt-get install --only-upgrade -y ${DPKG_OPTS} ${pkgList} 2>&1; RC=$?`,
+    `[ $RC -eq 124 ] && echo "ERROR: upgrade timed out after ${REMOTE_UPGRADE_TIMEOUT}s and was killed"`,
     `exit $RC`,
   ].join('; ')
   return `sh -c '${script}'`
@@ -226,17 +272,41 @@ async function detectLxcPackageManager(site, vmid) {
 
 function lxcApkUpgradeCmd(site, vmid) {
   const p = (!site.ssh.username || site.ssh.username === 'root') ? '' : 'sudo '
-  return `${p}pct exec ${vmid} -- sh -c 'apk update -q 2>&1 || true; apk upgrade 2>&1; RC=$?; exit $RC'`
+  return `${p}pct exec ${vmid} -- sh -c '${TIMEOUT_VARS}; $TU apk update -q 2>&1 || true; $TG apk upgrade 2>&1; RC=$?; exit $RC'`
 }
 
 function lxcDnfUpgradeCmd(site, vmid) {
   const p = (!site.ssh.username || site.ssh.username === 'root') ? '' : 'sudo '
-  return `${p}pct exec ${vmid} -- sh -c 'dnf upgrade -y 2>&1; RC=$?; dnf autoremove -y 2>&1 || true; exit $RC'`
+  return `${p}pct exec ${vmid} -- sh -c '${TIMEOUT_VARS}; $TG dnf upgrade -y 2>&1; RC=$?; $TG dnf autoremove -y 2>&1 || true; exit $RC'`
 }
 
 function lxcYumUpgradeCmd(site, vmid) {
   const p = (!site.ssh.username || site.ssh.username === 'root') ? '' : 'sudo '
-  return `${p}pct exec ${vmid} -- sh -c 'yum upgrade -y 2>&1; RC=$?; yum autoremove -y 2>&1 || true; exit $RC'`
+  return `${p}pct exec ${vmid} -- sh -c '${TIMEOUT_VARS}; $TG yum upgrade -y 2>&1; RC=$?; $TG yum autoremove -y 2>&1 || true; exit $RC'`
+}
+
+// A container that inherits an unreachable nameserver (host-only resolvers such
+// as Tailscale MagicDNS are the common case) makes every apt lookup block for
+// ~40s, so an upgrade stalls for many minutes with nothing on screen. Probing
+// the first repository host costs one round-trip and turns that into a message.
+async function checkTargetDns(site, vmid) {
+  const probe = [
+    `command -v getent >/dev/null 2>&1 || { echo dns_skip; exit 0; }`,
+    `H=$(cat /etc/apt/sources.list /etc/apt/sources.list.d/* 2>/dev/null | grep -v "^#" | grep -oE "https?://[^/ ]+" | head -1 | cut -d/ -f3)`,
+    `[ -z "$H" ] && echo dns_skip && exit 0`,
+    `if command -v timeout >/dev/null 2>&1; then TP="timeout 8"; else TP=""; fi`,
+    `if $TP getent hosts "$H" >/dev/null 2>&1; then echo dns_ok; else echo "dns_fail $H"; fi`,
+  ].join('; ')
+  const cmd = vmid == null ? `sh -c '${probe}'` : pctExecCmd(site, vmid, `sh -c '${probe}'`)
+  try {
+    const { stdout } = await siteExec(site, cmd, 20000)
+    const line = stdout.trim().split('\n').pop().trim()
+    if (line.startsWith('dns_fail')) return { ok: false, host: line.split(/\s+/)[1] || '' }
+    return { ok: true }
+  } catch {
+    // Probe itself is best-effort — never block an update because it failed.
+    return { ok: true }
+  }
 }
 
 // ─── Check ────────────────────────────────────────────────────────────────────
@@ -388,6 +458,14 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
   let success = true
   try {
     if (target === 'node') {
+      const dns = await checkTargetDns(site, null)
+      if (!dns.ok) {
+        onLog(`\nERROR: cannot resolve ${dns.host} on the Proxmox node — apt would stall on every lookup.\n`)
+        onLog(`Check /etc/resolv.conf on the node before retrying.\n`)
+        broadcast({ type: 'update_done', siteId, target, vmid, success: false, key: updateKey })
+        await notify(site, 'update_complete', { target: targetLabel, success: false })
+        return false
+      }
       const cmd = (packages && packages.length > 0)
         ? nodeAptSelectiveUpgradeCmd(site, packages)
         : aptUpgradeCmd(site)
@@ -397,6 +475,16 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
       const pm = await detectLxcPackageManager(site, vmid)
 
       if (pm === 'apt') {
+        const dns = await checkTargetDns(site, vmid)
+        if (!dns.ok) {
+          onLog(`\nERROR: CT ${vmid} cannot resolve ${dns.host} — apt would stall on every lookup.\n`)
+          onLog(`Its nameserver is unreachable from inside the container. Fix with:\n`)
+          onLog(`  pct set ${vmid} --nameserver "<working-dns-ip>"\n`)
+          onLog(`then rewrite /etc/resolv.conf in the container or restart it.\n`)
+          broadcast({ type: 'update_done', siteId, target, vmid, success: false, key: updateKey })
+          await notify(site, 'update_complete', { target: targetLabel, success: false })
+          return false
+        }
         const appApiUpdates = appUpdates.filter(u => u.source === 'app-api')
         for (const appUpdate of appApiUpdates) {
           const ok = await updateApp(vmid, appUpdate, onLog, site)
