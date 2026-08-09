@@ -1,6 +1,11 @@
 name: Security Audit
 
 on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
   release:
     types: [published]
   workflow_dispatch:
@@ -19,7 +24,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Run npm audit
         id: audit
@@ -55,13 +60,38 @@ jobs:
                   f.write('findings=\n')
           PYEOF
 
+      # Issues are only useful for unattended runs; a push or PR should just fail
+      # so the vulnerability never reaches main in the first place.
       - name: Create issue if findings
-        if: steps.audit.outputs.findings != ''
+        if: steps.audit.outputs.findings != '' && (github.event_name == 'schedule' || github.event_name == 'release')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           RELEASE="${{ github.event.release.tag_name }}"
-          TRIGGER="${RELEASE:-manual (workflow_dispatch)}"
+          TRIGGER="${RELEASE:-scheduled scan}"
           gh issue create \
             --title "[Security] npm audit HIGH/CRITICAL — $(date +%Y-%m-%d)" \
             --body "$(printf '## npm audit findings\n\nTriggered by: %s\n\n%s\n\nRun `npm audit fix` in the affected directory to resolve.' "$TRIGGER" "${{ steps.audit.outputs.findings }}")"
+
+      - name: Fail on findings
+        if: steps.audit.outputs.findings != ''
+        run: |
+          echo "${{ steps.audit.outputs.findings }}"
+          echo "::error::npm audit found HIGH/CRITICAL vulnerabilities"
+          exit 1
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Pinned image instead of a third-party action: fewer moving parts in the
+      # supply chain, and the whole history is scanned, not just the diff.
+      - name: Gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            detect --source /repo --redact --verbose --no-banner
