@@ -1,45 +1,30 @@
 version: 2
+
+# Version-update PRs are switched off: open-pull-requests-limit 0 stops
+# dependabot from raising routine bumps, which produced dozens of emails for a
+# single maintainer.
+#
+# Vulnerabilities are still covered, by two mechanisms that do not depend on
+# this file:
+#   - Dependabot security updates (repo setting) still open a PR when an
+#     advisory affects a dependency in use
+#   - .github/workflows/security-audit.yml runs npm audit on every push and PR
+#     and weekly, and fails the build on high or critical
 updates:
   - package-ecosystem: npm
     directory: /server
     schedule:
       interval: monthly
-      time: "07:00"
-      timezone: Europe/Copenhagen
-    open-pull-requests-limit: 3
-    groups:
-      server-deps:
-        patterns: ["*"]
+    open-pull-requests-limit: 0
 
   - package-ecosystem: npm
     directory: /client
     schedule:
       interval: monthly
-      time: "07:00"
-      timezone: Europe/Copenhagen
-    open-pull-requests-limit: 3
-    groups:
-      client-deps:
-        patterns: ["*"]
+    open-pull-requests-limit: 0
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
-      time: "07:00"
-      timezone: Europe/Copenhagen
-    open-pull-requests-limit: 3
-    groups:
-      actions:
-        patterns: ["*"]
-
-  - package-ecosystem: docker
-    directory: /
-    schedule:
-      interval: monthly
-      time: "07:00"
-      timezone: Europe/Copenhagen
-    open-pull-requests-limit: 3
-    groups:
-      docker:
-        patterns: ["*"]
+    open-pull-requests-limit: 0
