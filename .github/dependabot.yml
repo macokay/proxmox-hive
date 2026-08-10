@@ -7,11 +7,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     groups:
       server-deps:
         patterns: ["*"]
-        update-types: [minor, patch]
 
   - package-ecosystem: npm
     directory: /client
@@ -20,11 +19,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     groups:
       client-deps:
         patterns: ["*"]
-        update-types: [minor, patch]
 
   - package-ecosystem: github-actions
     directory: /
@@ -33,7 +31,10 @@ updates:
       day: monday
       time: "07:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
+    groups:
+      actions:
+        patterns: ["*"]
 
   - package-ecosystem: docker
     directory: /
@@ -42,4 +43,7 @@ updates:
       day: monday
       time: "07:00"
       timezone: Europe/Copenhagen
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
+    groups:
+      docker:
+        patterns: ["*"]
