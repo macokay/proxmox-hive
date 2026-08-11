@@ -2,7 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
-## [1.0.25] - 2026-08-09
+## [1.0.25] - 2026-08-11
+
+### Security
+- Cleared 24 dependency advisories, 6 of them high: axios 1.19, express 4.22, ws 8.21, ssh2 1.17 and node-cron 4.6 on the server, vite 8, @vitejs/plugin-react 6, postcss 8.5 and autoprefixer 10.5 on the client. `npm audit` is clean in both workspaces
+- The security audit workflow now runs on push, pull request and weekly instead of only on release, fails the build on high or critical findings, and scans the full git history for secrets with a pinned gitleaks image
 
 ### Fixed
 - Updates no longer stall silently when a target cannot resolve its repository hosts. A DNS probe runs first and reports the unreachable host plus the `pct set --nameserver` fix, instead of letting every apt lookup block for ~40s (a container that inherits a host-only resolver such as Tailscale MagicDNS turned an upgrade into a multi-minute freeze with nothing on screen)
@@ -13,6 +17,7 @@ All notable changes to Proxmox Hive are documented here.
 ### Changed
 - Update terminals show numbered stage markers and `apt-get update` output (`-q` instead of `-qq`), so a slow phase no longer looks frozen
 - A failing `apt-get update` is reported in the terminal instead of being swallowed silently
+- Docker images build with `npm ci` on node 22 so they match the lockfiles exactly, and the container declares a `HEALTHCHECK`
 
 ## [1.0.24] - 2026-04-30
 
