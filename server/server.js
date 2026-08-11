@@ -47,7 +47,7 @@ async function checkAndBroadcastUpdate() {
     let result
     const latest = await fetchLatestRelease()
     const releaseNewer = isUpdateAvailable(current, latest)
-    const releaseReady = releaseNewer && await isDockerImageAvailable(`v${latest}`)
+    const releaseReady = releaseNewer && await isDockerImageAvailable(latest)
 
     const isDevBuild = current.includes('-')
     if (betaUpdates && isDevBuild) {

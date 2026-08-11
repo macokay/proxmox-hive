@@ -38,6 +38,10 @@ jobs:
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            # v-prefixed alias: releases up to 1.0.25 probe ghcr for "v<version>"
+            # before offering an update, and that tag never existed, so those
+            # installs never saw one. Keep publishing it for them.
+            type=semver,pattern=v{{version}}
 
       - name: Resolve app version
         id: appver

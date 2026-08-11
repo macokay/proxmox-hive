@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.26] - 2026-08-11
+
+### Fixed
+- Stable installs can finally see updates. Before offering one, the app checked ghcr for an image tagged `v<version>`, but releases are published as `<version>` — that tag has never existed, so the update never appeared on the stable channel and only dev builds ever updated themselves. The check now asks for the tag that is actually published, and releases also publish a `v`-prefixed alias so installs on 1.0.25 and earlier, which still use the old check, are offered this one
+
 ## [1.0.25] - 2026-08-11
 
 ### Security
