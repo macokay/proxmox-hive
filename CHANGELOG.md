@@ -2,6 +2,13 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [1.0.27] - 2026-09-07
+
+### Fixed
+- Update terminals no longer spin forever after the server goes away mid-update. Job state lived only in the browser tab, so an update whose closing event never arrived — the server was restarted or killed while it ran — stayed "running" until a hard reload. The server now tracks running updates and sends the live set on every WebSocket connect; a tab reconciles against it and marks orphaned terminals `Interrupted`, which says the result is unknown rather than claiming success or failure
+- Upgrading Docker inside the container that hosts Proxmox Hive now warns before it starts. dpkg restarts the Docker daemon, which stops Hive's own container mid-stream, so the log simply cut off with no explanation while the upgrade finished unattended on the target
+- The terminal overlay header counted finished terminals as running ("2 updates running" with one of them already done). It now reports how many are actually still going, and says "finished" once they all are
+
 ## [1.0.26] - 2026-08-11
 
 ### Fixed
