@@ -4,7 +4,7 @@ import { detectAppUpdates } from './appUpdates.js'
 import { notify } from './notifications.js'
 import { getAllSites, getSite, saveSite } from './config.js'
 import { broadcast } from '../broadcast.js'
-import { getCurrentVersion, fetchLatestRelease, isUpdateAvailable, applySelfUpdate } from './selfUpdate.js'
+import { getCurrentVersion, fetchLatestRelease, isUpdateAvailable, applySelfUpdate, getDockerHostname } from './selfUpdate.js'
 
 // Map of siteId -> array of cron tasks
 const siteTasks = new Map()
@@ -309,6 +309,30 @@ async function checkTargetDns(site, vmid) {
   }
 }
 
+const DOCKER_PACKAGES = new Set([
+  'docker-ce', 'docker-ce-cli', 'docker-ce-rootless-extras', 'docker.io', 'containerd.io', 'containerd'
+])
+
+// Hive runs as a Docker container inside one of the containers it updates.
+// Upgrading Docker there makes dpkg restart the daemon, which stops this
+// container mid-stream: the upgrade finishes on the target with nobody left to
+// report it, and the terminal simply stops. Say so before it happens.
+async function warnIfUpgradingOwnDocker(site, vmid, packageNames, onLog) {
+  if (!packageNames.some(name => DOCKER_PACKAGES.has(name))) return
+  const ownHost = getDockerHostname()
+  if (!ownHost) return
+  try {
+    const { stdout } = await siteExec(site, pctExecCmd(site, vmid, 'hostname'), 20000)
+    if (stdout.trim().split('\n').pop().trim() !== ownHost) return
+  } catch {
+    // Best-effort probe — never block an update because the hostname lookup failed.
+    return
+  }
+  onLog(`\nNOTE: CT ${vmid} is the container running Proxmox Hive, and this upgrade includes Docker.\n`)
+  onLog(`Installing it restarts the Docker daemon, which stops this container, so the log below will cut off mid-upgrade.\n`)
+  onLog(`The upgrade keeps running inside CT ${vmid} and finishes on its own — reload this page and run a check to see the result.\n`)
+}
+
 // ─── Check ────────────────────────────────────────────────────────────────────
 
 export async function runCheck(siteId) {
@@ -490,6 +514,11 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
           const ok = await updateApp(vmid, appUpdate, onLog, site)
           if (!ok) success = false
         }
+        const pending = (packages && packages.length > 0)
+          ? packages
+          : (site.lastCheck?.lxc?.find(l => l.vmid === vmid)?.packages || []).map(p => p.name)
+        await warnIfUpgradingOwnDocker(site, vmid, pending, onLog)
+
         onLog('\n[apt] Running package upgrade...\n')
         const cmd = (packages && packages.length > 0)
           ? lxcAptSelectiveUpgradeCmd(site, vmid, packages)

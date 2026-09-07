@@ -5,7 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import apiRouter from './routes/api.js'
-import { wsClients, broadcast, sendToClient } from './broadcast.js'
+import { wsClients, broadcast, sendToClient, getActiveJobs } from './broadcast.js'
 import { initScheduler } from './services/scheduler.js'
 import { isConfigured, getAppSettings } from './services/config.js'
 import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable } from './services/selfUpdate.js'
@@ -31,6 +31,10 @@ wss.on('connection', (ws) => {
   wsClients.add(ws)
   ws.on('close', () => wsClients.delete(ws))
   ws.on('error', () => wsClients.delete(ws))
+  // A tab that was open through a server restart still shows the updates that
+  // were running then, spinning forever because their closing event died with
+  // the process. Send the truth on every connect and let it reconcile.
+  sendToClient(ws, { type: 'active_jobs', keys: getActiveJobs() })
   if (pendingUpdate) sendToClient(ws, { type: 'app_update_available', ...pendingUpdate })
 })
 

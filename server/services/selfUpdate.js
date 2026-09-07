@@ -91,6 +91,22 @@ export function checkDockerSocket() {
   return existsSync('/var/run/docker.sock')
 }
 
+// The Docker daemon reports the hostname of the machine it runs on, which for
+// Hive is the LXC container hosting it. Knowing that name is what lets an
+// update recognise it is about to upgrade Docker underneath itself.
+let _dockerHostname
+export function getDockerHostname() {
+  if (_dockerHostname !== undefined) return _dockerHostname
+  try {
+    _dockerHostname = execFileSync('docker', ['info', '--format', '{{.Name}}'], {
+      encoding: 'utf8', timeout: 10000
+    }).trim() || null
+  } catch {
+    _dockerHostname = null
+  }
+  return _dockerHostname
+}
+
 export async function applySelfUpdate(onLog, beta = false, knownVersion = null) {
   if (!checkDockerSocket()) {
     onLog('ERROR: Docker socket not mounted into container.\n\n')

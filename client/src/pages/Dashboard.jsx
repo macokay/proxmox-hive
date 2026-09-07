@@ -211,12 +211,17 @@ function MultiTerminal({ terminals, onCloseAll, onClose }) {
   const keys = Object.keys(terminals)
   if (keys.length === 0) return null
   const allDone = keys.every(k => terminals[k].done)
+  const runningCount = keys.filter(k => !terminals[k].done).length
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col p-4 sm:p-6 gap-4 overflow-y-auto"
       style={{ background: 'rgba(8,8,10,0.9)', backdropFilter: 'blur(8px)' }}>
       <div className="flex items-center justify-between flex-shrink-0">
-        <span className="text-white font-semibold text-sm">{keys.length} update{keys.length !== 1 ? 's' : ''} running</span>
+        <span className="text-white font-semibold text-sm">
+          {allDone
+            ? `${keys.length} update${keys.length !== 1 ? 's' : ''} finished`
+            : `${runningCount} of ${keys.length} update${keys.length !== 1 ? 's' : ''} running`}
+        </span>
         {allDone && (
           <button onClick={onCloseAll} className="btn-ghost text-xs">Close all</button>
         )}
@@ -263,7 +268,8 @@ function TerminalPanel({ term, onClose }) {
         </div>
         <div className="flex items-center gap-2">
           {!term.done && <span className="pulse-dot w-2 h-2 rounded-full bg-accent block" />}
-          {term.done && !term.success && <span className="text-xs font-medium text-danger">Error</span>}
+          {term.done && term.interrupted && <span className="text-xs font-medium text-warning">Interrupted</span>}
+          {term.done && !term.success && !term.interrupted && <span className="text-xs font-medium text-danger">Error</span>}
           {term.done && term.success && <img src="/check.svg" className="w-5 h-5" alt="Done" />}
           {term.done && <button onClick={onClose} className="text-muted hover:text-white transition-colors text-sm px-2">✕</button>}
         </div>
@@ -682,6 +688,36 @@ export default function Dashboard({ sites, activeSiteId, onSiteChange, onSetting
     if (msg.type === 'auto_update_done') {
       const scopedKey = `${sId}:auto-${msg.groupName}`
       setTerminals(prev => prev[scopedKey] ? { ...prev, [scopedKey]: { ...prev[scopedKey], done: true, success: true } } : prev)
+    }
+    // Sent on every (re)connect. Anything this tab still shows as running that
+    // the server does not know about lost its closing event when the server
+    // went away — its result is unknown, not successful and not failed.
+    if (msg.type === 'active_jobs') {
+      const live = new Set(msg.keys)
+      setTerminals(prev => {
+        const next = {}
+        let changed = false
+        for (const [key, term] of Object.entries(prev)) {
+          if (term.done || live.has(key)) { next[key] = term; continue }
+          next[key] = {
+            ...term,
+            done: true,
+            success: false,
+            interrupted: true,
+            logs: [...term.logs, { text: '\n--- Lost contact with Proxmox Hive while this was running. It may well have finished on the target; run a check to see. ---\n', type: 'stderr' }]
+          }
+          changed = true
+        }
+        return changed ? next : prev
+      })
+      setActiveUpdates(() => {
+        const next = {}
+        for (const key of msg.keys) {
+          next[key] = true
+          next[key.slice(key.indexOf(':') + 1)] = true
+        }
+        return next
+      })
     }
   }, []))
 
