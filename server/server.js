@@ -8,7 +8,7 @@ import apiRouter from './routes/api.js'
 import { wsClients, broadcast, sendToClient, getActiveJobs } from './broadcast.js'
 import { initScheduler } from './services/scheduler.js'
 import { isConfigured, getAppSettings } from './services/config.js'
-import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable } from './services/selfUpdate.js'
+import { getCurrentVersion, resolveUpdate } from './services/selfUpdate.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -48,24 +48,8 @@ async function checkAndBroadcastUpdate() {
   if (current === 'dev') return
   try {
     const { betaUpdates } = getAppSettings()
-    let result
-    const latest = await fetchLatestRelease()
-    const releaseNewer = isUpdateAvailable(current, latest)
-    const releaseReady = releaseNewer && await isDockerImageAvailable(latest)
-
-    const isDevBuild = current.includes('-')
-    if (betaUpdates && isDevBuild) {
-      const latestSha = await fetchLatestDevCommit()
-      if (releaseNewer) {
-        result = { current, latest, updateAvailable: true, beta: false }
-      } else {
-        const devReady = isDevUpdateAvailable(current, latestSha) && await isDockerImageAvailable('dev')
-        result = { current, latest: 'dev', latestSha, updateAvailable: devReady, beta: true }
-      }
-    } else {
-      result = { current, latest, updateAvailable: releaseReady, beta: false }
-    }
-    console.log(`[update check] current=${current} latest=${latest} releaseNewer=${releaseNewer} updateAvailable=${result.updateAvailable} beta=${result.beta}`)
+    const result = await resolveUpdate(betaUpdates)
+    console.log(`[update check] current=${current} latest=${result.latest} updateAvailable=${result.updateAvailable} beta=${result.beta}`)
     if (result.updateAvailable) {
       pendingUpdate = result
       broadcast({ type: 'app_update_available', ...result })

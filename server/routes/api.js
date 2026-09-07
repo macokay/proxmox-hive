@@ -9,7 +9,7 @@ import {
 import { initScheduler, initSiteScheduler, runCheck, runTargetUpdate, runGroupUpdate, parseLXCList, parseQMList } from '../services/scheduler.js'
 import { testChannel } from '../services/notifications.js'
 import { broadcast } from '../broadcast.js'
-import { getCurrentVersion, fetchLatestRelease, fetchLatestDevCommit, isUpdateAvailable, isDevUpdateAvailable, isDockerImageAvailable, applySelfUpdate, checkDockerSocket } from '../services/selfUpdate.js'
+import { getCurrentVersion, resolveUpdate, applySelfUpdate, checkDockerSocket } from '../services/selfUpdate.js'
 
 const router = Router()
 
@@ -52,23 +52,7 @@ router.get('/app-update', async (req, res) => {
 
   const { betaUpdates } = getAppSettings()
   try {
-    let result
-    const latest = await fetchLatestRelease()
-    const releaseNewer = isUpdateAvailable(current, latest)
-    const releaseReady = releaseNewer && await isDockerImageAvailable(latest)
-
-    const isDevBuild = current.includes('-')
-    if (betaUpdates && isDevBuild) {
-      const latestSha = await fetchLatestDevCommit()
-      if (releaseNewer) {
-        result = { current, latest, updateAvailable: true, beta: false }
-      } else {
-        const devReady = isDevUpdateAvailable(current, latestSha) && await isDockerImageAvailable('dev')
-        result = { current, latest: 'dev', latestSha, updateAvailable: devReady, beta: true }
-      }
-    } else {
-      result = { current, latest, updateAvailable: releaseReady, beta: false }
-    }
+    const result = await resolveUpdate(betaUpdates)
     _updateCache = result
     _updateCacheAt = now
     res.json(result)

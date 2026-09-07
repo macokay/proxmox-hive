@@ -87,6 +87,42 @@ export function isDevUpdateAvailable(current, latestSha) {
   return currentSha !== latestSha
 }
 
+// With beta updates on, the newest build wins whether it came from a release or
+// from the dev branch, so something has to decide which of the two that is.
+// dev normally contains the latest release, but a fix landed straight on main
+// does not reach dev, and then the release is the newer one.
+export async function isDevAheadOfRelease(releaseVersion) {
+  if (!releaseVersion) return false
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/macokay/proxmox-hive/compare/v${releaseVersion}...dev`,
+      { headers: { 'User-Agent': 'proxmox-hive' } }
+    )
+    if (!r.ok) return false
+    const data = await r.json()
+    return (data.ahead_by || 0) > 0
+  } catch {
+    // Never move an install onto dev because a lookup failed — fall back to releases.
+    return false
+  }
+}
+
+// Single answer to "is there something newer than what is running", shared by
+// the polling check and the API so the two can never disagree about it.
+export async function resolveUpdate(betaUpdates) {
+  const current = getCurrentVersion()
+  const latest = await fetchLatestRelease()
+
+  if (betaUpdates && await isDevAheadOfRelease(latest)) {
+    const latestSha = await fetchLatestDevCommit()
+    const updateAvailable = isDevUpdateAvailable(current, latestSha) && await isDockerImageAvailable('dev')
+    return { current, latest: 'dev', latestSha, updateAvailable, beta: true }
+  }
+
+  const updateAvailable = isUpdateAvailable(current, latest) && await isDockerImageAvailable(latest)
+  return { current, latest, updateAvailable, beta: false }
+}
+
 export function checkDockerSocket() {
   return existsSync('/var/run/docker.sock')
 }

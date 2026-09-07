@@ -857,7 +857,7 @@ export default function Settings({ sites, activeSiteId, onBack, onSitesChanged, 
             value={appSettings.betaUpdates || false}
             onChange={v => patchAppSettings({ betaUpdates: v })}
             label="Beta updates"
-            description="Pull from the dev branch instead of stable releases. Enables early access to new features — may be less stable."
+            description="Always take the newest build, whether that is a stable release or the dev branch. Dev builds carry changes that have not been released yet and may be less stable."
           />
           <ForceUpdateButton beta={appSettings.betaUpdates || false} />
         </Section>

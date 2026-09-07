@@ -8,6 +8,10 @@ All notable changes to Proxmox Hive are documented here.
 - Update terminals no longer spin forever after the server goes away mid-update. Job state lived only in the browser tab, so an update whose closing event never arrived — the server was restarted or killed while it ran — stayed "running" until a hard reload. The server now tracks running updates and sends the live set on every WebSocket connect; a tab reconciles against it and marks orphaned terminals `Interrupted`, which says the result is unknown rather than claiming success or failure
 - Upgrading Docker inside the container that hosts Proxmox Hive now warns before it starts. dpkg restarts the Docker daemon, which stops Hive's own container mid-stream, so the log simply cut off with no explanation while the upgrade finished unattended on the target
 - The terminal overlay header counted finished terminals as running ("2 updates running" with one of them already done). It now reports how many are actually still going, and says "finished" once they all are
+- Beta updates now do what the toggle says. The check only entered the beta channel for installs that were *already* running a dev build, so turning the setting on from a stable release did nothing at all and no stable install ever saw a dev build. It now takes whichever build is newest — comparing the release tag against the dev branch decides which that is, so a fix landed straight on main still wins over an older dev branch
+
+### Changed
+- The update check lives in one function shared by the API and the background poll, instead of the same branching logic written twice in two files that could disagree
 
 ## [1.0.26] - 2026-08-11
 
