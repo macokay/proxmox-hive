@@ -2,6 +2,11 @@
 
 All notable changes to Proxmox Hive are documented here.
 
+## [Unreleased]
+
+### Added
+- Update history. A `History` button on the dashboard shows every update from the last 7, 14 or 30 days, grouped by day with the time, the target, whether it was run by hand or by an auto-update group, and the result. Each entry expands to the packages it touched with their old and new versions, read from the package manager's own output (apt and apk); dnf, yum and VMs with no output fall back to the list from the last check. Proxmox Hive's own updates are recorded on the next start, and an update cut off by a restart is marked `Interrupted` instead of vanishing. History is kept for 30 days in `/data/history.json`
+
 ## [1.0.27] - 2026-09-07
 
 ### Fixed

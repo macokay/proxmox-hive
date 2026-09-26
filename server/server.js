@@ -9,6 +9,7 @@ import { wsClients, broadcast, sendToClient, getActiveJobs } from './broadcast.j
 import { initScheduler } from './services/scheduler.js'
 import { isConfigured, getAppSettings } from './services/config.js'
 import { getCurrentVersion, resolveUpdate } from './services/selfUpdate.js'
+import { markInterrupted, recordSelfUpdateIfChanged } from './services/history.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -37,6 +38,11 @@ wss.on('connection', (ws) => {
   sendToClient(ws, { type: 'active_jobs', keys: getActiveJobs() })
   if (pendingUpdate) sendToClient(ws, { type: 'app_update_available', ...pendingUpdate })
 })
+
+try {
+  markInterrupted()
+  recordSelfUpdateIfChanged(getCurrentVersion())
+} catch (e) { console.error('History init failed:', e.message) }
 
 if (isConfigured()) {
   try { initScheduler(); console.log('Scheduler initialized') }

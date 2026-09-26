@@ -5,6 +5,7 @@ import { notify } from './notifications.js'
 import { getAllSites, getSite, saveSite } from './config.js'
 import { broadcast } from '../broadcast.js'
 import { getCurrentVersion, fetchLatestRelease, isUpdateAvailable, applySelfUpdate, getDockerHostname } from './selfUpdate.js'
+import { startEntry, finishEntry, parseInstalled } from './history.js'
 
 // Map of siteId -> array of cron tasks
 const siteTasks = new Map()
@@ -468,7 +469,11 @@ export async function runCheck(siteId) {
 
 // ─── Update ───────────────────────────────────────────────────────────────────
 
-export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpdates = [], packages = null) {
+// Enough for a full dist-upgrade of a stale container; beyond it the tail is
+// dropped from the history parse only, never from the live terminal.
+const HISTORY_OUTPUT_CAP = 2 * 1024 * 1024
+
+export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpdates = [], packages = null, { trigger = 'manual', group = null } = {}) {
   const site = getSite(siteId)
   if (!site) return false
   const { updateApp } = await import('./appUpdater.js')
@@ -477,7 +482,26 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
   const updateKey = target === 'node' ? 'node' : `${target}-${vmid}`
 
   broadcast({ type: 'update_start', siteId, target, vmid, targetLabel, key: updateKey })
-  const onLog = (data) => broadcast({ type: 'log', siteId, data, key: updateKey })
+  let output = ''
+  const onLog = (data) => {
+    if (output.length < HISTORY_OUTPUT_CAP) output += data
+    broadcast({ type: 'log', siteId, data, key: updateKey })
+  }
+
+  const historyId = startEntry({ siteId, siteName: site.name, target, vmid, label: targetLabel, trigger, group })
+  const appInstalled = []
+  // apt and apk name every package they touch; dnf/yum and a VM whose output
+  // came back empty do not, so only those fall back to the planned list.
+  let outputHasVersions = true
+  const finish = async (ok) => {
+    let installed = parseInstalled(output)
+    if (installed.length === 0 && ok && !outputHasVersions) installed = plannedPackages(site, target, vmid, packages)
+    finishEntry(historyId, { status: ok ? 'success' : 'failed', packages: [...appInstalled, ...installed] })
+    broadcast({ type: 'update_done', siteId, target, vmid, success: ok, key: updateKey })
+    broadcast({ type: 'history_updated' })
+    await notify(site, 'update_complete', { target: targetLabel, success: ok })
+    return ok
+  }
 
   let success = true
   try {
@@ -486,9 +510,7 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
       if (!dns.ok) {
         onLog(`\nERROR: cannot resolve ${dns.host} on the Proxmox node — apt would stall on every lookup.\n`)
         onLog(`Check /etc/resolv.conf on the node before retrying.\n`)
-        broadcast({ type: 'update_done', siteId, target, vmid, success: false, key: updateKey })
-        await notify(site, 'update_complete', { target: targetLabel, success: false })
-        return false
+        return finish(false)
       }
       const cmd = (packages && packages.length > 0)
         ? nodeAptSelectiveUpgradeCmd(site, packages)
@@ -505,14 +527,13 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
           onLog(`Its nameserver is unreachable from inside the container. Fix with:\n`)
           onLog(`  pct set ${vmid} --nameserver "<working-dns-ip>"\n`)
           onLog(`then rewrite /etc/resolv.conf in the container or restart it.\n`)
-          broadcast({ type: 'update_done', siteId, target, vmid, success: false, key: updateKey })
-          await notify(site, 'update_complete', { target: targetLabel, success: false })
-          return false
+          return finish(false)
         }
         const appApiUpdates = appUpdates.filter(u => u.source === 'app-api')
         for (const appUpdate of appApiUpdates) {
           const ok = await updateApp(vmid, appUpdate, onLog, site)
           if (!ok) success = false
+          else appInstalled.push({ name: appUpdate.name, from: appUpdate.currentVersion || null, to: appUpdate.newVersion || null, action: 'upgrade' })
         }
         const pending = (packages && packages.length > 0)
           ? packages
@@ -539,9 +560,11 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
         onLog('\n[apk] Running package upgrade...\n')
         await siteExecStream(site, lxcApkUpgradeCmd(site, vmid), onLog, (code) => { if (code !== 0) success = false })
       } else if (pm === 'dnf') {
+        outputHasVersions = false
         onLog('\n[dnf] Running package upgrade...\n')
         await siteExecStream(site, lxcDnfUpgradeCmd(site, vmid), onLog, (code) => { if (code !== 0) success = false })
       } else if (pm === 'yum') {
+        outputHasVersions = false
         onLog('\n[yum] Running package upgrade...\n')
         await siteExecStream(site, lxcYumUpgradeCmd(site, vmid), onLog, (code) => { if (code !== 0) success = false })
       } else {
@@ -567,6 +590,7 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
           ].join('; ')
 
       const result = await qmGuestExecSimple(site, vmid, script, 300)
+      if (!result.stdout.trim()) outputHasVersions = false
       if (result.stdout) onLog(result.stdout)
       if (result.stderr) onLog(result.stderr)
       success = result.exitcode === 0
@@ -576,9 +600,20 @@ export async function runTargetUpdate(siteId, target, vmid, targetLabel, appUpda
     success = false
   }
 
-  broadcast({ type: 'update_done', siteId, target, vmid, success, key: updateKey })
-  await notify(site, 'update_complete', { target: targetLabel, success })
-  return success
+  return finish(success)
+}
+
+// dnf/yum summaries and empty VM output carry no parseable versions; the last
+// check's list of what was pending is the best record left.
+function plannedPackages(site, target, vmid, selected) {
+  const check = site.lastCheck
+  const pending = target === 'node' ? check?.node?.packages
+    : target === 'lxc' ? check?.lxc?.find(l => l.vmid === vmid)?.packages
+    : check?.vms?.find(v => v.vmid === vmid)?.packages
+  const chosen = selected?.length ? new Set(selected) : null
+  return (pending || [])
+    .filter(p => !chosen || chosen.has(p.name))
+    .map(p => ({ name: p.name, from: null, to: p.newVersion || null, action: 'upgrade' }))
 }
 
 export async function runGroupUpdate(siteId, group) {
@@ -587,9 +622,10 @@ export async function runGroupUpdate(siteId, group) {
   broadcast({ type: 'auto_update_start', siteId, groupName: group.name, timestamp: new Date().toISOString() })
   const checkResult = await runCheck(siteId)
   if (!checkResult) return
+  const auto = { trigger: 'auto', group: group.name }
   for (const target of (group.targets || [])) {
     if (target === 'node') {
-      if (checkResult.node.updates > 0) await runTargetUpdate(siteId, 'node', null, 'Proxmox Node')
+      if (checkResult.node.updates > 0) await runTargetUpdate(siteId, 'node', null, 'Proxmox Node', [], null, auto)
     } else if (target === 'hive') {
       try {
         const current = getCurrentVersion()
@@ -611,14 +647,14 @@ export async function runGroupUpdate(siteId, group) {
       if (lxcInfo) {
         const total = (lxcInfo?.packages?.length || 0) + (lxcInfo?.appUpdates?.length || 0)
         if (lxcInfo?.running && total > 0) {
-          await runTargetUpdate(siteId, 'lxc', vmid, `${lxcInfo.name} (CT ${vmid})`, lxcInfo.appUpdates)
+          await runTargetUpdate(siteId, 'lxc', vmid, `${lxcInfo.name} (CT ${vmid})`, lxcInfo.appUpdates, null, auto)
         }
         continue
       }
       // Check VM
       const vmInfo = checkResult.vms?.find(v => v.vmid === vmid)
       if (vmInfo?.running && (vmInfo.packages?.length || 0) > 0) {
-        await runTargetUpdate(siteId, 'vm', vmid, `${vmInfo.name} (VM ${vmid})`)
+        await runTargetUpdate(siteId, 'vm', vmid, `${vmInfo.name} (VM ${vmid})`, [], null, auto)
       }
     }
   }

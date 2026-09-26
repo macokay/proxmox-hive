@@ -8,6 +8,7 @@ import {
 } from '../services/config.js'
 import { initScheduler, initSiteScheduler, runCheck, runTargetUpdate, runGroupUpdate, parseLXCList, parseQMList } from '../services/scheduler.js'
 import { testChannel } from '../services/notifications.js'
+import { getHistory } from '../services/history.js'
 import { broadcast } from '../broadcast.js'
 import { getCurrentVersion, resolveUpdate, applySelfUpdate, checkDockerSocket } from '../services/selfUpdate.js'
 
@@ -74,6 +75,17 @@ router.post('/app-update/apply', (req, res) => {
       broadcast({ type: 'app_update_done', success: false })
     }
   })()
+})
+
+// ─── Update history ───────────────────────────────────────────────────────────
+
+router.get('/history', (req, res) => {
+  const days = Number(req.query.days ?? 7)
+  if (!Number.isInteger(days) || days < 1 || days > 30) {
+    return res.status(400).json({ error: 'days must be an integer from 1 to 30' })
+  }
+  const siteId = typeof req.query.siteId === 'string' && req.query.siteId ? req.query.siteId : null
+  res.json({ entries: getHistory({ days, siteId }) })
 })
 
 // ─── Config status ────────────────────────────────────────────────────────────

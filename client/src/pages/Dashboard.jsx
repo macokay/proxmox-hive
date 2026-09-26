@@ -4,6 +4,7 @@ import NodeCard from '../components/NodeCard.jsx'
 import LXCCard from '../components/LXCCard.jsx'
 import VMCard from '../components/VMCard.jsx'
 import Terminal from '../components/Terminal.jsx'
+import HistoryModal from '../components/HistoryModal.jsx'
 
 function formatRelative(ts, now = Date.now()) {
   if (!ts) return null
@@ -622,6 +623,7 @@ export default function Dashboard({ sites, activeSiteId, onSiteChange, onSetting
   const [activeUpdates, setActiveUpdates] = useState({}) // key → bool
   const [now, setNow] = useState(Date.now())
   const [showAbout, setShowAbout] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
     fetch('/api/version').then(r => r.json()).then(d => setAppVersion(d.version)).catch(() => {})
@@ -794,6 +796,7 @@ function closeTerminal(key) {
               {isChecking ? <><span className="pulse-dot w-2 h-2 rounded-full bg-accent inline-block mr-1.5" />Checking...</> : <><img src="/sync.svg" className="w-3.5 h-3.5 inline mr-1.5 align-middle" alt="" />Check now</>}
             </button>
           )}
+          <button className="btn-ghost text-xs" onClick={() => setShowHistory(true)}>History</button>
           <button className="btn-ghost text-xs" onClick={onSettings}>⚙ Settings</button>
         </div>
       </header>
@@ -829,6 +832,10 @@ function closeTerminal(key) {
           })()} · <a href="https://github.com/macokay/proxmox-hive" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub</a>
         </span>
       </footer>
+
+      {showHistory && (
+        <HistoryModal siteId={isGlobal ? null : activeSite?.id} onClose={() => setShowHistory(false)} />
+      )}
 
       {showAbout && (
         <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex: 200, background: 'rgba(8,8,10,0.85)', backdropFilter: 'blur(6px)' }}
