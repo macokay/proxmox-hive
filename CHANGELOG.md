@@ -4,6 +4,10 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- Installs on the beta channel now follow the dev branch on their own. The 15 minute update check applies a new dev build when no update job is running, and the daily auto-update group honours the beta setting instead of only looking at releases. Previously the check only told the dashboard that something was available
+- Self-updates delete the previous image once the new container is running. Every update left one 350 MB image behind, and a long-lived install eventually filled its disk (CT 111 reached 100% with 83 stale images)
+
 ### Added
 - Update history. A `History` button on the dashboard shows every update from the last 7, 14 or 30 days, grouped by day with the time, the target, whether it was run by hand or by an auto-update group, and the result. Each entry expands to the packages it touched with their old and new versions, read from the package manager's own output (apt and apk); dnf, yum and VMs with no output fall back to the list from the last check. Proxmox Hive's own updates are recorded on the next start, and an update cut off by a restart is marked `Interrupted` instead of vanishing. History is kept for 30 days in `/data/history.json`
 
