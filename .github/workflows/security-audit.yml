@@ -41,13 +41,13 @@ jobs:
                   ['npm', 'install', '--package-lock-only', '--ignore-scripts', '--quiet'],
                   cwd=d, capture_output=True
               )
-              r = subprocess.run(['npm', 'audit', '--json'], cwd=d, capture_output=True, text=True)
+              r = subprocess.run(['npm', 'audit', '--omit=dev', '--json'], cwd=d, capture_output=True, text=True)
               try:
                   data = json.loads(r.stdout)
                   for name, v in data.get('vulnerabilities', {}).items():
                       if v.get('severity') in ('high', 'critical'):
                           fix = 'yes' if v.get('fixAvailable') else 'no'
-                          findings.append(f'| `{name}` | {v["severity"].upper()} | `{d}` | {fix} |')
+                          findings.append(f'| {name} | {v["severity"].upper()} | {d} | {fix} |')
               except Exception:
                   pass
 

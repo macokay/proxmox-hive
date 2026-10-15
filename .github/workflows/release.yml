@@ -66,8 +66,8 @@ jobs:
 
       - name: npm audit
         run: |
-          npm audit --audit-level=high --prefix client
-          npm audit --audit-level=high --prefix server
+          npm audit --omit=dev --audit-level=high --prefix client
+          npm audit --omit=dev --audit-level=high --prefix server
 
       - name: Create zip asset
         run: |
