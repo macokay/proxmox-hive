@@ -99,7 +99,7 @@ function Toggle({ value, onChange, label, description }) {
         {description && <div className="text-xs text-muted mt-0.5">{description}</div>}
       </div>
       <button onClick={() => onChange(!value)}
-        className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${value ? 'bg-accent' : 'bg-base-600'}`}>
+        className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${value ? 'bg-accent' : 'bg-base-600'}`}>
         <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${value ? 'translate-x-5' : ''}`} />
       </button>
     </div>
@@ -140,7 +140,7 @@ export function NotificationChannels({ channels, onChange }) {
           <div key={ch.id} className="rounded-lg border border-border bg-base-800 overflow-hidden">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
               <button onClick={() => update(ch.id, { enabled: !ch.enabled })}
-                className={`relative w-8 h-4 rounded-full transition-colors flex-shrink-0 ${ch.enabled ? 'bg-accent' : 'bg-base-600'}`}>
+                className={`relative w-8 h-4 rounded-full transition-colors shrink-0 ${ch.enabled ? 'bg-accent' : 'bg-base-600'}`}>
                 <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${ch.enabled ? 'translate-x-4' : ''}`} />
               </button>
               <input className="flex-1 bg-transparent text-white text-sm font-medium focus:outline-none"
@@ -155,13 +155,13 @@ export function NotificationChannels({ channels, onChange }) {
               <div className="flex gap-2">
                 <input className="input flex-1 text-xs" placeholder={typeDef.placeholder}
                   value={ch.url} onChange={e => update(ch.id, { url: e.target.value })} />
-                <button className="btn-ghost text-xs flex-shrink-0" onClick={() => test(ch)} disabled={!ch.url || testing[ch.id]}>
+                <button className="btn-ghost text-xs shrink-0" onClick={() => test(ch)} disabled={!ch.url || testing[ch.id]}>
                   {testing[ch.id] ? '...' : 'Test'}
                 </button>
               </div>
               {testResults[ch.id] && (
                 <p className={`text-xs ${testResults[ch.id].ok ? 'text-success' : 'text-danger'}`}>
-                  <span className="flex items-center gap-1.5"><img src={testResults[ch.id].ok ? '/check.svg' : '/cross.svg'} className="w-4 h-4 flex-shrink-0" alt="" />{testResults[ch.id].ok ? 'Message sent' : testResults[ch.id].error}</span>
+                  <span className="flex items-center gap-1.5"><img src={testResults[ch.id].ok ? '/check.svg' : '/cross.svg'} className="w-4 h-4 shrink-0" alt="" />{testResults[ch.id].ok ? 'Message sent' : testResults[ch.id].error}</span>
                 </p>
               )}
               <div>
@@ -170,7 +170,7 @@ export function NotificationChannels({ channels, onChange }) {
                   {ALERT_TYPES.map(a => (
                     <label key={a.key} className="flex items-center gap-2.5 cursor-pointer group">
                       <div onClick={() => update(ch.id, { alerts: { ...alerts, [a.key]: !alerts[a.key] } })}
-                        className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all cursor-pointer ${
+                        className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center text-[9px] transition-all cursor-pointer ${
                           alerts[a.key] ? 'bg-accent border-accent text-white' : 'border-base-500 group-hover:border-accent/50'
                         }`}>
                         {alerts[a.key] && '✓'}
@@ -217,7 +217,7 @@ function GroupEditor({ groups, lxcList, vmList, onChange }) {
         <div key={group.id} className="rounded-lg border border-border bg-base-800 overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
             <button onClick={() => upd(group.id, { enabled: !group.enabled })}
-              className={`relative w-8 h-4 rounded-full transition-colors flex-shrink-0 ${group.enabled ? 'bg-accent' : 'bg-base-600'}`}>
+              className={`relative w-8 h-4 rounded-full transition-colors shrink-0 ${group.enabled ? 'bg-accent' : 'bg-base-600'}`}>
               <span className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform ${group.enabled ? 'translate-x-4' : ''}`} />
             </button>
             <input className="flex-1 bg-transparent text-white text-sm font-medium focus:outline-none"
@@ -233,7 +233,7 @@ function GroupEditor({ groups, lxcList, vmList, onChange }) {
                   className={`flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border transition-all ${
                     group.targets.includes(t.id) ? 'bg-accent/20 border-accent/40 text-accent' : 'bg-base-700 border-border text-muted hover:text-white'
                   }`}>
-                  <img src={`/${t.icon}.svg`} className="w-4 h-4 rounded flex-shrink-0" alt="" />
+                  <img src={`/${t.icon}.svg`} className="w-4 h-4 rounded shrink-0" alt="" />
                   {t.name}
                 </button>
               ))}
@@ -263,14 +263,14 @@ function ContainerList({ items, selectedSet, onToggle, onRetry, loading, error, 
         <div className="p-3 rounded-lg bg-danger/10 text-danger border border-danger/20 text-sm space-y-1">
           <div className="flex justify-between items-start gap-2">
             <span className="flex items-start gap-1.5">
-              <img src="/cross.svg" className="w-4 h-4 flex-shrink-0 mt-0.5" alt="" />
+              <img src="/cross.svg" className="w-4 h-4 shrink-0 mt-0.5" alt="" />
               <span>
                 {/handshake|timed out/i.test(error)
                   ? 'SSH handshake timed out — the host is reachable but not responding to SSH. Check that the IP and port are correct, that SSH is running on the host, and that no firewall is blocking port 22. Then test the connection above.'
                   : error}
               </span>
             </span>
-            <button className="underline text-xs flex-shrink-0" onClick={onRetry}>Retry</button>
+            <button className="underline text-xs shrink-0" onClick={onRetry}>Retry</button>
           </div>
         </div>
       )}
@@ -295,8 +295,8 @@ function ContainerList({ items, selectedSet, onToggle, onRetry, loading, error, 
           return (
             <button key={item.vmid} onClick={() => onToggle(item.vmid)}
               className={`w-full flex items-center gap-3 p-3.5 rounded-lg border text-left transition-all ${isSelected ? 'bg-accent/10 border-accent/40 text-white' : 'bg-base-800 border-border text-muted hover:border-base-500 hover:text-white'}`}>
-              <div className={`w-4 h-4 rounded border flex items-center justify-center text-xs flex-shrink-0 transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'border-base-500'}`}>{isSelected && '✓'}</div>
-              <img src={iconSrc} className="w-5 h-5 rounded flex-shrink-0" alt="" />
+              <div className={`w-4 h-4 rounded border flex items-center justify-center text-xs shrink-0 transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'border-base-500'}`}>{isSelected && '✓'}</div>
+              <img src={iconSrc} className="w-5 h-5 rounded shrink-0" alt="" />
               <span className="font-medium text-sm flex-1">{item.name}</span>
               <span className="text-xs text-muted">{prefix} {item.vmid}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full border ${item.status === 'running' ? 'bg-success/10 text-success border-success/20' : 'bg-base-700 text-muted border-border'}`}>{item.status}</span>
@@ -314,7 +314,7 @@ function CopyLine({ children }) {
     <div className="flex items-center justify-between gap-2 font-mono text-xs bg-base-900 rounded px-3 py-2 border border-border">
       <span className="text-white/80 select-all flex-1">{children}</span>
       <button onClick={() => { navigator.clipboard.writeText(children); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
-        className={`flex-shrink-0 text-[10px] px-2 py-0.5 rounded border transition-all ${copied ? 'border-success/40 text-success' : 'border-border text-muted hover:text-white hover:border-base-500'}`}>
+        className={`shrink-0 text-[10px] px-2 py-0.5 rounded border transition-all ${copied ? 'border-success/40 text-success' : 'border-border text-muted hover:text-white hover:border-base-500'}`}>
         {copied ? '✓' : '⎘'}
       </button>
     </div>
@@ -371,7 +371,7 @@ function OffboardModal({ site, onClose }) {
           {status === 'success' && (
             <div className="space-y-3">
               <div className="flex items-start gap-2 text-success">
-                <img src="/check.svg" className="w-6 h-6 flex-shrink-0" alt="" />
+                <img src="/check.svg" className="w-6 h-6 shrink-0" alt="" />
                 <div className="text-sm space-y-1">
                   {result.isRoot ? (
                     <>
@@ -402,7 +402,7 @@ function OffboardModal({ site, onClose }) {
           {status === 'fallback' && (
             <div className="space-y-4">
               <div className="flex items-start gap-2 text-danger/80 text-sm">
-                <img src="/cross.svg" className="w-5 h-5 flex-shrink-0 mt-0.5" alt="" />
+                <img src="/cross.svg" className="w-5 h-5 shrink-0 mt-0.5" alt="" />
                 <span>Automatic cleanup failed{result?.error ? `: ${result.error}` : ''}. Run these commands on your Proxmox host (Web UI → Node → Shell):</span>
               </div>
               <div className="space-y-2">
@@ -597,7 +597,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
         </div>
         <div className="flex items-center gap-3">
           <button className="btn-ghost text-xs" onClick={testSSH} disabled={testingSSH}>{testingSSH ? 'Testing...' : 'Test connection'}</button>
-          {sshResult && <span className={`text-xs flex items-center gap-1.5 ${sshResult.ok ? 'text-success' : 'text-danger'}`}><img src={sshResult.ok ? '/check.svg' : '/cross.svg'} className="w-4 h-4 flex-shrink-0" alt="" />{sshResult.ok ? 'Connected' : sshResult.error}</span>}
+          {sshResult && <span className={`text-xs flex items-center gap-1.5 ${sshResult.ok ? 'text-success' : 'text-danger'}`}><img src={sshResult.ok ? '/check.svg' : '/cross.svg'} className="w-4 h-4 shrink-0" alt="" />{sshResult.ok ? 'Connected' : sshResult.error}</span>}
         </div>
       </Section>
 
@@ -685,7 +685,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
                 Remove the <span className="font-mono">{config.ssh?.username || 'root'}</span> user and its sudoers rule from <span className="font-mono">{config.ssh?.host}</span>.
               </div>
             </div>
-            <button className="btn-danger text-xs flex-shrink-0" onClick={() => setShowOffboard(true)}>
+            <button className="btn-danger text-xs shrink-0" onClick={() => setShowOffboard(true)}>
               Off-board
             </button>
           </div>
@@ -696,7 +696,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
               <div className="text-xs text-muted mt-0.5">Removes <strong>{site.name}</strong> from Proxmox Hive. Other sites are unaffected.</div>
             </div>
             {!showDeleteConfirm ? (
-              <button className="btn-danger text-xs flex-shrink-0" onClick={() => setShowDeleteConfirm(true)}>Delete site</button>
+              <button className="btn-danger text-xs shrink-0" onClick={() => setShowDeleteConfirm(true)}>Delete site</button>
             ) : (
               <div className="flex gap-2">
                 <button className="btn-danger text-xs" onClick={deleteSite}>Confirm delete</button>
@@ -710,7 +710,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
               <div className="text-xs text-muted mt-0.5">Deletes all sites and configuration. Returns to the setup wizard. Cannot be undone.</div>
             </div>
             {!showResetConfirm ? (
-              <button className="btn-danger text-xs flex-shrink-0" onClick={() => setShowResetConfirm(true)}>Fresh reset</button>
+              <button className="btn-danger text-xs shrink-0" onClick={() => setShowResetConfirm(true)}>Fresh reset</button>
             ) : (
               <div className="flex gap-2">
                 <button className="btn-danger text-xs" onClick={resetEverything}>Yes, reset all</button>

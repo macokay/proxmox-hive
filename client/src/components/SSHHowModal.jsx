@@ -51,12 +51,12 @@ export function SSHKeyHowModal({ onClose }) {
       style={{ background: 'rgba(8,8,10,0.88)', backdropFilter: 'blur(8px)' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="slide-up w-full max-w-xl card border-border flex flex-col max-h-[85vh]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
           <h3 className="text-white font-semibold text-sm">How to set up SSH access</h3>
           <button onClick={onClose} className="text-muted hover:text-white transition-colors">✕</button>
         </div>
 
-        <div className="flex border-b border-border flex-shrink-0 overflow-x-auto">
+        <div className="flex border-b border-border shrink-0 overflow-x-auto">
           <Tab label="Option A — Restricted user" active={tab === 'a'} onClick={() => setTab('a')} />
           <Tab label="Option B — Root" active={tab === 'b'} onClick={() => setTab('b')} />
           <Tab label="Option C — Password" active={tab === 'c'} onClick={() => setTab('c')} />
@@ -140,7 +140,7 @@ export function SSHKeyHowModal({ onClose }) {
           )}
         </div>
 
-        <div className="px-5 py-4 border-t border-border flex-shrink-0">
+        <div className="px-5 py-4 border-t border-border shrink-0">
           <button onClick={onClose} className="btn-primary w-full justify-center">Got it</button>
         </div>
       </div>

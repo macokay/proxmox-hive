@@ -46,7 +46,7 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
         <div className="flex items-center gap-3">
           {hasUpdates && vm.running && !vm.noAgent && onCardSelect && (
             <button onClick={e => { e.stopPropagation(); onCardSelect(vm.vmid) }}
-              className={`w-5 h-5 rounded border flex-shrink-0 flex items-center justify-center text-[10px] transition-all ${
+              className={`w-5 h-5 rounded border shrink-0 flex items-center justify-center text-[10px] transition-all ${
                 isCardSelected ? 'bg-accent border-accent text-white' : 'border-base-500 hover:border-accent/60'
               }`} title="Select for batch update">
               {isCardSelected && '✓'}
@@ -64,7 +64,7 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
             </div>
           </div>
         </div>
-        <div className="text-right flex-shrink-0">{statusBadge()}</div>
+        <div className="text-right shrink-0">{statusBadge()}</div>
       </div>
 
       {vm.error && (
@@ -75,7 +75,7 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
         <div className="mb-3 text-xs text-warning/70 bg-warning/5 border border-warning/10 rounded-md px-3 py-2">
           <div className="flex items-center justify-between gap-2">
             <span>QEMU guest agent not running. Install <span className="font-mono">qemu-guest-agent</span> inside the VM and enable it in Proxmox VM Options.</span>
-            <button onClick={() => setShowAgentHelp(v => !v)} className="flex-shrink-0 text-warning/50 hover:text-warning transition-colors" title="How to fix">
+            <button onClick={() => setShowAgentHelp(v => !v)} className="shrink-0 text-warning/50 hover:text-warning transition-colors" title="How to fix">
               {showAgentHelp ? '▲' : '▼'}
             </button>
           </div>
@@ -114,11 +114,11 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
               }`}>
-              <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all ${
+              <div className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center text-[9px] transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-accent border-accent text-white' : 'border-base-500'
               }`}>{effectiveSelected.has(pkg.name) && '✓'}</div>
               <span className="font-mono text-white/80 flex-1 text-left min-w-0 truncate" title={pkg.name}>{pkg.name}</span>
-              <span className="text-muted flex-shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
+              <span className="text-muted shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
             </button>
           ))}
 

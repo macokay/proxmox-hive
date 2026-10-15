@@ -11,7 +11,7 @@ const APP_BADGES = {
 function AppBadge({ appType }) {
   const badge = APP_BADGES[appType] || { label: 'app', color: 'bg-base-600 text-muted border-border' }
   return (
-    <span className={`text-[10px] px-1.5 py-0.5 rounded border flex-shrink-0 ${badge.color}`}>
+    <span className={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${badge.color}`}>
       {badge.label}
     </span>
   )
@@ -67,7 +67,7 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
         <div className="flex items-center gap-3">
           {hasUpdates && lxc.running && onCardSelect && (
             <button onClick={e => { e.stopPropagation(); onCardSelect(lxc.vmid) }}
-              className={`w-5 h-5 rounded border flex-shrink-0 flex items-center justify-center text-[10px] transition-all ${
+              className={`w-5 h-5 rounded border shrink-0 flex items-center justify-center text-[10px] transition-all ${
                 isCardSelected ? 'bg-accent border-accent text-white' : 'border-base-500 hover:border-accent/60'
               }`} title="Select for batch update">
               {isCardSelected && '✓'}
@@ -91,7 +91,7 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
             </div>
           </div>
         </div>
-        <div className="text-right flex-shrink-0">
+        <div className="text-right shrink-0">
           {lxc.pending ? (
             <span className="text-xs px-2.5 py-1 rounded-full bg-base-700 text-muted border border-border italic">Pending check</span>
           ) : !lxc.running ? (
@@ -133,12 +133,12 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
               }`}>
-              <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all ${
+              <div className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center text-[9px] transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-accent border-accent text-white' : 'border-base-500'
               }`}>{effectiveSelected.has(pkg.name) && '✓'}</div>
               <span className="font-mono text-white/80 flex-1 text-left min-w-0" style={{wordBreak:'break-all'}} title={pkg.name}>{pkg.name}</span>
               <AppBadge appType={pkg.appType} />
-              <span className="text-muted flex-shrink-0 max-w-[80px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
+              <span className="text-muted shrink-0 max-w-[80px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
             </button>
           ))}
 
@@ -147,14 +147,14 @@ export default function LXCCard({ lxc, onUpdate, updating, delay = 0, isCardSele
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
               }`}>
-              <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all ${
+              <div className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center text-[9px] transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-accent border-accent text-white' : 'border-base-500'
               }`}>{effectiveSelected.has(pkg.name) && '✓'}</div>
               <span className="font-mono text-white/80 flex-1 text-left min-w-0 truncate" title={pkg.name}>{pkg.name}</span>
               {pkg.keptBack && (
-                <span className="text-[9px] px-1 py-0.5 rounded border bg-warning/10 text-warning border-warning/20 flex-shrink-0">held back</span>
+                <span className="text-[9px] px-1 py-0.5 rounded border bg-warning/10 text-warning border-warning/20 shrink-0">held back</span>
               )}
-              <span className="text-muted flex-shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
+              <span className="text-muted shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
             </button>
           ))}
 

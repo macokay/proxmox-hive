@@ -1,6 +1,45 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: DM Sans, sans-serif;
+  --font-mono: JetBrains Mono, monospace;
+
+  --color-base-500: #2e2e38;
+  --color-base-600: #22222a;
+  --color-base-700: #1a1a20;
+  --color-base-800: #141418;
+  --color-base-900: #0e0e12;
+  --color-base-950: #08080a;
+
+  --color-border: #1e1e28;
+
+  --color-accent: #4f8ef7;
+  --color-accent-dim: #2563eb22;
+  --color-accent-glow: #4f8ef733;
+
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-muted: #5a5a6e;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 :root {
   --accent: #4f8ef7;
@@ -122,7 +161,7 @@ body::before {
 .slide-up { animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 /* Button styles */
-.btn {
+@utility btn {
   @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer;
 }
 .btn-primary {
@@ -141,7 +180,7 @@ body::before {
 /* Input */
 .input {
   @apply w-full bg-base-800 border border-border rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-muted
-         focus:outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/10 transition-all;
+         focus:outline-hidden focus:border-accent/60 focus:ring-2 focus:ring-accent/10 transition-all;
 }
 .label {
   @apply block text-xs font-medium text-muted mb-1.5 uppercase tracking-wider;

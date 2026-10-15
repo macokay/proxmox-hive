@@ -35,7 +35,7 @@ function SiteDropdown({ sites, activeSiteId, onSiteChange, onAddSite }) {
     <div className="relative" ref={ref} style={{ zIndex: 100 }}>
       <button onClick={() => setOpen(o => !o)}
         className="flex items-center gap-2 text-white text-sm font-medium hover:text-white/80 transition-colors">
-        <span className="w-2 h-2 rounded-full bg-success block flex-shrink-0" />
+        <span className="w-2 h-2 rounded-full bg-success block shrink-0" />
         {activeSite?.name || 'Select site'}
         <span className="text-muted text-xs">▾</span>
       </button>
@@ -62,7 +62,7 @@ function SiteDropdown({ sites, activeSiteId, onSiteChange, onAddSite }) {
               className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors ${
                 site.id === activeSiteId ? 'text-accent bg-accent/10' : 'text-white hover:bg-[#1a1a22]'
               }`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
               {site.name}
             </button>
           ))}
@@ -166,10 +166,10 @@ function UpdateSelectionModal({ nodeData, lxcData, vmData, onClose, onUpdate }) 
                 item.disabled ? 'opacity-40 cursor-not-allowed bg-base-800 border-border' :
                 selected.has(item.key) ? 'bg-accent/10 border-accent/40' : 'bg-base-800 border-border hover:border-base-500'
               }`}>
-              <div className={`w-4 h-4 rounded border flex items-center justify-center text-xs flex-shrink-0 ${
+              <div className={`w-4 h-4 rounded border flex items-center justify-center text-xs shrink-0 ${
                 selected.has(item.key) ? 'bg-accent border-accent text-white' : 'border-base-500'
               }`}>{selected.has(item.key) && '✓'}</div>
-              <img src={`/${item.icon}.svg`} className="w-5 h-5 rounded flex-shrink-0" alt="" />
+              <img src={`/${item.icon}.svg`} className="w-5 h-5 rounded shrink-0" alt="" />
               <span className="text-white text-sm flex-1">{item.name}</span>
               <span className="text-muted text-xs">{item.count} pkg</span>
             </button>
@@ -217,7 +217,7 @@ function MultiTerminal({ terminals, onCloseAll, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col p-4 sm:p-6 gap-4 overflow-y-auto"
       style={{ background: 'rgba(8,8,10,0.9)', backdropFilter: 'blur(8px)' }}>
-      <div className="flex items-center justify-between flex-shrink-0">
+      <div className="flex items-center justify-between shrink-0">
         <span className="text-white font-semibold text-sm">
           {allDone
             ? `${keys.length} update${keys.length !== 1 ? 's' : ''} finished`
@@ -258,7 +258,7 @@ function TerminalPanel({ term, onClose }) {
 
   return (
     <div className="card border-border flex flex-col" style={{ minHeight: '320px', maxHeight: '480px' }}>
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
         <div className="flex gap-1.5">
           <div className="w-3 h-3 rounded-full bg-danger/70" />
           <div className="w-3 h-3 rounded-full bg-warning/70" />
@@ -372,7 +372,7 @@ function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
 
       {!checking && site.lastCheck && (
         <div className={`card px-5 py-4 mb-8 flex items-center gap-4 fade-up ${totalUpdates > 0 ? 'border-accent/30' : ''}`}>
-          <div className="w-8 h-8 flex-shrink-0"><img src={totalUpdates > 0 ? '/sync.svg' : '/check.svg'} className="w-8 h-8" alt="" /></div>
+          <div className="w-8 h-8 shrink-0"><img src={totalUpdates > 0 ? '/sync.svg' : '/check.svg'} className="w-8 h-8" alt="" /></div>
           <div className="flex-1">
             <div className="font-semibold text-white text-sm">
               {totalUpdates > 0 ? `${totalUpdates} update${totalUpdates !== 1 ? 's' : ''} available` : 'Everything is up to date'}
@@ -507,7 +507,7 @@ function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
           )}
 
           {site.lastCheck.error && (
-            <div className="card p-4 border-danger/20 bg-danger/5 text-danger text-sm flex items-center gap-2"><img src="/cross.svg" className="w-5 h-5 flex-shrink-0" alt="" />{site.lastCheck.error}</div>
+            <div className="card p-4 border-danger/20 bg-danger/5 text-danger text-sm flex items-center gap-2"><img src="/cross.svg" className="w-5 h-5 shrink-0" alt="" />{site.lastCheck.error}</div>
           )}
         </div>
       )}
@@ -532,7 +532,7 @@ function GlobalView({ sites, activeUpdates, onUpdate, onCheck }) {
     <div className="space-y-12">
       {sitesWithData.length > 0 && (
         <div className={`card px-5 py-4 flex items-center gap-4 fade-up ${totalUpdates > 0 ? 'border-accent/30' : ''}`}>
-          <div className="w-8 h-8 flex-shrink-0"><img src={totalUpdates > 0 ? '/sync.svg' : '/check.svg'} className="w-8 h-8" alt="" /></div>
+          <div className="w-8 h-8 shrink-0"><img src={totalUpdates > 0 ? '/sync.svg' : '/check.svg'} className="w-8 h-8" alt="" /></div>
           <div className="flex-1">
             <div className="font-semibold text-white text-sm">
               {totalUpdates > 0 ? `${totalUpdates} total update${totalUpdates !== 1 ? 's' : ''} across ${sitesWithData.length} site${sitesWithData.length !== 1 ? 's' : ''}` : 'All sites up to date'}
@@ -779,7 +779,7 @@ function closeTerminal(key) {
 
       <header className="border-b border-border bg-base-900/80 backdrop-blur-md sticky top-0" style={{ zIndex: 10 }}>
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center gap-4" style={{ overflow: 'visible' }}>
-          <button onClick={() => setShowAbout(true)} className="flex-shrink-0 opacity-90 hover:opacity-100 transition-opacity" title="About Proxmox Hive">
+          <button onClick={() => setShowAbout(true)} className="shrink-0 opacity-90 hover:opacity-100 transition-opacity" title="About Proxmox Hive">
             <img src="/hive.svg" className="w-7 h-7" alt="Proxmox Hive" />
           </button>
           <SiteDropdown sites={sites} activeSiteId={activeSiteId} onSiteChange={onSiteChange} onAddSite={onAddSite} />

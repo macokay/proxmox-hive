@@ -37,7 +37,7 @@ function PackageLine({ pkg }) {
   return (
     <div className="flex items-baseline justify-between gap-3 font-mono text-[11px] py-0.5">
       <span className="text-white/80 truncate">{pkg.name}</span>
-      <span className="flex-shrink-0 text-right">{change}</span>
+      <span className="shrink-0 text-right">{change}</span>
     </div>
   )
 }
@@ -50,19 +50,19 @@ function EntryRow({ entry, showSite }) {
     <div className="border-b border-border last:border-b-0">
       <button onClick={() => count && setOpen(o => !o)}
         className={`w-full flex items-center gap-3 px-4 py-2.5 text-left ${count ? 'hover:bg-base-800' : 'cursor-default'} transition-colors`}>
-        <span className="font-mono text-xs text-muted w-11 flex-shrink-0">{timeLabel(entry.startedAt)}</span>
+        <span className="font-mono text-xs text-muted w-11 shrink-0">{timeLabel(entry.startedAt)}</span>
         <span className="flex-1 min-w-0 text-sm text-white truncate">
           {entry.label}
           {showSite && entry.siteName && <span className="text-muted text-xs ml-2">{entry.siteName}</span>}
         </span>
         {entry.trigger === 'auto' && (
-          <span className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded border border-border text-muted flex-shrink-0">auto: {entry.group}</span>
+          <span className="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded border border-border text-muted shrink-0">auto: {entry.group}</span>
         )}
-        <span className="text-xs text-muted flex-shrink-0 w-20 text-right">{count} package{count === 1 ? '' : 's'}</span>
-        <span className={`text-[10px] px-2 py-0.5 rounded-full border flex-shrink-0 ${status.cls}`}>{status.label}</span>
+        <span className="text-xs text-muted shrink-0 w-20 text-right">{count} package{count === 1 ? '' : 's'}</span>
+        <span className={`text-[10px] px-2 py-0.5 rounded-full border shrink-0 ${status.cls}`}>{status.label}</span>
       </button>
       {open && (
-        <div className="px-4 pb-3 pl-[4.25rem]">
+        <div className="px-4 pb-3 pl-17">
           {entry.packages.map((p, i) => <PackageLine key={`${p.name}-${i}`} pkg={p} />)}
         </div>
       )}

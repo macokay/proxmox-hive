@@ -39,7 +39,7 @@ function CopyBlock({ icon, where, hint, steps }) {
           {hint && <div className="text-[10px] text-muted mt-0.5 ml-5">{hint}</div>}
         </div>
         <button onClick={copy}
-          className={`flex-shrink-0 flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded border transition-all ${
+          className={`shrink-0 flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded border transition-all ${
             copied ? 'border-success/40 text-success bg-success/10' : 'border-border text-muted hover:text-white hover:border-base-500'
           }`}>
           {copied ? '✓ Copied' : '⎘ Copy'}
@@ -402,7 +402,7 @@ function SSHStep({ data, onChange, onNext }) {
 
       {result && (
         <div className={`p-3 rounded-lg text-sm ${result.ok ? 'bg-success/10 text-success border border-success/20' : 'bg-danger/10 text-danger border border-danger/20'}`}>
-          <span className="flex items-center gap-2"><img src={result.ok ? '/check.svg' : '/cross.svg'} className="w-5 h-5 flex-shrink-0" alt="" />{result.ok ? 'Connection successful' : result.error}</span>
+          <span className="flex items-center gap-2"><img src={result.ok ? '/check.svg' : '/cross.svg'} className="w-5 h-5 shrink-0" alt="" />{result.ok ? 'Connection successful' : result.error}</span>
         </div>
       )}
 
@@ -469,7 +469,7 @@ function LXCStep({ sshData, selected, onSelect, onNext, onBack }) {
         <div className="space-y-2">
           <div className="p-3 rounded-lg bg-danger/10 text-danger border border-danger/20 text-sm">
             <div className="flex items-center justify-between mb-1">
-              <span className="font-medium flex items-center gap-1.5"><img src="/cross.svg" className="w-4 h-4 flex-shrink-0" alt="" />Failed to list containers</span>
+              <span className="font-medium flex items-center gap-1.5"><img src="/cross.svg" className="w-4 h-4 shrink-0" alt="" />Failed to list containers</span>
               <button className="underline text-xs" onClick={load}>Retry</button>
             </div>
             <div className="font-mono text-xs text-danger/70 mt-1 break-all">{error}</div>
@@ -513,7 +513,7 @@ function LXCStep({ sshData, selected, onSelect, onNext, onBack }) {
                 className={`w-full flex items-center gap-4 p-4 rounded-lg border text-left transition-all duration-150 ${
                   isSelected ? 'bg-accent/10 border-accent/40 text-white' : 'bg-base-800 border-border text-muted hover:border-base-500 hover:text-white'
                 }`}>
-                <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border text-xs transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'border-base-500'}`}>
+                <div className={`w-5 h-5 rounded flex items-center justify-center shrink-0 border text-xs transition-all ${isSelected ? 'bg-accent border-accent text-white' : 'border-base-500'}`}>
                   {isSelected && '✓'}
                 </div>
                 <div className="flex-1 min-w-0">

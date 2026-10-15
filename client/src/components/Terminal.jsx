@@ -22,7 +22,7 @@ export default function Terminal({ logs, target, onClose, done, success }) {
       style={{ background: 'rgba(8,8,10,0.85)', backdropFilter: 'blur(6px)' }}
       onClick={e => e.target === e.currentTarget && done && onClose()}>
       <div className="slide-up w-full sm:max-w-3xl card border-border flex flex-col" style={{ height: 'min(90vh, 560px)' }}>
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-shrink-0">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
           <div className="flex gap-1.5">
             <div className="w-3 h-3 rounded-full bg-danger/70" />
             <div className="w-3 h-3 rounded-full bg-warning/70" />

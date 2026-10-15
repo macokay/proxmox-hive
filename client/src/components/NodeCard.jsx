@@ -36,7 +36,7 @@ export default function NodeCard({ node, onUpdate, updating }) {
             <div className="text-xs text-muted">Host OS packages</div>
           </div>
         </div>
-        <div className="text-right flex-shrink-0">
+        <div className="text-right shrink-0">
           {hasUpdates ? (
             <div className="flex flex-col items-end gap-1">
               <span className="text-2xl font-semibold text-white tabular-nums">{node.updates}</span>
@@ -67,11 +67,11 @@ export default function NodeCard({ node, onUpdate, updating }) {
               className={`w-full flex items-center gap-2 text-xs py-1.5 px-2.5 rounded-md border text-left transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-base-800 border-border' : 'bg-base-900 border-border/40 opacity-50'
               }`}>
-              <div className={`w-3.5 h-3.5 rounded border flex-shrink-0 flex items-center justify-center text-[9px] transition-all ${
+              <div className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center text-[9px] transition-all ${
                 effectiveSelected.has(pkg.name) ? 'bg-accent border-accent text-white' : 'border-base-500'
               }`}>{effectiveSelected.has(pkg.name) && '✓'}</div>
               <span className="font-mono text-white/80 flex-1 text-left min-w-0 truncate" title={pkg.name}>{pkg.name}</span>
-              <span className="text-muted flex-shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
+              <span className="text-muted shrink-0 max-w-[100px] truncate" title={pkg.newVersion}>{pkg.newVersion}</span>
             </button>
           ))}
 
