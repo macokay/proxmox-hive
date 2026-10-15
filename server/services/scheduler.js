@@ -2,9 +2,9 @@ import cron from 'node-cron'
 import { createSSHConnection } from './ssh.js'
 import { detectAppUpdates } from './appUpdates.js'
 import { notify } from './notifications.js'
-import { getAllSites, getSite, saveSite } from './config.js'
+import { getAllSites, getSite, saveSite, getAppSettings } from './config.js'
 import { broadcast } from '../broadcast.js'
-import { getCurrentVersion, fetchLatestRelease, isUpdateAvailable, applySelfUpdate, getDockerHostname } from './selfUpdate.js'
+import { getCurrentVersion, resolveUpdate, applySelfUpdate, getDockerHostname } from './selfUpdate.js'
 import { startEntry, finishEntry, parseInstalled } from './history.js'
 
 // Map of siteId -> array of cron tasks
@@ -630,11 +630,11 @@ export async function runGroupUpdate(siteId, group) {
       try {
         const current = getCurrentVersion()
         if (current === 'dev') continue
-        const latest = await fetchLatestRelease()
-        if (!isUpdateAvailable(current, latest)) continue
+        const update = await resolveUpdate(getAppSettings().betaUpdates)
+        if (!update.updateAvailable) continue
         broadcast({ type: 'update_start', siteId, target: 'hive', vmid: null, targetLabel: 'Proxmox Hive', key: 'hive' })
         const onLog = (data) => broadcast({ type: 'log', siteId, data, key: 'hive' })
-        await applySelfUpdate(onLog)
+        await applySelfUpdate(onLog, update.beta, update.beta ? null : update.latest)
         broadcast({ type: 'update_done', siteId, target: 'hive', vmid: null, success: true, key: 'hive' })
       } catch (e) {
         console.error(`[${site.name}] Hive self-update failed:`, e.message)
