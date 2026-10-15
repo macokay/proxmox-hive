@@ -4,6 +4,11 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+## [1.0.28] - 2026-10-15
+
+### Fixed
+- A failed self-update no longer leaves `docker-compose.yml` pinned to an image that was never pulled. The image is now pulled first and compose is pinned only once it is on disk, so the next restart of the host still starts Hive on the version it was running
+
 ## [1.0.27] - 2026-10-15
 
 ### Added
