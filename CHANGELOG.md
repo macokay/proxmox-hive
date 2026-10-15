@@ -4,6 +4,8 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+## [1.0.29] - 2026-10-15
+
 ### Changed
 - The dashboard is built with Tailwind CSS 4 (Vite plugin) instead of version 3. This clears the high severity advisories in the old build toolchain and removes the PostCSS and autoprefixer dependencies. The rendered dashboard is unchanged
 
