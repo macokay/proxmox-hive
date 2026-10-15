@@ -171,6 +171,11 @@ export async function applySelfUpdate(onLog, beta = false, knownVersion = null) 
   const image = `ghcr.io/macokay/proxmox-hive:${latest}`
 
   if (compose) {
+    // Pull before pinning: a failed pull must not leave compose pointing at a tag
+    // that is not on disk, or the next restart of the host cannot start Hive.
+    onLog('--- Pulling latest image ---\n')
+    await run('docker', ['pull', image])
+
     try {
       let content = readFileSync(compose, 'utf8')
       content = content.replace(
@@ -182,8 +187,6 @@ export async function applySelfUpdate(onLog, beta = false, knownVersion = null) 
     } catch (e) {
       onLog(`Warning: could not update compose file: ${e.message}\n`)
     }
-    onLog('--- Pulling latest image ---\n')
-    await run('docker', ['compose', '-f', compose, 'pull'])
 
     // Spawn a detached helper container that restarts us after we finish.
     // Running compose up -d from inside the container kills our process mid-execution;
