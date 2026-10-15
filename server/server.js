@@ -59,11 +59,11 @@ async function checkAndBroadcastUpdate() {
     if (result.updateAvailable) {
       pendingUpdate = result
       broadcast({ type: 'app_update_available', ...result })
-      // Beta installs opted into the newest dev build, so apply it here instead of
-      // waiting for the daily group. Never mid-job: the restart would orphan its report.
-      if (result.beta && getActiveJobs().length === 0) {
-        console.log(`[update check] applying dev build ${result.latestSha}`)
-        await applySelfUpdate(data => broadcast({ type: 'app_update_log', data }), true)
+      // Beta installs opted into the newest build, dev or release, so apply it here
+      // instead of waiting for the daily group. Never mid-job: the restart would orphan its report.
+      if (betaUpdates && getActiveJobs().length === 0) {
+        console.log(`[update check] applying ${result.beta ? `dev build ${result.latestSha}` : `release ${result.latest}`}`)
+        await applySelfUpdate(data => broadcast({ type: 'app_update_log', data }), result.beta, result.beta ? null : result.latest)
       }
     } else {
       pendingUpdate = null
