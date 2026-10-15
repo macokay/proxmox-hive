@@ -4,16 +4,14 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
-### Fixed
-- Installs on the beta channel now follow the dev branch on their own. The 15 minute update check applies a new dev build when no update job is running, and the daily auto-update group honours the beta setting instead of only looking at releases. Previously the check only told the dashboard that something was available
-- Self-updates delete the previous image once the new container is running. Every update left one 350 MB image behind, and a long-lived install eventually filled its disk (CT 111 reached 100% with 83 stale images)
+## [1.0.27] - 2026-10-15
 
 ### Added
 - Update history. A `History` button on the dashboard shows every update from the last 7, 14 or 30 days, grouped by day with the time, the target, whether it was run by hand or by an auto-update group, and the result. Each entry expands to the packages it touched with their old and new versions, read from the package manager's own output (apt and apk); dnf, yum and VMs with no output fall back to the list from the last check. Proxmox Hive's own updates are recorded on the next start, and an update cut off by a restart is marked `Interrupted` instead of vanishing. History is kept for 30 days in `/data/history.json`
 
-## [1.0.27] - 2026-09-07
-
 ### Fixed
+- Installs on the beta channel now follow the dev branch on their own. The 15 minute update check applies a new dev build when no update job is running, and the daily auto-update group honours the beta setting instead of only looking at releases. Previously the check only told the dashboard that something was available
+- Self-updates delete the previous image once the new container is running. Every update left one 350 MB image behind, and a long-lived install eventually filled its disk (CT 111 reached 100% with 83 stale images)
 - Update terminals no longer spin forever after the server goes away mid-update. Job state lived only in the browser tab, so an update whose closing event never arrived — the server was restarted or killed while it ran — stayed "running" until a hard reload. The server now tracks running updates and sends the live set on every WebSocket connect; a tab reconciles against it and marks orphaned terminals `Interrupted`, which says the result is unknown rather than claiming success or failure
 - Upgrading Docker inside the container that hosts Proxmox Hive now warns before it starts. dpkg restarts the Docker daemon, which stops Hive's own container mid-stream, so the log simply cut off with no explanation while the upgrade finished unattended on the target
 - The terminal overlay header counted finished terminals as running ("2 updates running" with one of them already done). It now reports how many are actually still going, and says "finished" once they all are
