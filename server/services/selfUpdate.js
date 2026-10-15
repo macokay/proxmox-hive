@@ -195,7 +195,8 @@ export async function applySelfUpdate(onLog, beta = false, knownVersion = null) 
       '-v', '/var/run/docker.sock:/var/run/docker.sock',
       '-v', `${compose}:${compose}`,
       image,
-      '-c', `sleep 3 && docker compose -f ${compose} up -d --remove-orphans --force-recreate`
+      // Prune after the recreate: the previous image is only unused once the new container runs.
+      '-c', `sleep 3 && docker compose -f ${compose} up -d --remove-orphans --force-recreate && docker image prune -af`
     ])
     onLog('Restarting in a few seconds…\n')
   } else {
