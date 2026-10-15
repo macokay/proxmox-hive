@@ -8,7 +8,7 @@ import apiRouter from './routes/api.js'
 import { wsClients, broadcast, sendToClient, getActiveJobs } from './broadcast.js'
 import { initScheduler } from './services/scheduler.js'
 import { isConfigured, getAppSettings } from './services/config.js'
-import { getCurrentVersion, resolveUpdate } from './services/selfUpdate.js'
+import { getCurrentVersion, resolveUpdate, applySelfUpdate } from './services/selfUpdate.js'
 import { markInterrupted, recordSelfUpdateIfChanged } from './services/history.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -59,6 +59,12 @@ async function checkAndBroadcastUpdate() {
     if (result.updateAvailable) {
       pendingUpdate = result
       broadcast({ type: 'app_update_available', ...result })
+      // Beta installs opted into the newest dev build, so apply it here instead of
+      // waiting for the daily group. Never mid-job: the restart would orphan its report.
+      if (result.beta && getActiveJobs().length === 0) {
+        console.log(`[update check] applying dev build ${result.latestSha}`)
+        await applySelfUpdate(data => broadcast({ type: 'app_update_log', data }), true)
+      }
     } else {
       pendingUpdate = null
     }
