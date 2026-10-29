@@ -4,6 +4,11 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+## [1.0.30] - 2026-10-29
+
+### Fixed
+- App updates for Prowlarr, Lidarr and Readarr are detected and installed. Hive asked them for updates on API v3, but they only serve v1, so the check got a 404 and reported that everything was up to date. Sonarr and Radarr were not affected
+
 ## [1.0.29] - 2026-10-15
 
 ### Changed
