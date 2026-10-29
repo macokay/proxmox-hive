@@ -66,7 +66,7 @@ async function checkArrApp(sshConfig, vmid, appName, defaultPort) {
   const port = parseInt((xml.match(/<Port>([^<]+)<\/Port>/) || [])[1]) || defaultPort
   if (!apiKey) return []
 
-  const { stdout, code } = await curlInLXC(sshConfig, vmid, `http://localhost:${port}/api/v3/update?apikey=${apiKey}`)
+  const { stdout, code } = await curlInLXC(sshConfig, vmid, `http://localhost:${port}/api/${ARR_API[appName]}/update?apikey=${apiKey}`)
   if (code !== 0 || !stdout.trim()) return []
 
   try {
@@ -140,6 +140,8 @@ async function checkSeerr(sshConfig, vmid) {
 
 const ARR_PORTS = { sonarr: 8989, radarr: 7878, prowlarr: 9696, lidarr: 8686, readarr: 8787 }
 
+const ARR_API = { sonarr: 'v3', radarr: 'v3', prowlarr: 'v1', lidarr: 'v1', readarr: 'v1' }
+
 const SERVICE_REGISTRY = {
   'sonarr':          (sc, vmid) => checkArrApp(sc, vmid, 'sonarr',   ARR_PORTS.sonarr),
   'radarr':          (sc, vmid) => checkArrApp(sc, vmid, 'radarr',   ARR_PORTS.radarr),
@@ -182,7 +184,7 @@ export async function detectAppUpdates(vmid, site) {
 
 // ─── Update functions (used by appUpdater.js) ─────────────────────────────────
 
-export { execInLXC, curlInLXC, writeFileInLXC, findArrConfig, ARR_PORTS }
+export { execInLXC, curlInLXC, writeFileInLXC, findArrConfig, ARR_PORTS, ARR_API }
 
 function versionIsNewer(a, b) {
   if (!a || !b) return false

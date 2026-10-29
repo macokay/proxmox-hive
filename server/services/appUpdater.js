@@ -1,5 +1,5 @@
 import { createSSHConnection } from './ssh.js'
-import { execInLXC, findArrConfig, ARR_PORTS } from './appUpdates.js'
+import { execInLXC, findArrConfig, ARR_PORTS, ARR_API } from './appUpdates.js'
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
 
@@ -61,7 +61,7 @@ async function updateArrApp(sshConfig, vmid, appName, onLog) {
   const jsonPath = `/tmp/pxd_body.json`
   await execInLXC(sshConfig, vmid, `sh -c "echo ${jsonB64} | base64 -d > ${jsonPath}"`)
 
-  const curlScript = `#!/bin/sh\ncurl -sf -X POST "http://localhost:${port}/api/v3/command" -H "X-Api-Key: ${apiKey}" -H "Content-Type: application/json" --data @${jsonPath}\n`
+  const curlScript = `#!/bin/sh\ncurl -sf -X POST "http://localhost:${port}/api/${ARR_API[appName] || 'v3'}/command" -H "X-Api-Key: ${apiKey}" -H "Content-Type: application/json" --data @${jsonPath}\n`
   const scriptB64 = Buffer.from(curlScript).toString('base64')
   const scriptPath = `/tmp/pxd_arr.sh`
   await execInLXC(sshConfig, vmid, `sh -c "echo ${scriptB64} | base64 -d > ${scriptPath} && chmod +x ${scriptPath}"`)
