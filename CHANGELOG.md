@@ -4,6 +4,11 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+## [1.0.31] - 2026-10-29
+
+### Security
+- Server dependencies `body-parser` and `follow-redirects` are updated to clear two high severity advisories. No behaviour change
+
 ## [1.0.30] - 2026-10-29
 
 ### Fixed
