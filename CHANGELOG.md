@@ -4,6 +4,10 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- Major version updates for Sonarr, Radarr, Prowlarr, Lidarr and Readarr are installed. Hive asked the app to update, but the app declines major jumps (Prowlarr 2 to 3, Radarr 6 to 7) unless told to, so the update was reported as a success while nothing changed and the next check offered it again
+- An *arr update is only reported as successful when the app's version actually changed
+
 ## [1.0.31] - 2026-10-29
 
 ### Security

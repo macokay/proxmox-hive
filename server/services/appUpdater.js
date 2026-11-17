@@ -1,5 +1,5 @@
 import { createSSHConnection } from './ssh.js'
-import { execInLXC, findArrConfig, ARR_PORTS, ARR_API } from './appUpdates.js'
+import { execInLXC, curlInLXC, findArrConfig, ARR_PORTS, ARR_API } from './appUpdates.js'
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)) }
 
@@ -37,7 +37,7 @@ export async function updateApp(vmid, appUpdate, onLog, site) {
   onLog(`\n[app-updater] Updating ${name} (${appType})\n`)
 
   switch (appType) {
-    case 'arr':      return updateArrApp(sshConfig, vmid, name, onLog)
+    case 'arr':      return updateArrApp(sshConfig, vmid, name, newVersion, onLog)
     case 'plex':     return updatePlex(sshConfig, vmid, newVersion, downloadUrl, onLog)
     case 'jellyfin': return updateJellyfin(sshConfig, vmid, onLog)
     case 'overseerr': return updateSeerr(sshConfig, vmid, name, onLog)
@@ -45,7 +45,7 @@ export async function updateApp(vmid, appUpdate, onLog, site) {
   }
 }
 
-async function updateArrApp(sshConfig, vmid, appName, onLog) {
+async function updateArrApp(sshConfig, vmid, appName, newVersion, onLog) {
   const xml = await findArrConfig(sshConfig, vmid, appName)
   if (!xml) { onLog(`[app-updater] config.xml not found\n`); return false }
 
@@ -56,7 +56,7 @@ async function updateArrApp(sshConfig, vmid, appName, onLog) {
   onLog(`[app-updater] Triggering ${appName} built-in update on port ${port}...\n`)
 
   // Write JSON body and curl script via base64
-  const jsonBody = JSON.stringify({ name: 'ApplicationUpdate' })
+  const jsonBody = JSON.stringify({ name: 'ApplicationUpdate', installMajorUpdate: true })
   const jsonB64 = Buffer.from(jsonBody).toString('base64')
   const jsonPath = `/tmp/pxd_body.json`
   await execInLXC(sshConfig, vmid, `sh -c "echo ${jsonB64} | base64 -d > ${jsonPath}"`)
@@ -78,16 +78,23 @@ async function updateArrApp(sshConfig, vmid, appName, onLog) {
     return false
   }
 
-  onLog(`[app-updater] Update accepted. Waiting for ${appName} to restart...\n`)
-  await sleep(5000)
-  for (let i = 0; i < 6; i++) {
-    await sleep(5000)
-    const { code: alive } = await execInLXC(sshConfig, vmid, `systemctl is-active ${appName} 2>/dev/null`)
-    if (alive === 0) { onLog(`[app-updater] ${appName} is running.\n`); return true }
-    onLog(`[app-updater] Still restarting... (${(i + 1) * 5}s)\n`)
+  // The command is accepted even when the app then declines to install (e.g. a major update),
+  // so only the version the app reports after the restart proves the update happened.
+  onLog(`[app-updater] Update accepted. Waiting for ${appName} to report ${newVersion}...\n`)
+  const statusUrl = `http://localhost:${port}/api/${ARR_API[appName] || 'v3'}/system/status?apikey=${apiKey}`
+  let seen = null
+  for (let waited = 0; waited < 180; waited += 10) {
+    await sleep(10000)
+    const { stdout: st, code: stCode } = await curlInLXC(sshConfig, vmid, statusUrl)
+    seen = stCode === 0 ? (st.match(/"version"\s*:\s*"([^"]+)"/) || [])[1] || null : null
+    if (seen === newVersion) { onLog(`[app-updater] ${appName} is running ${seen}.\n`); return true }
+    onLog(`[app-updater] ${seen ? `Still on ${seen}` : 'Not responding'} (${waited + 10}s)\n`)
   }
-  onLog(`[app-updater] Did not restart in 35s — check manually.\n`)
-  return true // soft success
+  const { code: alive } = await execInLXC(sshConfig, vmid, `systemctl is-active ${appName} 2>/dev/null`)
+  onLog(alive === 0
+    ? `[app-updater] ${appName} still reports ${seen || 'no version'} after 180s. The update was not installed; see ${appName}'s System > Updates and UpdateLogs.\n`
+    : `[app-updater] ${appName} is not running after the update. Check the service and free disk space in CT ${vmid}.\n`)
+  return false
 }
 
 async function updatePlex(sshConfig, vmid, newVersion, downloadUrl, onLog) {
