@@ -6,7 +6,7 @@ All notable changes to Proxmox Hive are documented here.
 
 ### Known issues
 - A check has no overall time limit. Each command has its own timeout, but when several guests time out one after another, a check can run for well over 10 minutes with no new result. Once, a check ran for more than 10 minutes and its cause was not found. Starting the check again finished in about 100 seconds. Checks can overlap if one runs longer than the check interval, because there is no lock
-- Windows detection through the guest agent (OS id `mswindows`) is untested. Detection by the OS type set in Proxmox is tested
+- Windows detection through the guest agent (OS id `mswindows`) is tested on Windows 10 Pro only. Windows Server and other editions are not tested. Detection by the OS type set in Proxmox is tested
 
 ### Fixed
 - Windows VMs are shown as "Not supported" instead of "QEMU guest agent not running". Hive checked the agent by running `bash` inside the guest, and Windows has no bash, so the check failed. The agent is now checked with `qm guest cmd <vmid> ping`. A VM whose OS type is set to Windows in Proxmox skips the Linux checks
