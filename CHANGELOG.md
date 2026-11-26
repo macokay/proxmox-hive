@@ -4,6 +4,9 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+### Security
+- The dashboard build tool `vite` is updated from 8.2.1 to 8.2.4. This clears six advisories in its development server, including one high severity advisory in `launch-editor`. They affect the dev server only, and the built dashboard is unchanged
+
 ## [1.0.32] - 2026-11-26
 
 ### Known issues
