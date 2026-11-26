@@ -4,6 +4,9 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+### Known issues
+- A check has no overall time limit. Each command has its own timeout, but when several guests time out one after another, a check can run for well over 10 minutes with no new result. Once, a check ran for more than 10 minutes and its cause was not found. Starting the check again finished in about 100 seconds
+
 ### Fixed
 - Windows VMs are shown as "Not supported" instead of "QEMU guest agent not running". Hive checked the agent by running `bash` inside the guest, and Windows has no bash, so the check failed. The agent is now checked with `qm guest cmd <vmid> ping`. A VM whose OS type is set to Windows in Proxmox skips the Linux checks
 - A VM update check whose apt command exits with an error, or does not finish, is shown on the VM card instead of "Up to date". Guests without apt, such as Fedora or Alpine, now show that error
