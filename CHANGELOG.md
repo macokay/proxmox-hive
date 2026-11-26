@@ -4,6 +4,8 @@ All notable changes to Proxmox Hive are documented here.
 
 ## [Unreleased]
 
+## [1.0.32] - 2026-11-26
+
 ### Known issues
 - A check has no overall time limit. Each command has its own timeout, but when several guests time out one after another, a check can run for well over 10 minutes with no new result. Once, a check ran for more than 10 minutes and its cause was not found. Starting the check again finished in about 100 seconds. Checks can overlap if one runs longer than the check interval, because there is no lock
 - Windows detection through the guest agent (OS id `mswindows`) is tested on Windows 10 Pro only. Windows Server and other editions are not tested. Detection by the OS type set in Proxmox is tested
