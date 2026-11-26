@@ -470,7 +470,7 @@ function SiteView({ site, activeUpdates, onUpdate, onCheck, checking }) {
           {vmData.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xs font-semibold text-muted uppercase tracking-widest">Linux VMs</h2>
+                <h2 className="text-xs font-semibold text-muted uppercase tracking-widest">Virtual machines</h2>
                 {updatableVMs.length > 1 && (
                   <div className="flex items-center gap-3">
                     {selectedCards.size > 0 && (

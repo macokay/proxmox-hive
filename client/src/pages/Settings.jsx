@@ -615,7 +615,7 @@ function SiteSettings({ site, onSaved, onDeleted }) {
       </Section>
 
       {/* VMs */}
-      <Section title="Monitored Linux VMs" description="QEMU VMs with the guest agent installed. Requires qemu-guest-agent running inside the VM.">
+      <Section title="Monitored VMs" description="QEMU VMs with the guest agent installed. Linux VMs are updated through it; Windows VMs are listed but not checked. Untick one to leave it out of update checks.">
         <ContainerList
           items={vmList}
           selectedSet={vmMonitoredSet}

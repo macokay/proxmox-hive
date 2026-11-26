@@ -126,6 +126,13 @@ async function getQMList(site) {
   return result.stdout
 }
 
+// ostype from qm config; null when it cannot be read
+async function getVmOstype(site, vmid) {
+  const isRoot = !site.ssh.username || site.ssh.username === 'root'
+  const { stdout, code } = await siteExec(site, `${isRoot ? '' : 'sudo '}qm config ${vmid}`)
+  return code === 0 ? parseQmOstype(stdout) : null
+}
+
 // Execute a command inside a VM via QEMU guest agent
 async function qmGuestExecSimple(site, vmid, cmd, timeout = 60) {
   const isRoot = !site.ssh.username || site.ssh.username === 'root'
@@ -419,13 +426,20 @@ export async function runCheck(siteId) {
       for (const vmid of (site.monitoredVMs || [])) {
         const vmInfo = vmMap[vmid] || { name: `VM-${vmid}`, status: 'unknown' }
         try {
+          // Windows has no bash or apt, so the Linux checks below do not apply to it
+          const ostype = await getVmOstype(site, vmid).catch(() => null)
+          if (isWindowsOstype(ostype)) {
+            results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: vmInfo.status === 'running', unsupported: 'windows' })
+            continue
+          }
           if (vmInfo.status !== 'running') {
             results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: false })
             continue
           }
-          // Test QEMU guest agent availability
-          const agentOk = await qmGuestExecSimple(site, vmid, 'echo ok', 8)
-            .then(r => r.stdout.trim() === 'ok')
+          // Agent liveness only: running `bash` inside the guest says nothing about the agent
+          const isRoot = !site.ssh.username || site.ssh.username === 'root'
+          const agentOk = await siteExec(site, `${isRoot ? '' : 'sudo '}qm guest cmd ${vmid} ping`, 15000)
+            .then(r => r.code === 0)
             .catch(() => false)
 
           if (!agentOk) {
@@ -433,9 +447,15 @@ export async function runCheck(siteId) {
             continue
           }
 
-          const { stdout: vmOut } = await qmGuestExecSimple(site, vmid,
-            'apt-get update -qq -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 2>/dev/null; apt list --upgradable 2>/dev/null', 90)
-          const vmPackages = parseAptOutput(vmOut)
+          let vmPackages
+          try {
+            const { stdout: vmOut } = await qmGuestExecSimple(site, vmid,
+              'apt-get update -qq -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 2>/dev/null; apt list --upgradable 2>/dev/null', 90)
+            vmPackages = parseAptOutput(vmOut)
+          } catch (e) {
+            results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: true, error: `Guest agent responds, but the update check failed: ${e.message}` })
+            continue
+          }
           results.vms.push({ vmid, name: vmInfo.name, updates: vmPackages.length, packages: vmPackages, running: true })
         } catch (e) {
           results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: false, error: e.message })
@@ -684,6 +704,16 @@ export function parseQMList(output) {
     }
   })
   return map
+}
+
+export function parseQmOstype(output) {
+  const match = output.match(/^ostype:\s*(\S+)/m)
+  return match ? match[1] : null
+}
+
+// Proxmox Windows ostypes: wxp, w2k, w2k3, w2k8, wvista, win7, win8, win10, win11
+export function isWindowsOstype(ostype) {
+  return !!ostype && /^(wxp|w2k\d*|wvista|win\d+)$/.test(ostype)
 }
 
 export function parseAptOutput(output) {

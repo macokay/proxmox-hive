@@ -29,6 +29,7 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
 
   const statusBadge = () => {
     if (vm.pending) return <span className="text-xs px-2.5 py-1 rounded-full bg-base-700 text-muted border border-border italic">Pending check</span>
+    if (vm.unsupported) return <span className="text-xs px-2.5 py-1 rounded-full bg-base-700 text-muted border border-border">Not supported</span>
     if (!vm.running) return <span className="text-xs px-2.5 py-1 rounded-full bg-base-700 text-muted border border-border">Offline</span>
     if (vm.noAgent) return <span className="text-xs px-2.5 py-1 rounded-full bg-warning/10 text-warning border border-warning/20">No agent</span>
     if (hasUpdates) return (
@@ -92,6 +93,12 @@ export default function VMCard({ vm, onUpdate, updating, delay = 0, isCardSelect
               </ol>
             </div>
           )}
+        </div>
+      )}
+
+      {vm.unsupported && (
+        <div className="mb-3 text-xs text-muted bg-base-900 border border-border rounded-md px-3 py-2">
+          Windows VM. Hive updates Linux guests with apt through the guest agent, so this VM is not checked. Untick it under Settings → Monitored VMs to hide it.
         </div>
       )}
 
