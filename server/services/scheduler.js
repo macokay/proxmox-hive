@@ -447,11 +447,21 @@ export async function runCheck(siteId) {
             continue
           }
 
+          // ostype may be unset or wrong; the guest's own OS id is the second check
+          const osId = await siteExec(site, `${isRoot ? '' : 'sudo '}qm guest cmd ${vmid} get-osinfo`, 15000)
+            .then(r => JSON.parse(r.stdout).id)
+            .catch(() => null)
+          if (osId === 'mswindows') {
+            results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: true, unsupported: 'windows' })
+            continue
+          }
+
           let vmPackages
           try {
-            const { stdout: vmOut } = await qmGuestExecSimple(site, vmid,
+            const vmRes = await qmGuestExecSimple(site, vmid,
               'apt-get update -qq -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 2>/dev/null; apt list --upgradable 2>/dev/null', 90)
-            vmPackages = parseAptOutput(vmOut)
+            if (vmRes.exitcode !== 0) throw new Error(`apt list exited ${vmRes.exitcode}`)
+            vmPackages = parseAptOutput(vmRes.stdout)
           } catch (e) {
             results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: true, error: `Guest agent responds, but the update check failed: ${e.message}` })
             continue
