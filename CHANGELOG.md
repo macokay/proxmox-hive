@@ -5,8 +5,8 @@ All notable changes to Proxmox Hive are documented here.
 ## [Unreleased]
 
 ### Fixed
-- Windows VMs are shown as "Not supported" instead of "QEMU guest agent not running". Hive checked the agent by running `bash` inside the guest, and Windows has no bash, so the check failed. The agent is now checked with `qm guest cmd <vmid> ping`. A VM is treated as Windows when its ostype is Windows or the guest agent reports a Windows OS, and those VMs skip the Linux checks
-- A VM update check whose apt command exits with an error is shown on the VM card. Before, it was reported as "Up to date"
+- Windows VMs are shown as "Not supported" instead of "QEMU guest agent not running". Hive checked the agent by running `bash` inside the guest, and Windows has no bash, so the check failed. The agent is now checked with `qm guest cmd <vmid> ping`. A VM whose OS type is set to Windows in Proxmox skips the Linux checks
+- A VM update check whose apt command exits with an error, or does not finish, is shown on the VM card instead of "Up to date". Guests without apt, such as Fedora or Alpine, now show that error
 - Major version updates for Sonarr, Radarr, Prowlarr, Lidarr and Readarr are installed. Hive asked the app to update, but the app declines major jumps (Prowlarr 2 to 3, Radarr 6 to 7) unless told to, so the update was reported as a success while nothing changed and the next check offered it again
 - An *arr update is only reported as successful when the app's version actually changed
 

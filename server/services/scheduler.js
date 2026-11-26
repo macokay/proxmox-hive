@@ -149,7 +149,7 @@ async function qmGuestExecSimple(site, vmid, cmd, timeout = 60) {
     return {
       stdout: json['out-data'] || '',
       stderr: json['err-data'] || '',
-      exitcode: json['exitcode'] ?? 0,
+      exitcode: json['exitcode'] ?? null,
       exited: json['exited'] ?? 1
     }
   } catch {
@@ -449,7 +449,7 @@ export async function runCheck(siteId) {
 
           // ostype may be unset or wrong; the guest's own OS id is the second check
           const osId = await siteExec(site, `${isRoot ? '' : 'sudo '}qm guest cmd ${vmid} get-osinfo`, 15000)
-            .then(r => JSON.parse(r.stdout).id)
+            .then(r => osInfoId(r.stdout))
             .catch(() => null)
           if (osId === 'mswindows') {
             results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: true, unsupported: 'windows' })
@@ -460,7 +460,8 @@ export async function runCheck(siteId) {
           try {
             const vmRes = await qmGuestExecSimple(site, vmid,
               'apt-get update -qq -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 2>/dev/null; apt list --upgradable 2>/dev/null', 90)
-            if (vmRes.exitcode !== 0) throw new Error(`apt list exited ${vmRes.exitcode}`)
+            const failure = aptListFailure(vmRes)
+            if (failure) throw new Error(failure)
             vmPackages = parseAptOutput(vmRes.stdout)
           } catch (e) {
             results.vms.push({ vmid, name: vmInfo.name, updates: 0, packages: [], running: true, error: `Guest agent responds, but the update check failed: ${e.message}` })
@@ -724,6 +725,18 @@ export function parseQmOstype(output) {
 // Proxmox Windows ostypes: wxp, w2k, w2k3, w2k8, wvista, win7, win8, win10, win11
 export function isWindowsOstype(ostype) {
   return !!ostype && /^(wxp|w2k\d*|wvista|win\d+)$/.test(ostype)
+}
+
+// Guest OS id from `qm guest cmd <vmid> get-osinfo`, null when unreadable
+export function osInfoId(output) {
+  try { return JSON.parse(output).id ?? null } catch { return null }
+}
+
+// null when the apt list finished with exit code 0, otherwise why it did not
+export function aptListFailure(res) {
+  if (res.exitcode === 0) return null
+  if (res.exitcode == null) return `apt list did not finish (exited=${res.exited})`
+  return `apt list exited ${res.exitcode}`
 }
 
 export function parseAptOutput(output) {
